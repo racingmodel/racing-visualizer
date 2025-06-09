@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Value Bets</title>
+  <style>
+    body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
+    h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
+    .nav-link {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .nav-link a {
+      color: #00bfff;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .nav-link a:hover {
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #2c2c3e;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 0.8rem 1rem;
+      text-align: center;
+    }
+    th {
+      background: #444;
+      color: #ffd700;
+    }
+    tr:nth-child(even) {
+      background: #2a2a3d;
+    }
+    tr:hover {
+      background: #3a3a4d;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 Today's Value Bets</h1>
+
+  <div class="nav-link">
+    <a href="index.html">🔙 Back to Race Visualizer</a>
+  </div>
+
+  <table id="value-table">
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>📊 Model Odds</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    fetch('value_bets.json')
+      .then(response => {
+        if (!response.ok) throw new Error('JSON file not found');
+        return response.json();
+      })
+      .then(data => {
+        const tbody = document.querySelector('#value-table tbody');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5">No value bets found.</td></tr>';
+          return;
+        }
+
+        // Deduplicate by race_datetime + horse
+        const uniqueMap = new Map();
+        data.forEach(entry => {
+          const key = `${entry.race_datetime}_${entry.horse}`;
+          uniqueMap.set(key, entry); // Latest occurrence wins
+        });
+
+        const uniqueEntries = Array.from(uniqueMap.values());
+
+        // Sort by time
+        uniqueEntries.sort((a, b) => {
+          const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
+          const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
+          return tA.localeCompare(tB);
+        });
+
+        uniqueEntries.forEach(entry => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${entry.race_datetime}</td>
+            <td>${entry.course}</td>
+            <td>${entry.horse}</td>
+            <td>${entry.bookie_odds}</td>
+            <td>${entry.model_odds}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        document.querySelector('#value-table tbody').innerHTML =
+          `<tr><td colspan="5" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+      });
+  </script>
+</body>
+</html>
