@@ -34,8 +34,8 @@
     <tr>
       <td>Belgarum</td>
       <td>2.88</td>
-      <td>2.88</td>
-      <td>762</td>
+      <td>2.92</td>
+      <td>776</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -45,8 +45,8 @@
     <tr>
       <td>Morfee</td>
       <td>3.25</td>
-      <td>3.52</td>
-      <td>731</td>
+      <td>3.57</td>
+      <td>743</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -55,9 +55,9 @@
     </tr>
     <tr>
       <td>Onethreefivenotout</td>
-      <td>3.00</td>
-      <td>3.80</td>
-      <td>646</td>
+      <td>2.88</td>
+      <td>3.65</td>
+      <td>663</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -67,8 +67,8 @@
     <tr>
       <td>No No Maestro</td>
       <td>8.50</td>
-      <td>11.99</td>
-      <td>538</td>
+      <td>12.17</td>
+      <td>557</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -78,8 +78,8 @@
     <tr>
       <td>Enjoy D'allen</td>
       <td>21.00</td>
-      <td>46.37</td>
-      <td>488</td>
+      <td>47.05</td>
+      <td>499</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -90,21 +90,22 @@
 </table>
     <script>
     document.querySelectorAll('table tbody tr').forEach(row => {
-      const cells = row.querySelectorAll('td');
-      const horseCell = cells[1];            // targets Horse Name
-      const realOdds  = parseFloat(cells[2].textContent) || 0;
-      const modelOdds = parseFloat(cells[3].textContent) || 0;
-      const valueText = cells[cells.length - 1].textContent;
+    const cells = row.querySelectorAll('td');
+    const horseCell = cells[0];  // ✅ Correct column: Horse Name
+    const realOdds  = parseFloat(cells[1].textContent) || 0;
+    const modelOdds = parseFloat(cells[2].textContent) || 0;
+    const valueText = cells[cells.length - 1].textContent;
 
-      if (valueText.includes('✖') || valueText.includes('✘')) {
+    if (valueText.includes('✖') || valueText.includes('✘')) {
         horseCell.classList.add('value-cross');
-      }
-      if (valueText.includes('💰') || valueText.includes('✔')) {
+    } else if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
-      } else if (realOdds >= 10 && modelOdds < realOdds) {
+    } else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
-      }
+    }
     });
     </script>
+
+    
 </body>
 </html>
