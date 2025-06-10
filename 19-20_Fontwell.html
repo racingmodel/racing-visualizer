@@ -33,20 +33,20 @@
   <tbody>
     <tr>
       <td>Chicago Storm</td>
-      <td>4.33</td>
-      <td>3.79</td>
-      <td>716</td>
+      <td>4.00</td>
+      <td>3.74</td>
+      <td>733</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td>💰</td>
+      <td></td>
     </tr>
     <tr>
       <td>Man Of The Sea</td>
       <td>3.50</td>
-      <td>3.79</td>
-      <td>676</td>
+      <td>3.83</td>
+      <td>693</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -56,8 +56,8 @@
     <tr>
       <td>Junkanoo</td>
       <td>2.75</td>
-      <td>3.71</td>
-      <td>661</td>
+      <td>3.74</td>
+      <td>681</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -67,8 +67,8 @@
     <tr>
       <td>Lightning Maqueen</td>
       <td>5.00</td>
-      <td>6.74</td>
-      <td>634</td>
+      <td>6.81</td>
+      <td>653</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -77,9 +77,9 @@
     </tr>
     <tr>
       <td>Songo</td>
-      <td>13.00</td>
-      <td>21.91</td>
-      <td>508</td>
+      <td>12.00</td>
+      <td>20.42</td>
+      <td>526</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -89,33 +89,34 @@
     <tr>
       <td>Bread And Butter</td>
       <td>34.00</td>
-      <td>112.91</td>
-      <td>496</td>
+      <td>114.02</td>
+      <td>511</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td></td>
+      <td>✖️</td>
     </tr>
   </tbody>
 </table>
     <script>
     document.querySelectorAll('table tbody tr').forEach(row => {
-      const cells = row.querySelectorAll('td');
-      const horseCell = cells[1];            // targets Horse Name
-      const realOdds  = parseFloat(cells[2].textContent) || 0;
-      const modelOdds = parseFloat(cells[3].textContent) || 0;
-      const valueText = cells[cells.length - 1].textContent;
+    const cells = row.querySelectorAll('td');
+    const horseCell = cells[0];  // ✅ Correct column: Horse Name
+    const realOdds  = parseFloat(cells[1].textContent) || 0;
+    const modelOdds = parseFloat(cells[2].textContent) || 0;
+    const valueText = cells[cells.length - 1].textContent;
 
-      if (valueText.includes('✖') || valueText.includes('✘')) {
+    if (valueText.includes('✖') || valueText.includes('✘')) {
         horseCell.classList.add('value-cross');
-      }
-      if (valueText.includes('💰') || valueText.includes('✔')) {
+    } else if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
-      } else if (realOdds >= 10 && modelOdds < realOdds) {
+    } else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
-      }
+    }
     });
     </script>
+
+    
 </body>
 </html>
