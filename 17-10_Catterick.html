@@ -11,8 +11,10 @@
         tr:nth-child(even) { background-color: #f2f2f2; }
 
         /* ▶︎ Our new highlight classes */
+        .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
+        
     </style>
 </head>
 <body>
@@ -35,8 +37,8 @@
     <tr>
       <td>Duskaura</td>
       <td>1.73</td>
-      <td>1.98</td>
-      <td>442</td>
+      <td>1.99</td>
+      <td>469</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -45,9 +47,9 @@
     </tr>
     <tr>
       <td>Yellow Diamonds</td>
-      <td>6.00</td>
-      <td>5.52</td>
-      <td>383</td>
+      <td>6.50</td>
+      <td>5.97</td>
+      <td>387</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -56,9 +58,9 @@
     </tr>
     <tr>
       <td>Desert Jungle</td>
-      <td>6.50</td>
-      <td>6.79</td>
-      <td>372</td>
+      <td>5.50</td>
+      <td>5.97</td>
+      <td>373</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -68,7 +70,7 @@
     <tr>
       <td>Maledetta Minerva</td>
       <td>101.00</td>
-      <td>69.62</td>
+      <td>69.89</td>
       <td>301</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -78,9 +80,9 @@
     </tr>
     <tr>
       <td>Harswell River</td>
-      <td>101.00</td>
-      <td>113.78</td>
-      <td>289</td>
+      <td>81.00</td>
+      <td>86.93</td>
+      <td>279</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -90,8 +92,8 @@
     <tr>
       <td>Belling The Cat</td>
       <td>51.00</td>
-      <td>86.61</td>
-      <td>256</td>
+      <td>86.93</td>
+      <td>236</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -101,8 +103,8 @@
     <tr>
       <td>Chalice Beauty</td>
       <td>4.33</td>
-      <td>8.49</td>
-      <td>254</td>
+      <td>8.52</td>
+      <td>232</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -111,9 +113,9 @@
     </tr>
     <tr>
       <td>Rum Therapy</td>
-      <td>21.00</td>
-      <td>69.62</td>
-      <td>254</td>
+      <td>34.00</td>
+      <td>138.07</td>
+      <td>232</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -131,11 +133,16 @@
       const modelOdds = parseFloat(cells[2].textContent) || 0;
       const valueText = cells[cells.length - 1].textContent;  // last column
 
-      // 1) gold if “Value” column contains our indicator  
+      // 1) Pink if “Value” column contains a Cross
+    if (valueText.includes('✖') || valueText.includes('✘')) {
+    horseCell.classList.add('value-cross');
+  }
+
+      // 2) gold if “Value” column contains our indicator  
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
       }
-      // 2) blue if long odds but model thinks cheaper
+      // 3) blue if long odds but model thinks cheaper
       else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
