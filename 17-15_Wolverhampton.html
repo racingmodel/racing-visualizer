@@ -11,8 +11,10 @@
         tr:nth-child(even) { background-color: #f2f2f2; }
 
         /* ▶︎ Our new highlight classes */
+        .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
+        
     </style>
 </head>
 <body>
@@ -34,9 +36,20 @@
   <tbody>
     <tr>
       <td>Rampant</td>
+      <td>3.75</td>
+      <td>3.73</td>
+      <td>500</td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Sir Laurence Graff</td>
       <td>4.00</td>
-      <td>3.87</td>
-      <td>570</td>
+      <td>4.23</td>
+      <td>492</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -46,8 +59,8 @@
     <tr>
       <td>Anificas Beauty</td>
       <td>2.88</td>
-      <td>3.44</td>
-      <td>567</td>
+      <td>3.73</td>
+      <td>482</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -57,19 +70,8 @@
     <tr>
       <td>Change Of Fortune</td>
       <td>5.00</td>
-      <td>5.58</td>
-      <td>567</td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>Sir Laurence Graff</td>
-      <td>3.75</td>
-      <td>4.94</td>
-      <td>567</td>
+      <td>6.35</td>
+      <td>481</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -79,8 +81,8 @@
     <tr>
       <td>Dors Delight</td>
       <td>34.00</td>
-      <td>44.67</td>
-      <td>423</td>
+      <td>44.04</td>
+      <td>370</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -90,8 +92,8 @@
     <tr>
       <td>Bevy</td>
       <td>23.00</td>
-      <td>36.08</td>
-      <td>368</td>
+      <td>35.57</td>
+      <td>322</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -101,8 +103,8 @@
     <tr>
       <td>Hazy Bela</td>
       <td>34.00</td>
-      <td>87.62</td>
-      <td>365</td>
+      <td>86.38</td>
+      <td>311</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -112,8 +114,8 @@
     <tr>
       <td>Waiting For Tom</td>
       <td>34.00</td>
-      <td>139.16</td>
-      <td>361</td>
+      <td>137.20</td>
+      <td>295</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -131,11 +133,16 @@
       const modelOdds = parseFloat(cells[2].textContent) || 0;
       const valueText = cells[cells.length - 1].textContent;  // last column
 
-      // 1) gold if “Value” column contains our indicator  
+      // 1) Pink if “Value” column contains a Cross
+    if (valueText.includes('✖') || valueText.includes('✘')) {
+    horseCell.classList.add('value-cross');
+  }
+
+      // 2) gold if “Value” column contains our indicator  
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
       }
-      // 2) blue if long odds but model thinks cheaper
+      // 3) blue if long odds but model thinks cheaper
       else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
