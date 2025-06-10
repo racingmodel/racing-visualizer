@@ -11,8 +11,10 @@
         tr:nth-child(even) { background-color: #f2f2f2; }
 
         /* ▶︎ Our new highlight classes */
+        .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
+        
     </style>
 </head>
 <body>
@@ -35,8 +37,8 @@
     <tr>
       <td>Chicago Storm</td>
       <td>4.33</td>
-      <td>3.70</td>
-      <td>913</td>
+      <td>3.71</td>
+      <td>830</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -45,9 +47,9 @@
     </tr>
     <tr>
       <td>Junkanoo</td>
-      <td>2.75</td>
-      <td>3.14</td>
-      <td>903</td>
+      <td>2.88</td>
+      <td>3.30</td>
+      <td>802</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -57,8 +59,8 @@
     <tr>
       <td>Man Of The Sea</td>
       <td>3.75</td>
-      <td>4.52</td>
-      <td>873</td>
+      <td>4.54</td>
+      <td>792</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -68,8 +70,8 @@
     <tr>
       <td>Lightning Maqueen</td>
       <td>5.00</td>
-      <td>6.58</td>
-      <td>867</td>
+      <td>6.60</td>
+      <td>773</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -78,9 +80,9 @@
     </tr>
     <tr>
       <td>Songo</td>
-      <td>23.00</td>
-      <td>34.53</td>
-      <td>726</td>
+      <td>13.00</td>
+      <td>21.45</td>
+      <td>634</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -90,8 +92,8 @@
     <tr>
       <td>Bread And Butter</td>
       <td>34.00</td>
-      <td>110.18</td>
-      <td>683</td>
+      <td>110.55</td>
+      <td>607</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -109,11 +111,16 @@
       const modelOdds = parseFloat(cells[2].textContent) || 0;
       const valueText = cells[cells.length - 1].textContent;  // last column
 
-      // 1) gold if “Value” column contains our indicator  
+      // 1) Pink if “Value” column contains a Cross
+    if (valueText.includes('✖') || valueText.includes('✘')) {
+    horseCell.classList.add('value-cross');
+  }
+
+      // 2) gold if “Value” column contains our indicator  
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
       }
-      // 2) blue if long odds but model thinks cheaper
+      // 3) blue if long odds but model thinks cheaper
       else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
