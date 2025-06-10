@@ -35,29 +35,29 @@
       <td>Broomfield Gale</td>
       <td>4.00</td>
       <td>3.42</td>
-      <td>766</td>
+      <td>775</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td>💰</td>
+      <td></td>
     </tr>
     <tr>
       <td>Blue In The West</td>
       <td>12.00</td>
       <td>10.10</td>
-      <td>734</td>
+      <td>744</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td>💰</td>
+      <td></td>
     </tr>
     <tr>
       <td>Trevor's Lad</td>
       <td>3.75</td>
       <td>4.27</td>
-      <td>634</td>
+      <td>649</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -68,7 +68,7 @@
       <td>Coup De Gold</td>
       <td>6.50</td>
       <td>7.77</td>
-      <td>598</td>
+      <td>610</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -79,7 +79,7 @@
       <td>Getoverthathill</td>
       <td>2.88</td>
       <td>4.47</td>
-      <td>563</td>
+      <td>580</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -90,7 +90,7 @@
       <td>Captain Howse</td>
       <td>17.00</td>
       <td>45.08</td>
-      <td>415</td>
+      <td>430</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -101,21 +101,22 @@
 </table>
     <script>
     document.querySelectorAll('table tbody tr').forEach(row => {
-      const cells = row.querySelectorAll('td');
-      const horseCell = cells[1];            // targets Horse Name
-      const realOdds  = parseFloat(cells[2].textContent) || 0;
-      const modelOdds = parseFloat(cells[3].textContent) || 0;
-      const valueText = cells[cells.length - 1].textContent;
+    const cells = row.querySelectorAll('td');
+    const horseCell = cells[0];  // ✅ Correct column: Horse Name
+    const realOdds  = parseFloat(cells[1].textContent) || 0;
+    const modelOdds = parseFloat(cells[2].textContent) || 0;
+    const valueText = cells[cells.length - 1].textContent;
 
-      if (valueText.includes('✖') || valueText.includes('✘')) {
+    if (valueText.includes('✖') || valueText.includes('✘')) {
         horseCell.classList.add('value-cross');
-      }
-      if (valueText.includes('💰') || valueText.includes('✔')) {
+    } else if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
-      } else if (realOdds >= 10 && modelOdds < realOdds) {
+    } else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
-      }
+    }
     });
     </script>
+
+    
 </body>
 </html>
