@@ -9,12 +9,9 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
         th { background-color: #333; color: white; }
         tr:nth-child(even) { background-color: #f2f2f2; }
-
-        /* ▶︎ Our new highlight classes */
         .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
-        
     </style>
 </head>
 <body>
@@ -36,9 +33,9 @@
   <tbody>
     <tr>
       <td>Belgarum</td>
-      <td>2.75</td>
-      <td>2.71</td>
-      <td>866</td>
+      <td>2.88</td>
+      <td>2.88</td>
+      <td>762</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -48,8 +45,8 @@
     <tr>
       <td>Morfee</td>
       <td>3.25</td>
-      <td>3.45</td>
-      <td>824</td>
+      <td>3.52</td>
+      <td>731</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -58,9 +55,9 @@
     </tr>
     <tr>
       <td>Onethreefivenotout</td>
-      <td>3.75</td>
-      <td>4.31</td>
-      <td>771</td>
+      <td>3.00</td>
+      <td>3.80</td>
+      <td>646</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -70,8 +67,8 @@
     <tr>
       <td>No No Maestro</td>
       <td>8.50</td>
-      <td>11.77</td>
-      <td>687</td>
+      <td>11.99</td>
+      <td>538</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -80,9 +77,9 @@
     </tr>
     <tr>
       <td>Enjoy D'allen</td>
-      <td>17.00</td>
-      <td>40.79</td>
-      <td>579</td>
+      <td>21.00</td>
+      <td>46.37</td>
+      <td>488</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -92,25 +89,19 @@
   </tbody>
 </table>
     <script>
-    // After the table is rendered, walk each row …
     document.querySelectorAll('table tbody tr').forEach(row => {
       const cells = row.querySelectorAll('td');
-      const horseCell = cells[0];
-      const realOdds = parseFloat(cells[1].textContent) || 0;
-      const modelOdds = parseFloat(cells[2].textContent) || 0;
-      const valueText = cells[cells.length - 1].textContent;  // last column
+      const horseCell = cells[1];            // targets Horse Name
+      const realOdds  = parseFloat(cells[2].textContent) || 0;
+      const modelOdds = parseFloat(cells[3].textContent) || 0;
+      const valueText = cells[cells.length - 1].textContent;
 
-      // 1) Pink if “Value” column contains a Cross
-    if (valueText.includes('✖') || valueText.includes('✘')) {
-    horseCell.classList.add('value-cross');
-  }
-
-      // 2) gold if “Value” column contains our indicator  
+      if (valueText.includes('✖') || valueText.includes('✘')) {
+        horseCell.classList.add('value-cross');
+      }
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
-      }
-      // 3) blue if long odds but model thinks cheaper
-      else if (realOdds >= 10 && modelOdds < realOdds) {
+      } else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
     });
