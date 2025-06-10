@@ -11,8 +11,10 @@
         tr:nth-child(even) { background-color: #f2f2f2; }
 
         /* ▶︎ Our new highlight classes */
+        .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
+        
     </style>
 </head>
 <body>
@@ -34,9 +36,9 @@
   <tbody>
     <tr>
       <td>Booziebrunch</td>
-      <td>8.00</td>
-      <td>5.58</td>
-      <td>331</td>
+      <td>6.50</td>
+      <td>4.64</td>
+      <td>323</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -46,8 +48,8 @@
     <tr>
       <td>Ninth Crusade</td>
       <td>2.10</td>
-      <td>2.51</td>
-      <td>205</td>
+      <td>2.54</td>
+      <td>179</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -56,9 +58,9 @@
     </tr>
     <tr>
       <td>Comic Strip</td>
-      <td>2.38</td>
-      <td>3.04</td>
-      <td>204</td>
+      <td>2.62</td>
+      <td>3.39</td>
+      <td>178</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -68,8 +70,8 @@
     <tr>
       <td>She's Divine</td>
       <td>8.50</td>
-      <td>11.96</td>
-      <td>203</td>
+      <td>12.10</td>
+      <td>176</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -78,9 +80,9 @@
     </tr>
     <tr>
       <td>Majd Al Kazem</td>
-      <td>41.00</td>
-      <td>106.81</td>
-      <td>202</td>
+      <td>34.00</td>
+      <td>82.28</td>
+      <td>176</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -98,11 +100,16 @@
       const modelOdds = parseFloat(cells[2].textContent) || 0;
       const valueText = cells[cells.length - 1].textContent;  // last column
 
-      // 1) gold if “Value” column contains our indicator  
+      // 1) Pink if “Value” column contains a Cross
+    if (valueText.includes('✖') || valueText.includes('✘')) {
+    horseCell.classList.add('value-cross');
+  }
+
+      // 2) gold if “Value” column contains our indicator  
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
       }
-      // 2) blue if long odds but model thinks cheaper
+      // 3) blue if long odds but model thinks cheaper
       else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
