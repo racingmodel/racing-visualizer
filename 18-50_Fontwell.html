@@ -9,12 +9,9 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
         th { background-color: #333; color: white; }
         tr:nth-child(even) { background-color: #f2f2f2; }
-
-        /* ▶︎ Our new highlight classes */
         .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
-        
     </style>
 </head>
 <body>
@@ -37,8 +34,8 @@
     <tr>
       <td>Jack Sparrow Grey</td>
       <td>1.67</td>
-      <td>1.84</td>
-      <td>885</td>
+      <td>1.88</td>
+      <td>820</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -47,9 +44,9 @@
     </tr>
     <tr>
       <td>Summer In Milan</td>
-      <td>4.00</td>
-      <td>4.09</td>
-      <td>871</td>
+      <td>3.75</td>
+      <td>3.97</td>
+      <td>783</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -58,9 +55,9 @@
     </tr>
     <tr>
       <td>Ryder's Rock</td>
-      <td>9.50</td>
-      <td>10.64</td>
-      <td>844</td>
+      <td>9.00</td>
+      <td>10.86</td>
+      <td>752</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -68,10 +65,21 @@
       <td></td>
     </tr>
     <tr>
+      <td>Millies Mite</td>
+      <td>23.00</td>
+      <td>21.71</td>
+      <td>712</td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td></td>
+    </tr>
+    <tr>
       <td>Henry Box Brown</td>
-      <td>11.00</td>
-      <td>13.92</td>
-      <td>789</td>
+      <td>10.00</td>
+      <td>16.70</td>
+      <td>663</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -79,21 +87,10 @@
       <td></td>
     </tr>
     <tr>
-      <td>Millies Mite</td>
-      <td>21.00</td>
-      <td>34.39</td>
-      <td>774</td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td></td>
-    </tr>
-    <tr>
       <td>Midnight Jewel</td>
-      <td>23.00</td>
-      <td>55.67</td>
-      <td>665</td>
+      <td>21.00</td>
+      <td>56.78</td>
+      <td>561</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -103,25 +100,19 @@
   </tbody>
 </table>
     <script>
-    // After the table is rendered, walk each row …
     document.querySelectorAll('table tbody tr').forEach(row => {
       const cells = row.querySelectorAll('td');
-      const horseCell = cells[0];
-      const realOdds = parseFloat(cells[1].textContent) || 0;
-      const modelOdds = parseFloat(cells[2].textContent) || 0;
-      const valueText = cells[cells.length - 1].textContent;  // last column
+      const horseCell = cells[1];            // targets Horse Name
+      const realOdds  = parseFloat(cells[2].textContent) || 0;
+      const modelOdds = parseFloat(cells[3].textContent) || 0;
+      const valueText = cells[cells.length - 1].textContent;
 
-      // 1) Pink if “Value” column contains a Cross
-    if (valueText.includes('✖') || valueText.includes('✘')) {
-    horseCell.classList.add('value-cross');
-  }
-
-      // 2) gold if “Value” column contains our indicator  
+      if (valueText.includes('✖') || valueText.includes('✘')) {
+        horseCell.classList.add('value-cross');
+      }
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
-      }
-      // 3) blue if long odds but model thinks cheaper
-      else if (realOdds >= 10 && modelOdds < realOdds) {
+      } else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
     });
