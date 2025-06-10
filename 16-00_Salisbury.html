@@ -1,0 +1,90 @@
+
+<html>
+<head>
+    <title>16:00 Salisbury — Madar Corporation Maiden Stakes (GBB/GBBPlus Race)</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5; }
+        h1 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background-color: white; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #ddd; }
+        th { background-color: #333; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+
+        /* ▶︎ Our new highlight classes */
+        .value-horse { background-color: gold !important; }
+        .undervalued { background-color: lightblue !important; }
+    </style>
+</head>
+<body>
+    <h1>16:00 Salisbury — Madar Corporation Maiden Stakes (GBB/GBBPlus Race)</h1>
+    <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🏇 Horse Name</th>
+      <th>🎯 Real Odds</th>
+      <th>Model 100%</th>
+      <th>📈 Score</th>
+      <th>Going</th>
+      <th>Distance</th>
+      <th>Class</th>
+      <th>Form</th>
+      <th>💰 Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Marnier</td>
+      <td>1.36</td>
+      <td>1.59</td>
+      <td>611</td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
+      <td>❔</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Triple Gee</td>
+      <td>2.88</td>
+      <td>3.10</td>
+      <td>308</td>
+      <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
+      <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
+      <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
+      <td>❔</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Bedford</td>
+      <td>21.00</td>
+      <td>20.12</td>
+      <td>218</td>
+      <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
+      <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
+      <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
+      <td>❔</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+    <script>
+    // After the table is rendered, walk each row …
+    document.querySelectorAll('table tbody tr').forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const horseCell = cells[0];
+      const realOdds = parseFloat(cells[1].textContent) || 0;
+      const modelOdds = parseFloat(cells[2].textContent) || 0;
+      const valueText = cells[cells.length - 1].textContent;  // last column
+
+      // 1) gold if “Value” column contains our indicator  
+      if (valueText.includes('💰') || valueText.includes('✔')) {
+        horseCell.classList.add('value-horse');
+      }
+      // 2) blue if long odds but model thinks cheaper
+      else if (realOdds >= 10 && modelOdds < realOdds) {
+        horseCell.classList.add('undervalued');
+      }
+    });
+    </script>
+</body>
+</html>
