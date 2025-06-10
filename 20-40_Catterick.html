@@ -11,8 +11,10 @@
         tr:nth-child(even) { background-color: #f2f2f2; }
 
         /* ▶︎ Our new highlight classes */
+        .value-cross { background-color: hotpink !important; }
         .value-horse { background-color: gold !important; }
         .undervalued { background-color: lightblue !important; }
+        
     </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
       <td>Coconut Bay</td>
       <td>4.00</td>
       <td>3.79</td>
-      <td>789</td>
+      <td>759</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -47,7 +49,7 @@
       <td>Rain Cap</td>
       <td>4.00</td>
       <td>4.21</td>
-      <td>781</td>
+      <td>743</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -58,7 +60,7 @@
       <td>Sunny Orange</td>
       <td>5.00</td>
       <td>5.48</td>
-      <td>737</td>
+      <td>691</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -69,7 +71,7 @@
       <td>Langholm</td>
       <td>7.00</td>
       <td>8.42</td>
-      <td>734</td>
+      <td>684</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -80,7 +82,7 @@
       <td>Elliott</td>
       <td>8.00</td>
       <td>10.95</td>
-      <td>660</td>
+      <td>619</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -91,7 +93,7 @@
       <td>Miss Calculation</td>
       <td>15.00</td>
       <td>21.90</td>
-      <td>648</td>
+      <td>607</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -102,7 +104,7 @@
       <td>B Associates</td>
       <td>17.00</td>
       <td>35.38</td>
-      <td>626</td>
+      <td>582</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -113,7 +115,7 @@
       <td>Brother Dave</td>
       <td>17.00</td>
       <td>48.85</td>
-      <td>618</td>
+      <td>572</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -124,7 +126,7 @@
       <td>Edergole's Gift</td>
       <td>26.00</td>
       <td>85.92</td>
-      <td>559</td>
+      <td>526</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -142,11 +144,16 @@
       const modelOdds = parseFloat(cells[2].textContent) || 0;
       const valueText = cells[cells.length - 1].textContent;  // last column
 
-      // 1) gold if “Value” column contains our indicator  
+      // 1) Pink if “Value” column contains a Cross
+    if (valueText.includes('✖') || valueText.includes('✘')) {
+    horseCell.classList.add('value-cross');
+  }
+
+      // 2) gold if “Value” column contains our indicator  
       if (valueText.includes('💰') || valueText.includes('✔')) {
         horseCell.classList.add('value-horse');
       }
-      // 2) blue if long odds but model thinks cheaper
+      // 3) blue if long odds but model thinks cheaper
       else if (realOdds >= 10 && modelOdds < realOdds) {
         horseCell.classList.add('undervalued');
       }
