@@ -82,76 +82,76 @@
   </table>
 
   <script>
-    fetch('value_bets.json')
-      .then(response => {
-        if (!response.ok) throw new Error('JSON file not found');
-        return response.json();
-      })
-      .then(data => {
-        const tbody = document.querySelector('#value-table tbody');
-        if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
-          return;
+  fetch('value_bets.json')
+    .then(response => {
+      if (!response.ok) throw new Error('JSON file not found');
+      return response.json();
+    })
+    .then(data => {
+      const tbody = document.querySelector('#value-table tbody');
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
+        return;
+      }
+
+      // Deduplicate by race_datetime + horse
+      const uniqueMap = new Map();
+      data.forEach(entry => {
+        const key = `${entry.race_datetime}_${entry.horse}`;
+        uniqueMap.set(key, entry);
+      });
+      const uniqueEntries = Array.from(uniqueMap.values());
+
+      // Sort by time
+      uniqueEntries.sort((a, b) => {
+        const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
+        const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
+        return tA.localeCompare(tB);
+      });
+
+      uniqueEntries.forEach(entry => {
+        let tag = "";
+        let rowClass = "";
+        switch ((entry.type || "").toLowerCase()) {
+          case "value":
+            tag = "💰 Value";
+            rowClass = "value-row";
+            break;
+          case "sleeper":
+            tag = "🌑 Sleeper";
+            rowClass = "sleeper-row";
+            break;
+          case "value+sleeper":
+            tag = "💰🌑 Value & Sleeper";
+            rowClass = "sleeper-row";
+            break;
+          case "top-rated-clear":
+            tag = "🥇 Top Rated Clear";
+            rowClass = "toprated-row";
+            break;
+          default:
+            tag = "⭐ Other";
+            rowClass = "";
         }
 
-        // Deduplicate by race_datetime + horse
-        const uniqueMap = new Map();
-        data.forEach(entry => {
-          const key = `${entry.race_datetime}_${entry.horse}`;
-          uniqueMap.set(key, entry);
-        });
-        const uniqueEntries = Array.from(uniqueMap.values());
-
-        // Sort by time
-        uniqueEntries.sort((a, b) => {
-          const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
-          const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
-          return tA.localeCompare(tB);
-        });
-
-        uniqueEntries.forEach(entry => {
-          let tag = "";
-          let rowClass = "";
-          // Modern, flexible type logic
-          switch ((entry.type || "").toLowerCase()) {
-            case "value":
-              tag = "💰 Value";
-              rowClass = "value-row";
-              break;
-            case "sleeper":
-              tag = "🌑 Sleeper";
-              rowClass = "sleeper-row";
-              break;
-            case "value+sleeper":
-              tag = "💰🌑 Value & Sleeper";
-              rowClass = "sleeper-row";
-              break;
-            case "top-rated-clear":
-              tag = "🥇 Top Rated Clear";
-              rowClass = "toprated-row";
-              break;
-            default:
-              tag = "⭐ Other";
-              rowClass = "";
-          }
-
-          const row = document.createElement('tr');
-          if (rowClass) row.className = rowClass;
-          row.innerHTML = `
-            <td>${entry.race_datetime}</td>
-            <td>${entry.course}</td>
-            <td>${tag} ${entry.horse}</td>
-            <td>${entry.bookie_odds}</td>
-            <td>${entry.model_odds}</td>
-            <td>${tag}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      })
-      .catch(error => {
-        document.querySelector('#value-table tbody').innerHTML =
-          `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+        const row = document.createElement('tr');
+        if (rowClass) row.className = rowClass;
+        row.innerHTML = `
+          <td>${entry.race_datetime}</td>
+          <td>${entry.course}</td>
+          <td>${entry.horse}</td>
+          <td>${entry.bookie_odds}</td>
+          <td>${entry.model_odds}</td>
+          <td>${tag}</td>
+        `;
+        tbody.appendChild(row);
       });
-  </script>
+    })
+    .catch(error => {
+      document.querySelector('#value-table tbody').innerHTML =
+        `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+    });
+</script>
+
 </body>
 </html>
