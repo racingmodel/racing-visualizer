@@ -38,7 +38,7 @@
       <td>2</td>
       <td>Jagetme</td>
       <td>3.75</td>
-      <td>3.63</td>
+      <td>3.62</td>
       <td>546</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -51,7 +51,7 @@
       <td>1</td>
       <td>She Went Whoosh</td>
       <td>6.00</td>
-      <td>5.36</td>
+      <td>5.34</td>
       <td>530</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -64,7 +64,7 @@
       <td>7</td>
       <td>Art Of Fox</td>
       <td>5.00</td>
-      <td>5.36</td>
+      <td>5.34</td>
       <td>475</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -77,7 +77,7 @@
       <td>3</td>
       <td>Cheeky Stanley</td>
       <td>3.00</td>
-      <td>4.33</td>
+      <td>4.31</td>
       <td>359</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -90,7 +90,7 @@
       <td>4</td>
       <td>Flicka's Girl</td>
       <td>19.00</td>
-      <td>24.75</td>
+      <td>24.65</td>
       <td>324</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -102,8 +102,8 @@
     <tr>
       <td>6</td>
       <td>Love Rock</td>
-      <td>8.00</td>
-      <td>14.03</td>
+      <td>8.50</td>
+      <td>14.79</td>
       <td>162</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -116,7 +116,7 @@
       <td>5</td>
       <td>The Voominator</td>
       <td>34.00</td>
-      <td>110.56</td>
+      <td>110.12</td>
       <td>84</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -128,23 +128,25 @@
   </tbody>
 </table>
         <script>
-            document.querySelectorAll('table tbody tr').forEach(row => {
+           // Patch for table with 'No.' column
+        document.querySelectorAll('table tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
-            const horseCell = cells[1];  // 🏇 Horse Name
-            const realOdds  = parseFloat(cells[2].textContent) || 0;  // 🎯 Real Odds
-            const modelOdds = parseFloat(cells[3].textContent) || 0;  // Model 100%
-
-
-            const valueText = cells[cells.length - 1].textContent;     // 💰 Value
-
+            if (cells.length < 5) return;
+            const horseCell = cells[1]; // 🏇 Horse Name
+            const realOdds = parseFloat(cells[2].textContent) || 0;
+            const modelOdds = parseFloat(cells[3].textContent) || 0;
+            const valueText = cells[cells.length - 2].textContent; // 💰 Value
             if (valueText.includes('✖') || valueText.includes('✘')) {
                 horseCell.classList.add('value-cross');
             } else if (valueText.includes('💰') || valueText.includes('✔')) {
                 horseCell.classList.add('value-horse');
-            } else if (realOdds >= 10 && modelOdds < realOdds) {
+           } else if (realOdds >= 10 && modelOdds < realOdds) {
                 horseCell.classList.add('undervalued');
             }
-        });
+            });
+
+
+
         </script>
     </body>
     </html>
