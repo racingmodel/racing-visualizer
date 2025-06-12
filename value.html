@@ -48,6 +48,12 @@
       color: #e0aaff;
       font-weight: bold;
     }
+    tr.toprated-row {
+      background: #262629 !important;
+      color: #ffe066;
+      font-weight: bold;
+      border-left: 8px solid #ffe066;
+    }
     tr:hover {
       background: #3a3a4d !important;
       color: #fff !important;
@@ -55,7 +61,7 @@
   </style>
 </head>
 <body>
-  <h1>🔥 Today's Value & Sleeper Bets</h1>
+  <h1>🔥 Today's Value, Sleeper & Top Rated Bets</h1>
 
   <div class="nav-link">
     <a href="index.html">🔙 Back to Race Visualizer</a>
@@ -104,25 +110,37 @@
         });
 
         uniqueEntries.forEach(entry => {
-          let tag = "💰 Value";
-          let rowClass = "value-row";
-          // Support both "type" or "tag" in JSON
-          if ((entry.type && entry.type.toLowerCase() === "sleeper") || entry.tag === "sleeper") {
-            tag = "🌑 Sleeper";
-            rowClass = "sleeper-row";
-          }
-          // If both, show both emojis
-          if (entry.type === "value+sleeper" || entry.tag === "value+sleeper") {
-            tag = "💰🌑 Value & Sleeper";
-            rowClass = "sleeper-row";
+          let tag = "";
+          let rowClass = "";
+          // Modern, flexible type logic
+          switch ((entry.type || "").toLowerCase()) {
+            case "value":
+              tag = "💰 Value";
+              rowClass = "value-row";
+              break;
+            case "sleeper":
+              tag = "🌑 Sleeper";
+              rowClass = "sleeper-row";
+              break;
+            case "value+sleeper":
+              tag = "💰🌑 Value & Sleeper";
+              rowClass = "sleeper-row";
+              break;
+            case "top-rated-clear":
+              tag = "🥇 Top Rated Clear";
+              rowClass = "toprated-row";
+              break;
+            default:
+              tag = "⭐ Other";
+              rowClass = "";
           }
 
           const row = document.createElement('tr');
-          row.className = rowClass;
+          if (rowClass) row.className = rowClass;
           row.innerHTML = `
             <td>${entry.race_datetime}</td>
             <td>${entry.course}</td>
-            <td>${entry.horse}</td>
+            <td>${tag} ${entry.horse}</td>
             <td>${entry.bookie_odds}</td>
             <td>${entry.model_odds}</td>
             <td>${tag}</td>
@@ -137,3 +155,4 @@
   </script>
 </body>
 </html>
+
