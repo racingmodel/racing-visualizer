@@ -38,7 +38,7 @@
       <td>6</td>
       <td>Jane Of The Jungle</td>
       <td>5.00</td>
-      <td>4.54</td>
+      <td>4.52</td>
       <td>445</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -51,20 +51,20 @@
       <td>4</td>
       <td>Somebody</td>
       <td>1.73</td>
-      <td>2.16</td>
+      <td>2.15</td>
       <td>411</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td>✖️</td>
+      <td></td>
       <td></td>
     </tr>
     <tr>
       <td>2</td>
       <td>Rajak</td>
-      <td>15.00</td>
-      <td>14.70</td>
+      <td>17.00</td>
+      <td>15.50</td>
       <td>215</td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -77,7 +77,7 @@
       <td>3</td>
       <td>Royal Bodyguard</td>
       <td>6.50</td>
-      <td>7.78</td>
+      <td>7.75</td>
       <td>133</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
@@ -90,7 +90,7 @@
       <td>1</td>
       <td>Akabusi</td>
       <td>151.00</td>
-      <td>174.64</td>
+      <td>173.89</td>
       <td>73</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -103,7 +103,7 @@
       <td>8</td>
       <td>Timeforshowcasing</td>
       <td>5.50</td>
-      <td>9.51</td>
+      <td>9.47</td>
       <td>73</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -115,8 +115,8 @@
     <tr>
       <td>5</td>
       <td>Diamond Ali</td>
-      <td>67.00</td>
-      <td>174.64</td>
+      <td>51.00</td>
+      <td>139.46</td>
       <td>67</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
@@ -128,36 +128,38 @@
     <tr>
       <td>7</td>
       <td>Rai Rogers</td>
-      <td>67.00</td>
-      <td>261.09</td>
+      <td>126.00</td>
+      <td>518.22</td>
       <td>53</td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#a020f0;font-weight:bold;">❔</span></td>
       <td><span style="color:#1ca31c;font-weight:bold;">✔</span></td>
-      <td>✖️</td>
+      <td></td>
       <td></td>
     </tr>
   </tbody>
 </table>
         <script>
-            document.querySelectorAll('table tbody tr').forEach(row => {
+           // Patch for table with 'No.' column
+        document.querySelectorAll('table tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
-            const horseCell = cells[1];  // 🏇 Horse Name
-            const realOdds  = parseFloat(cells[2].textContent) || 0;  // 🎯 Real Odds
-            const modelOdds = parseFloat(cells[3].textContent) || 0;  // Model 100%
-
-
-            const valueText = cells[cells.length - 1].textContent;     // 💰 Value
-
+            if (cells.length < 5) return;
+            const horseCell = cells[1]; // 🏇 Horse Name
+            const realOdds = parseFloat(cells[2].textContent) || 0;
+            const modelOdds = parseFloat(cells[3].textContent) || 0;
+            const valueText = cells[cells.length - 2].textContent; // 💰 Value
             if (valueText.includes('✖') || valueText.includes('✘')) {
                 horseCell.classList.add('value-cross');
             } else if (valueText.includes('💰') || valueText.includes('✔')) {
                 horseCell.classList.add('value-horse');
-            } else if (realOdds >= 10 && modelOdds < realOdds) {
+           } else if (realOdds >= 10 && modelOdds < realOdds) {
                 horseCell.classList.add('undervalued');
             }
-        });
+            });
+
+
+
         </script>
     </body>
     </html>
