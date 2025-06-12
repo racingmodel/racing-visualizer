@@ -128,23 +128,25 @@
   </tbody>
 </table>
         <script>
-            document.querySelectorAll('table tbody tr').forEach(row => {
+           // Patch for table with 'No.' column
+        document.querySelectorAll('table tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
-            const horseCell = cells[1];  // 🏇 Horse Name
-            const realOdds  = parseFloat(cells[2].textContent) || 0;  // 🎯 Real Odds
-            const modelOdds = parseFloat(cells[3].textContent) || 0;  // Model 100%
-
-
-            const valueText = cells[cells.length - 1].textContent;     // 💰 Value
-
+            if (cells.length < 5) return;
+            const horseCell = cells[1]; // 🏇 Horse Name
+            const realOdds = parseFloat(cells[2].textContent) || 0;
+            const modelOdds = parseFloat(cells[3].textContent) || 0;
+            const valueText = cells[cells.length - 2].textContent; // 💰 Value
             if (valueText.includes('✖') || valueText.includes('✘')) {
                 horseCell.classList.add('value-cross');
             } else if (valueText.includes('💰') || valueText.includes('✔')) {
                 horseCell.classList.add('value-horse');
-            } else if (realOdds >= 10 && modelOdds < realOdds) {
+           } else if (realOdds >= 10 && modelOdds < realOdds) {
                 horseCell.classList.add('undervalued');
             }
-        });
+            });
+
+
+
         </script>
     </body>
     </html>
