@@ -38,13 +38,24 @@
     tr:nth-child(even) {
       background: #2a2a3d;
     }
+    tr.value-row {
+      background: #ffd700 !important;
+      color: #222;
+      font-weight: bold;
+    }
+    tr.sleeper-row {
+      background: #3e235e !important;
+      color: #e0aaff;
+      font-weight: bold;
+    }
     tr:hover {
-      background: #3a3a4d;
+      background: #3a3a4d !important;
+      color: #fff !important;
     }
   </style>
 </head>
 <body>
-  <h1>🔥 Today's Value Bets</h1>
+  <h1>🔥 Today's Value & Sleeper Bets</h1>
 
   <div class="nav-link">
     <a href="index.html">🔙 Back to Race Visualizer</a>
@@ -58,6 +69,7 @@
         <th>🏇 Horse</th>
         <th>🎲 Bookie Odds</th>
         <th>🔥 Model 100%</th>
+        <th>Tag</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -71,8 +83,8 @@
       })
       .then(data => {
         const tbody = document.querySelector('#value-table tbody');
-        if (data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5">No value bets found.</td></tr>';
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
           return;
         }
 
@@ -82,7 +94,6 @@
           const key = `${entry.race_datetime}_${entry.horse}`;
           uniqueMap.set(key, entry);
         });
-
         const uniqueEntries = Array.from(uniqueMap.values());
 
         // Sort by time
@@ -93,21 +104,37 @@
         });
 
         uniqueEntries.forEach(entry => {
+          let tag = "💰 Value";
+          let rowClass = "value-row";
+          // Support both "type" or "tag" in JSON
+          if ((entry.type && entry.type.toLowerCase() === "sleeper") || entry.tag === "sleeper") {
+            tag = "🌑 Sleeper";
+            rowClass = "sleeper-row";
+          }
+          // If both, show both emojis
+          if (entry.type === "value+sleeper" || entry.tag === "value+sleeper") {
+            tag = "💰🌑 Value & Sleeper";
+            rowClass = "sleeper-row";
+          }
+
           const row = document.createElement('tr');
+          row.className = rowClass;
           row.innerHTML = `
             <td>${entry.race_datetime}</td>
             <td>${entry.course}</td>
             <td>${entry.horse}</td>
             <td>${entry.bookie_odds}</td>
             <td>${entry.model_odds}</td>
+            <td>${tag}</td>
           `;
           tbody.appendChild(row);
         });
       })
       .catch(error => {
         document.querySelector('#value-table tbody').innerHTML =
-          `<tr><td colspan="5" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+          `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
       });
   </script>
 </body>
 </html>
+
