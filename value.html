@@ -110,29 +110,36 @@
       });
 
       uniqueEntries.forEach(entry => {
-        let tag = "";
-        let rowClass = "";
-        switch ((entry.type || "").toLowerCase()) {
-          case "value":
-            tag = "💰 Value";
-            rowClass = "value-row";
-            break;
-          case "sleeper":
-            tag = "🌑 Sleeper";
-            rowClass = "sleeper-row";
-            break;
-          case "value+sleeper":
-            tag = "💰🌑 Value & Sleeper";
-            rowClass = "sleeper-row";
-            break;
-          case "top-rated-clear":
-            tag = "🥇 Top Rated Clear";
-            rowClass = "toprated-row";
-            break;
-          default:
-            tag = "⭐ Other";
-            rowClass = "";
+        // --- Handle tags as an array, a +/comma separated string, or fallback to old 'type'
+        let tags = [];
+        if (entry.tags && Array.isArray(entry.tags)) {
+          tags = entry.tags.map(t => t.toLowerCase());
+        } else if (typeof entry.tags === "string") {
+          tags = entry.tags.toLowerCase().split(/[\s,+]+/);
+        } else if (entry.type) {
+          tags = entry.type.toLowerCase().split(/[\s,+]+/);
         }
+
+        // Compose tag display and row class by priority
+        const tagIcons = [];
+        let rowClass = "";
+        if (tags.includes("top-rated-clear")) {
+          tagIcons.push("🥇 Top Rated Clear");
+          rowClass = "toprated-row";
+        }
+        if (tags.includes("sleeper")) {
+          tagIcons.push("🌑 Sleeper");
+          if (!rowClass) rowClass = "sleeper-row";
+        }
+        if (tags.includes("value")) {
+          tagIcons.push("💰 Value");
+          if (!rowClass) rowClass = "value-row";
+        }
+        // Fallback
+        if (tagIcons.length === 0) {
+          tagIcons.push("⭐ Other");
+        }
+        let tag = tagIcons.join(" | ");
 
         const row = document.createElement('tr');
         if (rowClass) row.className = rowClass;
@@ -151,7 +158,8 @@
       document.querySelector('#value-table tbody').innerHTML =
         `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
     });
-</script>
+  </script>
 
 </body>
 </html>
+
