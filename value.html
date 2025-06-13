@@ -54,6 +54,12 @@
       font-weight: bold;
       border-left: 8px solid #ffe066;
     }
+    tr.multi-tag-row {
+      background: #37be5e !important;
+      color: #1b2b1a !important;
+      font-weight: bold;
+      border-left: 8px solid #26c738;
+    }
     tr:hover {
       background: #3a3a4d !important;
       color: #fff !important;
@@ -122,24 +128,23 @@
 
         // Compose tag display and row class by priority
         const tagIcons = [];
-        let rowClass = "";
-        if (tags.includes("top-rated-clear")) {
-          tagIcons.push("🥇 Top Rated Clear");
-          rowClass = "toprated-row";
-        }
-        if (tags.includes("sleeper")) {
-          tagIcons.push("🌑 Sleeper");
-          if (!rowClass) rowClass = "sleeper-row";
-        }
-        if (tags.includes("value")) {
-          tagIcons.push("💰 Value");
-          if (!rowClass) rowClass = "value-row";
-        }
-        // Fallback
-        if (tagIcons.length === 0) {
-          tagIcons.push("⭐ Other");
-        }
+        if (tags.includes("top-rated-clear")) tagIcons.push("🥇 Top Rated Clear");
+        if (tags.includes("sleeper")) tagIcons.push("🌑 Sleeper");
+        if (tags.includes("value")) tagIcons.push("💰 Value");
+        if (tagIcons.length === 0) tagIcons.push("⭐ Other");
         let tag = tagIcons.join(" | ");
+
+        // Row class logic: Green for multi-tag, else priority order
+        let rowClass = "";
+        if (tags.filter(Boolean).length > 1) {
+          rowClass = "multi-tag-row";
+        } else if (tags.includes("top-rated-clear")) {
+          rowClass = "toprated-row";
+        } else if (tags.includes("sleeper")) {
+          rowClass = "sleeper-row";
+        } else if (tags.includes("value")) {
+          rowClass = "value-row";
+        }
 
         const row = document.createElement('tr');
         if (rowClass) row.className = rowClass;
