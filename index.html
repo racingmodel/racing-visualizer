@@ -94,16 +94,11 @@
       fetch(href)
         .then(response => response.text())
         .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
+          // ✅ Match 💰 in table cells
+          const hasValue = /<td[^>]*>[^<]*💰[^<]*<\/td>/i.test(html);
 
-          // ✅ Check for 💰 inside any <td> text content
-          const hasValue = Array.from(doc.querySelectorAll("td")).some(td => td.textContent.includes("💰"));
-
-          // ✅ Check for <tr> with inline style including background-color:#003eff
-          const hasBigEW = Array.from(doc.querySelectorAll("tr")).some(tr =>
-            tr.getAttribute("style")?.toLowerCase().includes("background-color:#003eff")
-          );
+          // ✅ Match Big E/W rows by style with or without space or case variation
+          const hasBigEW = /<tr[^>]*style=["'][^"']*background-color\s*:\s*#003eff\b[^"']*["']/i.test(html);
 
           if (hasValue) {
             const tag = document.createElement('div');
@@ -123,6 +118,7 @@
     });
   });
 </script>
+
 
 
 
