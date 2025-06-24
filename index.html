@@ -31,60 +31,64 @@
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
 
-  <script>
-    // 🧠 Define your races and sections manually here
-    const racePages = {
-      "Fairmount_Park": ["22-00_Fairmount_Park.html", "22-25_Fairmount_Park.html"],
-      "Horseshoe_Indianapolis": ["21-45_Horseshoe_Indianapolis.html", "22-16_Horseshoe_Indianapolis.html", "22-47_Horseshoe_Indianapolis.html", "23-15_Horseshoe_Indianapolis.html"]
-    };
+<script>
+  const racePages = {
+    "Fairmount_Park": ["22-00_Fairmount_Park.html", "22-25_Fairmount_Park.html"],
+    "Horseshoe_Indianapolis": ["21-45_Horseshoe_Indianapolis.html", "22-16_Horseshoe_Indianapolis.html", "22-47_Horseshoe_Indianapolis.html", "23-15_Horseshoe_Indianapolis.html"]
+  };
 
-    // 🧠 Store value_bets info
-    let valueRaceMap = {};
+  let fileIndicators = {};
 
-    fetch("value_bets.json")
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(entry => {
-          const key = `${entry.race_datetime}`;
-          if (!valueRaceMap[key]) valueRaceMap[key] = { value: false, blue: false };
-          if (entry.tags.includes("value")) valueRaceMap[key].value = true;
-          if (entry.tags.includes("blue"))  valueRaceMap[key].blue  = true;
-        });
+  fetch("value_bets.json")
+    .then(response => response.json())
+    .then(data => {
+      data.forEach(entry => {
+        // 🔄 Fix date format: DD/MM/YYYY to YYYY-MM-DD
+        let [day, month, yearTime] = entry.race_datetime.split("/");
+        let [year, time] = yearTime.split(" ");
+        let date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        let raceTimeKey = time.replace(":", "-");
 
-        renderRaces();
+        const course = entry.course.replaceAll(" ", "_");
+        const filename = `${raceTimeKey}_${course}.html`;
+
+        if (!fileIndicators[filename]) fileIndicators[filename] = [];
+        if (entry.tags.includes("value")) fileIndicators[filename].push("💰");
+        if (entry.tags.includes("blue"))  fileIndicators[filename].push("🔵");
       });
 
-    function renderRaces() {
-      const container = document.getElementById("main-container");
+      renderRaces();
+    });
 
-      for (const [course, races] of Object.entries(racePages)) {
-        const section = document.createElement("div");
-        section.innerHTML = `<h2>🏁 ${course}</h2>`;
-        const group = document.createElement("div");
-        group.className = "course-group";
+  function renderRaces() {
+    const container = document.getElementById("main-container");
 
-        races.forEach(filename => {
-          const [time, loc] = filename.replace(".html", "").split("_");
-          const raceTimeFormatted = time.replace("-", ":");
-          const raceKey = `${new Date().toISOString().slice(0, 10)} ${raceTimeFormatted}`;
+    for (const [course, races] of Object.entries(racePages)) {
+      const section = document.createElement("div");
+      section.innerHTML = `<h2>🏁 ${course}</h2>`;
+      const group = document.createElement("div");
+      group.className = "course-group";
 
-          const indicators = [];
-          if (valueRaceMap[raceKey]?.value) indicators.push("💰");
-          if (valueRaceMap[raceKey]?.blue)  indicators.push("🔵");
+      races.forEach(filename => {
+        const [time, loc] = filename.replace(".html", "").split("_");
+        const raceTimeFormatted = time.replace("-", ":");
 
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `
-            <a href="${filename}">${raceTimeFormatted} ${course}</a>
-            ${indicators.length ? `<div class="tag">${indicators.join(" ")}</div>` : ""}
-          `;
-          group.appendChild(card);
-        });
+        const indicators = fileIndicators[filename] || [];
 
-        section.appendChild(group);
-        container.appendChild(section);
-      }
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <a href="${filename}">${raceTimeFormatted} ${course}</a>
+          ${indicators.length ? `<div class="tag">${indicators.join(" ")}</div>` : ""}
+        `;
+        group.appendChild(card);
+      });
+
+      section.appendChild(group);
+      container.appendChild(section);
     }
-  </script>
+  }
+</script>
+
 </body>
 </html>
