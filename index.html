@@ -90,30 +90,40 @@
     cards.forEach(card => {
       const link = card.querySelector('a');
       const href = link.getAttribute('href');
+
       fetch(href)
         .then(response => response.text())
         .then(html => {
-          const hasValue = /<td[^>]*>💰<\/td>/.test(html);
-          const hasBigEW = /<tr[^>]*style="[^"]*background-color:\s*#003eff\b/i.test(html);
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, "text/html");
+
+          // Check for 💰 inside any <td>
+          const hasValue = !!doc.querySelector("td:contains('💰'), td:has-text('💰')");
+
+          // Check for <tr> with inline style containing #003eff
+          const hasBigEW = Array.from(doc.querySelectorAll("tr")).some(tr =>
+            tr.getAttribute("style")?.toLowerCase().includes("background-color:#003eff")
+          );
 
           if (hasValue) {
-            const badge = document.createElement('div');
-            badge.className = 'value-tag';
-            badge.innerHTML = '🟢 Value';
-            card.appendChild(badge);
+            const tag = document.createElement('div');
+            tag.className = 'value-tag';
+            tag.innerHTML = '🟢 Value';
+            card.appendChild(tag);
           }
 
           if (hasBigEW) {
-            const ewTag = document.createElement('div');
-            ewTag.className = 'big-ew-tag';
-            ewTag.innerHTML = '🔵 Big E/W';
-            card.appendChild(ewTag);
+            const tag = document.createElement('div');
+            tag.className = 'big-ew-tag';
+            tag.innerHTML = '🔵 Big E/W';
+            card.appendChild(tag);
           }
         })
-        .catch(error => console.error('Could not fetch', href, error));
+        .catch(err => console.error('Fetch error:', href, err));
     });
   });
 </script>
+
 
 </body>
 </html>
