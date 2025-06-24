@@ -84,35 +84,36 @@
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        const link = card.querySelector('a');
-        const href = link.getAttribute('href');
-        fetch(href)
-          .then(response => response.text())
-          .then(html => {
-            const hasValue = /<td[^>]*>💰<\/td>/.test(html);
-            const hasBigEW = /<tr[^>]*style="[^"]*background-color:\s*#003eff/i.test(html);
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      const link = card.querySelector('a');
+      const href = link.getAttribute('href');
+      fetch(href)
+        .then(response => response.text())
+        .then(html => {
+          const hasValue = /<td[^>]*>💰<\/td>/.test(html);
+          const hasBigEW = /<tr[^>]*style="[^"]*background-color:\s*#003eff\b/i.test(html);
 
-            if (hasValue) {
-              const badge = document.createElement('div');
-              badge.className = 'value-tag';
-              badge.innerHTML = '🟢 Value';
-              card.appendChild(badge);
-            }
+          if (hasValue) {
+            const badge = document.createElement('div');
+            badge.className = 'value-tag';
+            badge.innerHTML = '🟢 Value';
+            card.appendChild(badge);
+          }
 
-            if (hasBigEW) {
-              const ewTag = document.createElement('div');
-              ewTag.className = 'big-ew-tag';
-              ewTag.innerHTML = '🔵 Big E/W';
-              card.appendChild(ewTag);
-            }
-          })
-          .catch(error => console.error('Could not fetch', href, error));
-      });
+          if (hasBigEW) {
+            const ewTag = document.createElement('div');
+            ewTag.className = 'big-ew-tag';
+            ewTag.innerHTML = '🔵 Big E/W';
+            card.appendChild(ewTag);
+          }
+        })
+        .catch(error => console.error('Could not fetch', href, error));
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
