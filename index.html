@@ -14,6 +14,7 @@
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
+    .value-tag { margin-top: 8px; color: #00ff7f; font-weight: bold; font-size: 0.95rem; }
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -34,6 +35,7 @@
       <div class="card"><a href="20-54_Finger_Lakes.html">20:54 Finger_Lakes</a></div>
       <div class="card"><a href="21-23_Finger_Lakes.html">21:23 Finger_Lakes</a></div>
     </div>
+
     <h2>🏁 Horseshoe_Indianapolis</h2>
     <div class="course-group">
       <div class="card"><a href="19-10_Horseshoe_Indianapolis.html">19:10 Horseshoe_Indianapolis</a></div>
@@ -46,6 +48,7 @@
       <div class="card"><a href="22-47_Horseshoe_Indianapolis.html">22:47 Horseshoe_Indianapolis</a></div>
       <div class="card"><a href="23-15_Horseshoe_Indianapolis.html">23:15 Horseshoe_Indianapolis</a></div>
     </div>
+
     <h2>🏁 Newbury</h2>
     <div class="course-group">
       <div class="card"><a href="18-45_Newbury.html">18:45 Newbury</a></div>
@@ -54,6 +57,7 @@
       <div class="card"><a href="20-15_Newbury.html">20:15 Newbury</a></div>
       <div class="card"><a href="20-50_Newbury.html">20:50 Newbury</a></div>
     </div>
+
     <h2>🏁 Newton_Abbot</h2>
     <div class="course-group">
       <div class="card"><a href="18-57_Newton_Abbot.html">18:57 Newton_Abbot</a></div>
@@ -62,6 +66,7 @@
       <div class="card"><a href="20-27_Newton_Abbot.html">20:27 Newton_Abbot</a></div>
       <div class="card"><a href="20-57_Newton_Abbot.html">20:57 Newton_Abbot</a></div>
     </div>
+
     <h2>🏁 Thistledown</h2>
     <div class="course-group">
       <div class="card"><a href="18-50_Thistledown.html">18:50 Thistledown</a></div>
@@ -72,8 +77,30 @@
       <div class="card"><a href="21-20_Thistledown.html">21:20 Thistledown</a></div>
     </div>
   </div>
+
   <footer>
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        const link = card.querySelector('a');
+        const href = link.getAttribute('href');
+        fetch(href)
+          .then(response => response.text())
+          .then(html => {
+            if (html.includes('Value Indicator')) {
+              const badge = document.createElement('div');
+              badge.className = 'value-tag';
+              badge.innerHTML = '🟢 Value';
+              card.appendChild(badge);
+            }
+          })
+          .catch(error => console.error('Could not fetch', href, error));
+      });
+    });
+  </script>
 </body>
 </html>
