@@ -94,11 +94,11 @@
       fetch(href)
         .then(response => response.text())
         .then(html => {
-          // ✅ Match 💰 in table cells
+          // 💰 Value detection (💰 inside any <td>)
           const hasValue = /<td[^>]*>[^<]*💰[^<]*<\/td>/i.test(html);
 
-          // ✅ Match Big E/W rows by style with or without space or case variation
-          const hasBigEW = /<tr[^>]*style=["'][^"']*background-color\s*:\s*#003eff\b[^"']*["']/i.test(html);
+          // 🔵 Big E/W detection: <td class="undervalued">...</td>
+          const hasBigEW = /<td[^>]*class=["'][^"']*\bundervalued\b[^"']*["']/i.test(html);
 
           if (hasValue) {
             const tag = document.createElement('div');
@@ -118,6 +118,7 @@
     });
   });
 </script>
+
 
 
 
