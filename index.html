@@ -14,7 +14,9 @@
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
-    .value-tag { margin-top: 8px; color: #00ff7f; font-weight: bold; font-size: 0.95rem; }
+    .value-tag, .big-ew-tag { margin-top: 8px; font-weight: bold; font-size: 0.95rem; }
+    .value-tag { color: #00ff7f; }
+    .big-ew-tag { color: #3399ff; }
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -91,13 +93,21 @@
         fetch(href)
           .then(response => response.text())
           .then(html => {
-            // Only count as a match if 💰 is inside a <td> cell, not header
-            const match = html.match(/<td[^>]*>💰<\/td>/);
-            if (match) {
+            const hasValue = /<td[^>]*>💰<\/td>/.test(html);
+            const hasBigEW = /<tr[^>]*style="[^"]*background-color:\s*#003eff/i.test(html);
+
+            if (hasValue) {
               const badge = document.createElement('div');
               badge.className = 'value-tag';
               badge.innerHTML = '🟢 Value';
               card.appendChild(badge);
+            }
+
+            if (hasBigEW) {
+              const ewTag = document.createElement('div');
+              ewTag.className = 'big-ew-tag';
+              ewTag.innerHTML = '🔵 Big E/W';
+              card.appendChild(ewTag);
             }
           })
           .catch(error => console.error('Could not fetch', href, error));
