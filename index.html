@@ -97,10 +97,10 @@
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, "text/html");
 
-          // Check for 💰 inside any <td>
-          const hasValue = !!doc.querySelector("td:contains('💰'), td:has-text('💰')");
+          // ✅ Check for 💰 inside any <td> text content
+          const hasValue = Array.from(doc.querySelectorAll("td")).some(td => td.textContent.includes("💰"));
 
-          // Check for <tr> with inline style containing #003eff
+          // ✅ Check for <tr> with inline style including background-color:#003eff
           const hasBigEW = Array.from(doc.querySelectorAll("tr")).some(tr =>
             tr.getAttribute("style")?.toLowerCase().includes("background-color:#003eff")
           );
@@ -123,6 +123,7 @@
     });
   });
 </script>
+
 
 
 </body>
