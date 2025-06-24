@@ -95,11 +95,11 @@
       fetch(href)
         .then(response => response.text())
         .then(html => {
-          // ✅ Check for 💰
-          const hasValue = html.includes("💰");
+          // ✅ Only count 💰 if it's in a real <td> cell (avoids header false positives)
+          const hasValue = /<td[^>]*>[^<]*💰[^<]*<\/td>/i.test(html);
 
-          // ✅ Check for undervalued E/W class
-          const hasBigEW = html.includes('<td class="undervalued">');
+          // ✅ Only count Big E/W if there's a <td> with class="undervalued"
+          const hasBigEW = /<td[^>]*class=["'][^"']*\bundervalued\b[^"']*["']/i.test(html);
 
           if (hasValue) {
             const tag = document.createElement("div");
@@ -119,6 +119,7 @@
     });
   });
 </script>
+
 
 
 
