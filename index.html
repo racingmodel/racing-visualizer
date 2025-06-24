@@ -5,19 +5,115 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Race Visualizer</title>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1e1e2f; color: #f5f5f5; display: flex; flex-direction: column; align-items: center; }
-    header { background: linear-gradient(135deg, #222 40%, #444); width: 100%; padding: 2rem 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); }
-    header h1 { margin: 0; font-size: 2.5rem; color: #ffd700; letter-spacing: 1px; }
-    .container { width: 100%; max-width: 1200px; padding: 2rem; }
-    .container h2 { width: 100%; text-align: left; margin: 2rem 0 1rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
-    .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
-    .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); position: relative; }
-    .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: block; }
-    .tag { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; }
-    .tag span { margin-left: 5px; }
-    footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
-    @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1e1e2f;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      background: linear-gradient(135deg, #222 40%, #444);
+      width: 100%;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      color: #ffd700;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      padding: 2rem;
+    }
+
+    .container h2 {
+      width: 100%;
+      text-align: left;
+      margin: 2rem 0 1rem;
+      color: #ffd700;
+      border-bottom: 1px solid #444;
+      padding-bottom: 0.3rem;
+    }
+
+    .course-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #2c2c3e;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      width: 220px;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    }
+
+    .card a {
+      text-decoration: none;
+      color: #ffd700;
+      font-weight: bold;
+      font-size: 1.1rem;
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+
+    .tag {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .tag span {
+      background-color: #333;
+      border: 1px solid #555;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      color: #ffd700;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    footer {
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #888;
+      text-align: center;
+      padding-bottom: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 90%;
+      }
+
+      header h1 {
+        font-size: 1.8rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -43,7 +139,6 @@
     .then(response => response.json())
     .then(data => {
       data.forEach(entry => {
-        // 🔄 Fix date format: DD/MM/YYYY to YYYY-MM-DD
         let [day, month, yearTime] = entry.race_datetime.split("/");
         let [year, time] = yearTime.split(" ");
         let date = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
@@ -79,7 +174,7 @@
         card.className = "card";
         card.innerHTML = `
           <a href="${filename}">${raceTimeFormatted} ${course}</a>
-          ${indicators.length ? `<div class="tag">${indicators.join(" ")}</div>` : ""}
+          ${indicators.length ? `<div class="tag">${indicators.map(i => `<span>${i}</span>`).join("")}</div>` : ""}
         `;
         group.appendChild(card);
       });
