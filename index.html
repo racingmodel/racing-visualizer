@@ -95,16 +95,11 @@
       fetch(href)
         .then(response => response.text())
         .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
+          // ✅ Check for 💰
+          const hasValue = html.includes("💰");
 
-          // ✅ Check for 💰 in any <td>
-          const hasValue = Array.from(doc.querySelectorAll("td")).some(td =>
-            td.textContent.includes("💰")
-          );
-
-          // ✅ Check for <td> with class "undervalued"
-          const hasBigEW = doc.querySelector("td.undervalued") !== null;
+          // ✅ Check for undervalued E/W class
+          const hasBigEW = html.includes('<td class="undervalued">');
 
           if (hasValue) {
             const tag = document.createElement("div");
@@ -124,6 +119,7 @@
     });
   });
 </script>
+
 
 
 </body>
