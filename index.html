@@ -11,10 +11,9 @@
     .container { width: 100%; max-width: 1200px; padding: 2rem; }
     .container h2 { width: 100%; text-align: left; margin: 2rem 0 1rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
     .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
-    .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); position: relative; }
+    .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: block; }
-    .tag { position: absolute; top: 10px; right: 10px; font-size: 1.2rem; }
+    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -23,66 +22,23 @@
   <header>
     <h1>🏇 Race Visualizer Index</h1>
   </header>
-  <div class="container" id="main-container"></div>
+  <div class="container">
+    <h2>🏁 Fairmount_Park</h2>
+    <div class="course-group">
+      <div class="card"><a href="21-35_Fairmount_Park.html">21:35 Fairmount_Park</a></div>
+      <div class="card"><a href="22-00_Fairmount_Park.html">22:00 Fairmount_Park</a></div>
+      <div class="card"><a href="22-25_Fairmount_Park.html">22:25 Fairmount_Park</a></div>
+    </div>
+    <h2>🏁 Horseshoe_Indianapolis</h2>
+    <div class="course-group">
+      <div class="card"><a href="21-45_Horseshoe_Indianapolis.html">21:45 Horseshoe_Indianapolis</a></div>
+      <div class="card"><a href="22-16_Horseshoe_Indianapolis.html">22:16 Horseshoe_Indianapolis</a></div>
+      <div class="card"><a href="22-47_Horseshoe_Indianapolis.html">22:47 Horseshoe_Indianapolis</a></div>
+      <div class="card"><a href="23-15_Horseshoe_Indianapolis.html">23:15 Horseshoe_Indianapolis</a></div>
+    </div>
+  </div>
   <footer>
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
-
-  <script>
-    const racePages = {};
-    const fileIndicators = {};
-
-    fetch("value_bets.json")
-      .then(response => response.json())
-      .then(data => {
-        data.forEach(entry => {
-          // Convert "24/06/2025 22:00" to "22-00_Course_Name.html"
-          let [day, month, yearTime] = entry.race_datetime.split("/");
-          let [year, time] = yearTime.split(" ");
-          let timeKey = time.replace(":", "-");
-          const course = entry.course.replaceAll(" ", "_");
-          const filename = `${timeKey}_${course}.html`;
-
-          // Group by course
-          if (!racePages[course]) racePages[course] = [];
-          if (!racePages[course].includes(filename)) racePages[course].push(filename);
-
-          // Add indicator icons
-          if (!fileIndicators[filename]) fileIndicators[filename] = [];
-          if (entry.tags.includes("value")) fileIndicators[filename].push("💰");
-          if (entry.tags.includes("blue"))  fileIndicators[filename].push("🔵");
-        });
-
-        renderRaces();
-      });
-
-    function renderRaces() {
-      const container = document.getElementById("main-container");
-
-      for (const [course, races] of Object.entries(racePages)) {
-        const section = document.createElement("div");
-        section.innerHTML = `<h2>🏁 ${course}</h2>`;
-        const group = document.createElement("div");
-        group.className = "course-group";
-
-        races.forEach(filename => {
-          const [timePart] = filename.replace(".html", "").split("_");
-          const timeFormatted = timePart.replace("-", ":");
-          const indicators = fileIndicators[filename] || [];
-
-          const card = document.createElement("div");
-          card.className = "card";
-          card.innerHTML = `
-            <a href="${filename}">${timeFormatted} ${course}</a>
-            ${indicators.length ? `<div class="tag">${indicators.join(" ")}</div>` : ""}
-          `;
-          group.appendChild(card);
-        });
-
-        section.appendChild(group);
-        container.appendChild(section);
-      }
-    }
-  </script>
 </body>
 </html>
