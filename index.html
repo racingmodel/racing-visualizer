@@ -91,7 +91,9 @@
         fetch(href)
           .then(response => response.text())
           .then(html => {
-            if (html.includes('💰')) {
+            // Only count as a match if 💰 is inside a <td> cell, not header
+            const match = html.match(/<td[^>]*>💰<\/td>/);
+            if (match) {
               const badge = document.createElement('div');
               badge.className = 'value-tag';
               badge.innerHTML = '🟢 Value';
