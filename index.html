@@ -14,9 +14,6 @@
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
-    .value-tag, .big-ew-tag { margin-top: 8px; font-weight: bold; font-size: 0.95rem; }
-    .value-tag { color: #00ff7f; }
-    .big-ew-tag { color: #3399ff; }
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -65,40 +62,5 @@
   <footer>
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        const link = card.querySelector('a');
-        const href = link.getAttribute('href');
-
-        fetch(href)
-          .then(response => response.text())
-          .then(html => {
-            // Check for 💰 Value Indicator
-            const hasValue = /<td[^>]*>💰<\/td>/.test(html);
-
-            // Check for 🔵 Big E/W in tag text
-            const hasBigEW = html.includes("🔵 Big E/W");
-
-            if (hasValue) {
-              const tag = document.createElement('div');
-              tag.className = 'value-tag';
-              tag.innerHTML = '🟢 Value';
-              card.appendChild(tag);
-            }
-
-            if (hasBigEW) {
-              const tag = document.createElement('div');
-              tag.className = 'big-ew-tag';
-              tag.innerHTML = '🔵 Big E/W';
-              card.appendChild(tag);
-            }
-          })
-          .catch(err => console.error('Fetch error:', href, err));
-      });
-    });
-  </script>
 </body>
 </html>
