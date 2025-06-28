@@ -66,6 +66,12 @@
       font-weight: bold;
       border-left: 8px solid #00bfff;
     }
+    tr.extraplace-row {
+      background: #664400 !important;
+      color: #ffcc66 !important;
+      font-weight: bold;
+      border-left: 8px solid #ffaa00;
+    }
     tr:hover {
       background: #3a3a4d !important;
       color: #fff !important;
@@ -106,7 +112,6 @@
         return;
       }
 
-      // Deduplicate by race_datetime + horse
       const uniqueMap = new Map();
       data.forEach(entry => {
         const key = `${entry.race_datetime}_${entry.horse}`;
@@ -114,7 +119,6 @@
       });
       const uniqueEntries = Array.from(uniqueMap.values());
 
-      // Sort by time
       uniqueEntries.sort((a, b) => {
         const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
         const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
@@ -122,7 +126,6 @@
       });
 
       uniqueEntries.forEach(entry => {
-        // --- Handle tags as an array, a +/comma separated string, or fallback to old 'type'
         let tags = [];
         if (entry.tags && Array.isArray(entry.tags)) {
           tags = entry.tags.map(t => t.toLowerCase());
@@ -132,19 +135,20 @@
           tags = entry.type.toLowerCase().split(/[\s,+]+/);
         }
 
-        // Compose tag display and row class by priority
         const tagIcons = [];
         if (tags.includes("top-rated-clear")) tagIcons.push("🥇 Top Rated Clear");
         if (tags.includes("sleeper")) tagIcons.push("🌑 Sleeper");
         if (tags.includes("value")) tagIcons.push("💰 Value");
         if (tags.includes("blue")) tagIcons.push("🔵 BIG e/w Odds");
+        if (tags.includes("extra-place")) tagIcons.push("🟠 Extra Places");
         if (tagIcons.length === 0) tagIcons.push("⭐ Other");
         let tag = tagIcons.join(" | ");
 
-        // Row class logic: Green for multi-tag, else priority order
         let rowClass = "";
         if (tags.filter(Boolean).length > 1) {
           rowClass = "multi-tag-row";
+        } else if (tags.includes("extra-place")) {
+          rowClass = "extraplace-row";
         } else if (tags.includes("top-rated-clear")) {
           rowClass = "toprated-row";
         } else if (tags.includes("sleeper")) {
@@ -176,3 +180,4 @@
 
 </body>
 </html>
+
