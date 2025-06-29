@@ -5,70 +5,123 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Value Bets</title>
   <style>
-    body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
-    h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
+    :root {
+      --bg: #1e1e2f;
+      --card: #2c2c3e;
+      --gold: #ffd700;
+      --hover: #3a3a4d;
+    }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: var(--gold);
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    }
+
     .nav-link {
       text-align: center;
       margin-bottom: 2rem;
     }
+
     .nav-link a {
       color: #00bfff;
       text-decoration: none;
       font-weight: bold;
       font-size: 1.1rem;
     }
+
     .nav-link a:hover {
       text-decoration: underline;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      background: #2c2c3e;
-      border-radius: 8px;
+      background: var(--card);
+      border-radius: 10px;
       overflow: hidden;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
     }
+
     th, td {
-      padding: 0.8rem 1rem;
+      padding: 1rem;
       text-align: center;
+      font-size: 1rem;
     }
+
     th {
       background: #444;
-      color: #ffd700;
+      color: var(--gold);
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      font-size: 1.05rem;
     }
+
     tr:nth-child(even) {
       background: #2a2a3d;
     }
+
+    /* Highlight Styles */
     tr.value-row {
       background: #ffd700 !important;
       color: #222;
       font-weight: bold;
+      animation: pulse 2s infinite;
     }
+
     tr.sleeper-row {
       background: #3e235e !important;
       color: #e0aaff;
       font-weight: bold;
     }
+
     tr.toprated-row {
       background: #262629 !important;
       color: #ffe066;
       font-weight: bold;
       border-left: 8px solid #ffe066;
     }
+
     tr.multi-tag-row {
       background: #37be5e !important;
       color: #1b2b1a !important;
       font-weight: bold;
       border-left: 8px solid #26c738;
     }
+
     tr.blue-row {
       background: #1f3b70 !important;
       color: #a8d1ff;
       font-weight: bold;
       border-left: 8px solid #00bfff;
     }
+
     tr:hover {
-      background: #3a3a4d !important;
+      background: var(--hover) !important;
       color: #fff !important;
+      cursor: pointer;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+    }
+
+    @media (max-width: 700px) {
+      th, td {
+        padding: 0.6rem;
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
@@ -85,94 +138,92 @@
         <th>⏰ Race Time</th>
         <th>📍 Course</th>
         <th>🏇 Horse</th>
-        <th>🎲 Bookie Odds</th>
-        <th>🔥 Model 100%</th>
-        <th>Tag</th>
+        <th title="Odds from bookmakers">🎲 Odds</th>
+        <th title="Odds derived from Racing Model">📈 Model</th>
+        <th>🏷️ Tags</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
-  fetch('value_bets.json')
-    .then(response => {
-      if (!response.ok) throw new Error('JSON file not found');
-      return response.json();
-    })
-    .then(data => {
-      const tbody = document.querySelector('#value-table tbody');
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
-        return;
-      }
-
-      // Deduplicate by race_datetime + horse
-      const uniqueMap = new Map();
-      data.forEach(entry => {
-        const key = `${entry.race_datetime}_${entry.horse}`;
-        uniqueMap.set(key, entry);
-      });
-      const uniqueEntries = Array.from(uniqueMap.values());
-
-      // Sort by time
-      uniqueEntries.sort((a, b) => {
-        const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
-        const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
-        return tA.localeCompare(tB);
-      });
-
-      uniqueEntries.forEach(entry => {
-        // --- Handle tags as an array, a +/comma separated string, or fallback to old 'type'
-        let tags = [];
-        if (entry.tags && Array.isArray(entry.tags)) {
-          tags = entry.tags.map(t => t.toLowerCase());
-        } else if (typeof entry.tags === "string") {
-          tags = entry.tags.toLowerCase().split(/[\s,+]+/);
-        } else if (entry.type) {
-          tags = entry.type.toLowerCase().split(/[\s,+]+/);
+    fetch('value_bets.json')
+      .then(response => {
+        if (!response.ok) throw new Error('JSON file not found');
+        return response.json();
+      })
+      .then(data => {
+        const tbody = document.querySelector('#value-table tbody');
+        if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
+          return;
         }
 
-        // Compose tag display and row class by priority
-        const tagIcons = [];
-        if (tags.includes("top-rated-clear")) tagIcons.push("🥇 Top Rated Clear");
-        if (tags.includes("sleeper")) tagIcons.push("🌑 Sleeper");
-        if (tags.includes("value")) tagIcons.push("💰 Value");
-        if (tags.includes("blue")) tagIcons.push("🔵 BIG e/w Odds");
-        if (tagIcons.length === 0) tagIcons.push("⭐ Other");
-        let tag = tagIcons.join(" | ");
+        // Deduplicate
+        const uniqueMap = new Map();
+        data.forEach(entry => {
+          const key = `${entry.race_datetime}_${entry.horse}`;
+          uniqueMap.set(key, entry);
+        });
+        const uniqueEntries = Array.from(uniqueMap.values());
 
-        // Row class logic: Green for multi-tag, else priority order
-        let rowClass = "";
-        if (tags.filter(Boolean).length > 1) {
-          rowClass = "multi-tag-row";
-        } else if (tags.includes("top-rated-clear")) {
-          rowClass = "toprated-row";
-        } else if (tags.includes("sleeper")) {
-          rowClass = "sleeper-row";
-        } else if (tags.includes("value")) {
-          rowClass = "value-row";
-        } else if (tags.includes("blue")) {
-          rowClass = "blue-row";
-        }
+        // Sort by time
+        uniqueEntries.sort((a, b) => {
+          const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
+          const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
+          return tA.localeCompare(tB);
+        });
 
-        const row = document.createElement('tr');
-        if (rowClass) row.className = rowClass;
-        row.innerHTML = `
-          <td>${entry.race_datetime}</td>
-          <td>${entry.course}</td>
-          <td>${entry.horse}</td>
-          <td>${entry.bookie_odds}</td>
-          <td>${entry.model_odds}</td>
-          <td>${tag}</td>
-        `;
-        tbody.appendChild(row);
+        uniqueEntries.forEach(entry => {
+          let tags = [];
+          if (Array.isArray(entry.tags)) {
+            tags = entry.tags.map(t => t.toLowerCase());
+          } else if (typeof entry.tags === "string") {
+            tags = entry.tags.toLowerCase().split(/[\s,+]+/);
+          } else if (entry.type) {
+            tags = entry.type.toLowerCase().split(/[\s,+]+/);
+          }
+
+          const tagIcons = [];
+          if (tags.includes("top-rated-clear")) tagIcons.push("🥇 Top Rated Clear");
+          if (tags.includes("sleeper")) tagIcons.push("🌑 Sleeper");
+          if (tags.includes("value")) tagIcons.push("💰 Value");
+          if (tags.includes("blue")) tagIcons.push("🔵 BIG e/w Odds");
+          if (tagIcons.length === 0) tagIcons.push("⭐ Other");
+          const tagText = tagIcons.join(" | ");
+
+          let rowClass = "";
+          if (tags.length > 1) {
+            rowClass = "multi-tag-row";
+          } else if (tags.includes("top-rated-clear")) {
+            rowClass = "toprated-row";
+          } else if (tags.includes("sleeper")) {
+            rowClass = "sleeper-row";
+          } else if (tags.includes("value")) {
+            rowClass = "value-row";
+          } else if (tags.includes("blue")) {
+            rowClass = "blue-row";
+          }
+
+          const row = document.createElement('tr');
+          if (rowClass) row.className = rowClass;
+
+          row.innerHTML = `
+            <td>${entry.race_datetime}</td>
+            <td>${entry.course}</td>
+            <td>${entry.horse}</td>
+            <td title="Bookie Odds">${entry.bookie_odds}</td>
+            <td title="Model Odds">${entry.model_odds}</td>
+            <td>${tagText}</td>
+          `;
+
+          tbody.appendChild(row);
+        });
+      })
+      .catch(error => {
+        document.querySelector('#value-table tbody').innerHTML =
+          `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
       });
-    })
-    .catch(error => {
-      document.querySelector('#value-table tbody').innerHTML =
-        `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
-    });
   </script>
-
 </body>
 </html>
