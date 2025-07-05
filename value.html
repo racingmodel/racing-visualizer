@@ -7,6 +7,7 @@
   <style>
     body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
     h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
+    h2 { color: #ffd700; margin-top: 2.5rem; border-bottom: 2px solid #444; padding-bottom: 0.3rem;}
     .nav-link {
       text-align: center;
       margin-bottom: 2rem;
@@ -26,6 +27,7 @@
       background: #2c2c3e;
       border-radius: 8px;
       overflow: hidden;
+      margin-bottom: 2rem;
     }
     th, td {
       padding: 0.8rem 1rem;
@@ -74,12 +76,61 @@
 </head>
 <body>
   <h1>🔥 Today's Value, Sleeper, Top Rated & BIG e/w Odds</h1>
-
   <div class="nav-link">
     <a href="index.html">🔙 Back to Race Visualizer</a>
   </div>
 
+  <!-- Section for Sleepers -->
+  <h2>🌑 Sleepers</h2>
+  <table id="sleepers-table">
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tag</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Section for Value -->
+  <h2>💰 Value</h2>
   <table id="value-table">
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tag</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Section for Big E/W Odds -->
+  <h2>🔵 BIG e/w Odds</h2>
+  <table id="blue-table">
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tag</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Section for Top Rated Clear -->
+  <h2>🥇 Top Rated Clear</h2>
+  <table id="toprated-table">
     <thead>
       <tr>
         <th>⏰ Race Time</th>
@@ -100,12 +151,6 @@
       return response.json();
     })
     .then(data => {
-      const tbody = document.querySelector('#value-table tbody');
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6">No value bets found.</td></tr>';
-        return;
-      }
-
       // Deduplicate by race_datetime + horse
       const uniqueMap = new Map();
       data.forEach(entry => {
@@ -121,8 +166,24 @@
         return tA.localeCompare(tB);
       });
 
+      // Helper: put in the right section(s)
+      function rowHtml(entry, tagIcons, rowClass = "") {
+        return `
+          <tr${rowClass ? ` class="${rowClass}"` : ""}>
+            <td>${entry.race_datetime}</td>
+            <td>${entry.course}</td>
+            <td>${entry.horse}</td>
+            <td>${entry.bookie_odds}</td>
+            <td>${entry.model_odds}</td>
+            <td>${tagIcons}</td>
+          </tr>
+        `;
+      }
+
+      // Section buffers
+      let sleepersRows = "", valueRows = "", blueRows = "", topratedRows = "";
+
       uniqueEntries.forEach(entry => {
-        // --- Handle tags as an array, a +/comma separated string, or fallback to old 'type'
         let tags = [];
         if (entry.tags && Array.isArray(entry.tags)) {
           tags = entry.tags.map(t => t.toLowerCase());
@@ -132,45 +193,38 @@
           tags = entry.type.toLowerCase().split(/[\s,+]+/);
         }
 
-        // Compose tag display and row class by priority
-        const tagIcons = [];
-        if (tags.includes("top-rated-clear")) tagIcons.push("🥇 Top Rated Clear");
-        if (tags.includes("sleeper")) tagIcons.push("🌑 Sleeper");
-        if (tags.includes("value")) tagIcons.push("💰 Value");
-        if (tags.includes("blue")) tagIcons.push("🔵 BIG e/w Odds");
-        if (tagIcons.length === 0) tagIcons.push("⭐ Other");
-        let tag = tagIcons.join(" | ");
+        // Row classes for different tags (optional, can be expanded)
+        let sleeperClass = "sleeper-row";
+        let valueClass = "value-row";
+        let blueClass = "blue-row";
+        let topratedClass = "toprated-row";
 
-        // Row class logic: Green for multi-tag, else priority order
-        let rowClass = "";
-        if (tags.filter(Boolean).length > 1) {
-          rowClass = "multi-tag-row";
-        } else if (tags.includes("top-rated-clear")) {
-          rowClass = "toprated-row";
-        } else if (tags.includes("sleeper")) {
-          rowClass = "sleeper-row";
-        } else if (tags.includes("value")) {
-          rowClass = "value-row";
-        } else if (tags.includes("blue")) {
-          rowClass = "blue-row";
+        // Add to each section if it qualifies
+        if (tags.includes("sleeper")) {
+          sleepersRows += rowHtml(entry, "🌑 Sleeper", sleeperClass);
         }
-
-        const row = document.createElement('tr');
-        if (rowClass) row.className = rowClass;
-        row.innerHTML = `
-          <td>${entry.race_datetime}</td>
-          <td>${entry.course}</td>
-          <td>${entry.horse}</td>
-          <td>${entry.bookie_odds}</td>
-          <td>${entry.model_odds}</td>
-          <td>${tag}</td>
-        `;
-        tbody.appendChild(row);
+        if (tags.includes("value")) {
+          valueRows += rowHtml(entry, "💰 Value", valueClass);
+        }
+        if (tags.includes("blue")) {
+          blueRows += rowHtml(entry, "🔵 BIG e/w Odds", blueClass);
+        }
+        if (tags.includes("top-rated-clear")) {
+          topratedRows += rowHtml(entry, "🥇 Top Rated Clear", topratedClass);
+        }
       });
+
+      // Fallback for empty
+      document.querySelector('#sleepers-table tbody').innerHTML = sleepersRows || '<tr><td colspan="6">No Sleepers found.</td></tr>';
+      document.querySelector('#value-table tbody').innerHTML = valueRows || '<tr><td colspan="6">No Value bets found.</td></tr>';
+      document.querySelector('#blue-table tbody').innerHTML = blueRows || '<tr><td colspan="6">No Big E/W Odds found.</td></tr>';
+      document.querySelector('#toprated-table tbody').innerHTML = topratedRows || '<tr><td colspan="6">No Top Rated Clear bets found.</td></tr>';
     })
     .catch(error => {
-      document.querySelector('#value-table tbody').innerHTML =
-        `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+      ['#sleepers-table', '#value-table', '#blue-table', '#toprated-table'].forEach(id => {
+        document.querySelector(id + ' tbody').innerHTML =
+          `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+      });
     });
   </script>
 
