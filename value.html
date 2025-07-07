@@ -91,92 +91,112 @@
     <tbody></tbody>
   </table>
 
-  <script>
-    fetch('value_bets.json')
-      .then(response => {
-        if (!response.ok) throw new Error('JSON file not found');
-        return response.json();
-      })
-      .then(data => {
-        const uniqueMap = new Map();
-        data.forEach(entry => {
-          const key = `${entry.race_datetime}_${entry.horse}`;
-          uniqueMap.set(key, entry);
-        });
-        const uniqueEntries = Array.from(uniqueMap.values());
-        uniqueEntries.sort((a, b) => {
-          const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
-          const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
-          return tA.localeCompare(tB);
-        });
+<script>
+fetch('value_bets.json')
+  .then(response => {
+    if (!response.ok) throw new Error('JSON file not found');
+    return response.json();
+  })
+  .then(data => {
+    const uniqueMap = new Map();
+    data.forEach(entry => {
+      const key = `${entry.race_datetime}_${entry.horse}`;
+      uniqueMap.set(key, entry);
+    });
+    const uniqueEntries = Array.from(uniqueMap.values());
+    uniqueEntries.sort((a, b) => {
+      const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
+      const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
+      return tA.localeCompare(tB);
+    });
 
-        function displayTagIcons(tagsArr) {
-          if (!tagsArr || tagsArr.length === 0) return "";
-          return tagsArr.map(tag => {
-            if (tag.includes("top-rated-clear")) return "🥇 Top Rated Clear";
-            if (tag.includes("sleeper")) return "🌑 Sleeper";
-            if (tag.includes("value")) return "💰 Value";
-            if (tag.includes("blue")) return "🔵 BIG e/w Odds";
-            if (tag.includes("tony-watch")) return "👀 Tony Watch";
-            if (tag.includes("raw-value")) return "📉 Raw Value";
-            return tag.charAt(0).toUpperCase() + tag.slice(1);
-          }).join(" | ");
-        }
+    function displayTagIcons(tagsArr) {
+      if (!tagsArr || tagsArr.length === 0) return "";
+      return tagsArr.map(tag => {
+        if (tag.includes("top-rated-clear")) return "🥇 Top Rated Clear";
+        if (tag.includes("sleeper")) return "🌑 Sleeper";
+        if (tag.includes("value")) return "💰 Value";
+        if (tag.includes("blue")) return "🔵 BIG e/w Odds";
+        if (tag.includes("tony-watch")) return "👀 Tony Watch";
+        if (tag.includes("raw-value")) return "📉 Raw Value";
+        return tag.charAt(0).toUpperCase() + tag.slice(1);
+      }).join(" | ");
+    }
 
-        function rowHtml(entry, tagIcons, rowClass = "", showRaw = false) {
-          return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-            <td>${entry.race_datetime}</td>
-            <td>${entry.course}</td>
-            <td>${entry.horse}</td>
-            <td>${entry.bookie_odds}</td>
-            <td>${showRaw && entry.raw_odds ? entry.raw_odds : entry.model_odds}</td>
-            <td>${tagIcons}</td>
-          </tr>`;
-        }
+    function rowHtml(entry, tagIcons, rowClass = "", showRaw = false, fullOdds = false) {
+      return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+        <td>${entry.race_datetime}</td>
+        <td>${entry.course}</td>
+        <td>${entry.horse}</td>
+        <td>${entry.bookie_odds}</td>
+        ${fullOdds ? `<td>${entry.raw_odds || "-"}</td>` : ""}
+        <td>${entry.model_odds}</td>
+        <td>${tagIcons}</td>
+      </tr>`;
+    }
 
-        let multiTagRows = "", sleepersRows = "", valueRows = "", rawvalueRows = "", blueRows = "", topratedRows = "", tonywatchRows = "";
+    let multiTagRows = "", sleepersRows = "", valueRows = "", rawvalueRows = "", blueRows = "", topratedRows = "", tonywatchRows = "";
 
-        uniqueEntries.forEach(entry => {
-          let tags = Array.isArray(entry.tags) ? entry.tags.map(t => t.toLowerCase()) : [];
+    uniqueEntries.forEach(entry => {
+      let tags = Array.isArray(entry.tags) ? entry.tags.map(t => t.toLowerCase()) : [];
 
-          if (tags.filter(Boolean).length > 1) {
-            multiTagRows += rowHtml(entry, displayTagIcons(tags), "multi-tag-row");
-          }
-          if (tags.includes("sleeper")) {
-            sleepersRows += rowHtml(entry, "🌑 Sleeper", "sleeper-row");
-          }
-          if (tags.includes("value")) {
-            valueRows += rowHtml(entry, "💰 Value", "value-row");
-          }
-          if (tags.includes("raw-value")) {
-            rawvalueRows += rowHtml(entry, "📉 Raw Value", "rawvalue-row", true);
-          }
-          if (tags.includes("blue")) {
-            blueRows += rowHtml(entry, "🔵 BIG e/w Odds", "blue-row");
-          }
-          if (tags.includes("top-rated-clear")) {
-            topratedRows += rowHtml(entry, "🥇 Top Rated Clear", "toprated-row");
-          }
-          if (tags.includes("tony-watch")) {
-            tonywatchRows += rowHtml(entry, "👀 Tony Watch", "tonywatch-row");
-          }
-        });
+      const tagCount = tags.filter(Boolean).length;
 
-        document.querySelector('#multitag-table tbody').innerHTML = multiTagRows || '<tr><td colspan="6">No Multi-Tag value bets found.</td></tr>';
-        document.querySelector('#sleepers-table tbody').innerHTML = sleepersRows || '<tr><td colspan="6">No Sleepers found.</td></tr>';
-        document.querySelector('#value-table tbody').innerHTML = valueRows || '<tr><td colspan="6">No Value bets found.</td></tr>';
-        document.querySelector('#rawvalue-table tbody').innerHTML = rawvalueRows || '<tr><td colspan="6">No Raw Value bets found.</td></tr>';
-        document.querySelector('#blue-table tbody').innerHTML = blueRows || '<tr><td colspan="6">No Big E/W Odds found.</td></tr>';
-        document.querySelector('#toprated-table tbody').innerHTML = topratedRows || '<tr><td colspan="6">No Top Rated Clear bets found.</td></tr>';
-        document.querySelector('#tonywatch-table tbody').innerHTML = tonywatchRows || '<tr><td colspan="6">No Tony Watch selections found.</td></tr>';
-      })
-      .catch(error => {
-        const ids = ['#multitag-table', '#sleepers-table', '#value-table', '#rawvalue-table', '#blue-table', '#toprated-table', '#tonywatch-table'];
-        ids.forEach(id => {
-          document.querySelector(id + ' tbody').innerHTML =
-            `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
-        });
-      });
-  </script>
+      const hasRaw = tags.includes("raw-value");
+      const hasMulti = tagCount > 1;
+
+      // ✅ Multi-Tag row logic, with raw included if it exists
+      if (hasMulti || hasRaw) {
+        multiTagRows += rowHtml(entry, displayTagIcons(tags), "multi-tag-row", true, true);
+      }
+
+      if (tags.includes("sleeper")) {
+        sleepersRows += rowHtml(entry, "🌑 Sleeper", "sleeper-row");
+      }
+      if (tags.includes("value")) {
+        valueRows += rowHtml(entry, "💰 Value", "value-row");
+      }
+      if (tags.includes("raw-value")) {
+        rawvalueRows += rowHtml(entry, "📉 Raw Value", "rawvalue-row", true);
+      }
+      if (tags.includes("blue")) {
+        blueRows += rowHtml(entry, "🔵 BIG e/w Odds", "blue-row");
+      }
+      if (tags.includes("top-rated-clear")) {
+        topratedRows += rowHtml(entry, "🥇 Top Rated Clear", "toprated-row");
+      }
+      if (tags.includes("tony-watch")) {
+        tonywatchRows += rowHtml(entry, "👀 Tony Watch", "tonywatch-row");
+      }
+    });
+
+    document.querySelector('#multitag-table thead').innerHTML = `
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>📉 Raw Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tags</th>
+      </tr>`;
+    document.querySelector('#multitag-table tbody').innerHTML = multiTagRows || '<tr><td colspan="7">No Multi-Tag value bets found.</td></tr>';
+
+    document.querySelector('#sleepers-table tbody').innerHTML = sleepersRows || '<tr><td colspan="6">No Sleepers found.</td></tr>';
+    document.querySelector('#value-table tbody').innerHTML = valueRows || '<tr><td colspan="6">No Value bets found.</td></tr>';
+    document.querySelector('#rawvalue-table tbody').innerHTML = rawvalueRows || '<tr><td colspan="6">No Raw Value bets found.</td></tr>';
+    document.querySelector('#blue-table tbody').innerHTML = blueRows || '<tr><td colspan="6">No Big E/W Odds found.</td></tr>';
+    document.querySelector('#toprated-table tbody').innerHTML = topratedRows || '<tr><td colspan="6">No Top Rated Clear bets found.</td></tr>';
+    document.querySelector('#tonywatch-table tbody').innerHTML = tonywatchRows || '<tr><td colspan="6">No Tony Watch selections found.</td></tr>';
+  })
+  .catch(error => {
+    const ids = ['#multitag-table', '#sleepers-table', '#value-table', '#rawvalue-table', '#blue-table', '#toprated-table', '#tonywatch-table'];
+    ids.forEach(id => {
+      document.querySelector(id + ' tbody').innerHTML =
+        `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+    });
+  });
+</script>
+
 </body>
 </html>
