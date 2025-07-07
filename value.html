@@ -8,16 +8,8 @@
     body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
     h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
     h2 { color: #ffd700; margin-top: 2.5rem; border-bottom: 2px solid #444; padding-bottom: 0.3rem;}
-    .nav-link {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-    .nav-link a {
-      color: #00bfff;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1.1rem;
-    }
+    .nav-link { text-align: center; margin-bottom: 2rem; }
+    .nav-link a { color: #00bfff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
     .nav-link a:hover { text-decoration: underline; }
     table {
       width: 100%;
@@ -27,10 +19,7 @@
       overflow: hidden;
       margin-bottom: 2rem;
     }
-    th, td {
-      padding: 0.8rem 1rem;
-      text-align: center;
-    }
+    th, td { padding: 0.8rem 1rem; text-align: center; }
     th { background: #444; color: #ffd700; }
     tr:nth-child(even) { background: #2a2a3d; }
     tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
@@ -51,7 +40,17 @@
 
   <h2>🌟 Multi-Tag Selections</h2>
   <table id="multitag-table">
-    <thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tags</th></tr></thead>
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>📉 Raw Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tags</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 
@@ -123,13 +122,13 @@ fetch('value_bets.json')
       }).join(" | ");
     }
 
-    function rowHtml(entry, tagIcons, rowClass = "", showRaw = false, fullOdds = false) {
+    function rowHtml(entry, tagIcons, rowClass = "", includeRaw = false) {
       return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
         <td>${entry.race_datetime}</td>
         <td>${entry.course}</td>
         <td>${entry.horse}</td>
         <td>${entry.bookie_odds}</td>
-        ${fullOdds ? `<td>${entry.raw_odds || "-"}</td>` : ""}
+        ${includeRaw ? `<td>${entry.raw_odds || "-"}</td>` : ""}
         <td>${entry.model_odds}</td>
         <td>${tagIcons}</td>
       </tr>`;
@@ -138,50 +137,20 @@ fetch('value_bets.json')
     let multiTagRows = "", sleepersRows = "", valueRows = "", rawvalueRows = "", blueRows = "", topratedRows = "", tonywatchRows = "";
 
     uniqueEntries.forEach(entry => {
-      let tags = Array.isArray(entry.tags) ? entry.tags.map(t => t.toLowerCase()) : [];
+      const tags = Array.isArray(entry.tags) ? entry.tags.map(t => t.toLowerCase()) : [];
+      const tagIcons = displayTagIcons(tags);
+      const isMultiTag = tags.length > 1;
 
-      const tagCount = tags.filter(Boolean).length;
-
-      const hasRaw = tags.includes("raw-value");
-      const hasMulti = tagCount > 1;
-
-      // ✅ Multi-Tag row logic, with raw included if it exists
-      if (hasMulti || hasRaw) {
-        multiTagRows += rowHtml(entry, displayTagIcons(tags), "multi-tag-row", true, true);
-      }
-
-      if (tags.includes("sleeper")) {
-        sleepersRows += rowHtml(entry, "🌑 Sleeper", "sleeper-row");
-      }
-      if (tags.includes("value")) {
-        valueRows += rowHtml(entry, "💰 Value", "value-row");
-      }
-      if (tags.includes("raw-value")) {
-        rawvalueRows += rowHtml(entry, "📉 Raw Value", "rawvalue-row", true);
-      }
-      if (tags.includes("blue")) {
-        blueRows += rowHtml(entry, "🔵 BIG e/w Odds", "blue-row");
-      }
-      if (tags.includes("top-rated-clear")) {
-        topratedRows += rowHtml(entry, "🥇 Top Rated Clear", "toprated-row");
-      }
-      if (tags.includes("tony-watch")) {
-        tonywatchRows += rowHtml(entry, "👀 Tony Watch", "tonywatch-row");
-      }
+      if (isMultiTag) multiTagRows += rowHtml(entry, tagIcons, "multi-tag-row", true);
+      if (tags.includes("sleeper")) sleepersRows += rowHtml(entry, "🌑 Sleeper", "sleeper-row");
+      if (tags.includes("value")) valueRows += rowHtml(entry, "💰 Value", "value-row");
+      if (tags.includes("raw-value")) rawvalueRows += rowHtml(entry, "📉 Raw Value", "rawvalue-row", true);
+      if (tags.includes("blue")) blueRows += rowHtml(entry, "🔵 BIG e/w Odds", "blue-row");
+      if (tags.includes("top-rated-clear")) topratedRows += rowHtml(entry, "🥇 Top Rated Clear", "toprated-row");
+      if (tags.includes("tony-watch")) tonywatchRows += rowHtml(entry, "👀 Tony Watch", "tonywatch-row");
     });
 
-    document.querySelector('#multitag-table thead').innerHTML = `
-      <tr>
-        <th>⏰ Race Time</th>
-        <th>📍 Course</th>
-        <th>🏇 Horse</th>
-        <th>🎲 Bookie Odds</th>
-        <th>📉 Raw Odds</th>
-        <th>🔥 Model 100%</th>
-        <th>Tags</th>
-      </tr>`;
     document.querySelector('#multitag-table tbody').innerHTML = multiTagRows || '<tr><td colspan="7">No Multi-Tag value bets found.</td></tr>';
-
     document.querySelector('#sleepers-table tbody').innerHTML = sleepersRows || '<tr><td colspan="6">No Sleepers found.</td></tr>';
     document.querySelector('#value-table tbody').innerHTML = valueRows || '<tr><td colspan="6">No Value bets found.</td></tr>';
     document.querySelector('#rawvalue-table tbody').innerHTML = rawvalueRows || '<tr><td colspan="6">No Raw Value bets found.</td></tr>';
@@ -193,10 +162,9 @@ fetch('value_bets.json')
     const ids = ['#multitag-table', '#sleepers-table', '#value-table', '#rawvalue-table', '#blue-table', '#toprated-table', '#tonywatch-table'];
     ids.forEach(id => {
       document.querySelector(id + ' tbody').innerHTML =
-        `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
+        `<tr><td colspan="7" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
     });
   });
 </script>
-
 </body>
 </html>
