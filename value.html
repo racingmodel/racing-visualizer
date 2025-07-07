@@ -68,6 +68,12 @@
       font-weight: bold;
       border-left: 8px solid #00bfff;
     }
+    tr.tonywatch-row {
+      background: #ffe6a7 !important;
+      color: #2a2a2a;
+      font-weight: bold;
+      border-left: 8px solid #ffa500;
+    }
     tr:hover {
       background: #3a3a4d !important;
       color: #fff !important;
@@ -80,7 +86,6 @@
     <a href="index.html">🔙 Back to Race Visualizer</a>
   </div>
 
-  <!-- New Section for Multi-Tag Bets -->
   <h2>🌟 Multi-Tag Selections</h2>
   <table id="multitag-table">
     <thead>
@@ -96,7 +101,6 @@
     <tbody></tbody>
   </table>
 
-  <!-- Section for Sleepers -->
   <h2>🌑 Sleepers</h2>
   <table id="sleepers-table">
     <thead>
@@ -112,7 +116,6 @@
     <tbody></tbody>
   </table>
 
-  <!-- Section for Value -->
   <h2>💰 Value</h2>
   <table id="value-table">
     <thead>
@@ -128,7 +131,6 @@
     <tbody></tbody>
   </table>
 
-  <!-- Section for Big E/W Odds -->
   <h2>🔵 BIG e/w Odds</h2>
   <table id="blue-table">
     <thead>
@@ -144,9 +146,23 @@
     <tbody></tbody>
   </table>
 
-  <!-- Section for Top Rated Clear -->
   <h2>🥇 Top Rated Clear</h2>
   <table id="toprated-table">
+    <thead>
+      <tr>
+        <th>⏰ Race Time</th>
+        <th>📍 Course</th>
+        <th>🏇 Horse</th>
+        <th>🎲 Bookie Odds</th>
+        <th>🔥 Model 100%</th>
+        <th>Tag</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>👀 Tony Watch</h2>
+  <table id="tonywatch-table">
     <thead>
       <tr>
         <th>⏰ Race Time</th>
@@ -167,22 +183,18 @@
       return response.json();
     })
     .then(data => {
-      // Deduplicate by race_datetime + horse
       const uniqueMap = new Map();
       data.forEach(entry => {
         const key = `${entry.race_datetime}_${entry.horse}`;
         uniqueMap.set(key, entry);
       });
       const uniqueEntries = Array.from(uniqueMap.values());
-
-      // Sort by time
       uniqueEntries.sort((a, b) => {
         const tA = a.race_datetime.split(' ')[1] || a.race_datetime;
         const tB = b.race_datetime.split(' ')[1] || b.race_datetime;
         return tA.localeCompare(tB);
       });
 
-      // Helper: Compose nice tag icons for display (for multi-tag table)
       function displayTagIcons(tagsArr) {
         if (!tagsArr || tagsArr.length === 0) return "";
         return tagsArr.map(tag => {
@@ -190,11 +202,11 @@
           if (tag.includes("sleeper")) return "🌑 Sleeper";
           if (tag.includes("value")) return "💰 Value";
           if (tag.includes("blue")) return "🔵 BIG e/w Odds";
-          // fallback to text
+          if (tag.includes("tony-watch")) return "👀 Tony Watch";
           return tag.charAt(0).toUpperCase() + tag.slice(1);
         }).join(" | ");
       }
-      // Helper: row HTML
+
       function rowHtml(entry, tagIcons, rowClass = "") {
         return `
           <tr${rowClass ? ` class="${rowClass}"` : ""}>
@@ -208,8 +220,7 @@
         `;
       }
 
-      // Section buffers
-      let multiTagRows = "", sleepersRows = "", valueRows = "", blueRows = "", topratedRows = "";
+      let multiTagRows = "", sleepersRows = "", valueRows = "", blueRows = "", topratedRows = "", tonywatchRows = "";
 
       uniqueEntries.forEach(entry => {
         let tags = [];
@@ -221,11 +232,9 @@
           tags = entry.type.toLowerCase().split(/[\s,+]+/);
         }
 
-        // Multi-tag at top: any horse with 2+ tags
         if (tags.filter(Boolean).length > 1) {
           multiTagRows += rowHtml(entry, displayTagIcons(tags), "multi-tag-row");
         }
-        // Individual sections
         if (tags.includes("sleeper")) {
           sleepersRows += rowHtml(entry, "🌑 Sleeper", "sleeper-row");
         }
@@ -238,6 +247,9 @@
         if (tags.includes("top-rated-clear")) {
           topratedRows += rowHtml(entry, "🥇 Top Rated Clear", "toprated-row");
         }
+        if (tags.includes("tony-watch")) {
+          tonywatchRows += rowHtml(entry, "👀 Tony Watch", "tonywatch-row");
+        }
       });
 
       document.querySelector('#multitag-table tbody').innerHTML = multiTagRows || '<tr><td colspan="6">No Multi-Tag value bets found.</td></tr>';
@@ -245,9 +257,10 @@
       document.querySelector('#value-table tbody').innerHTML = valueRows || '<tr><td colspan="6">No Value bets found.</td></tr>';
       document.querySelector('#blue-table tbody').innerHTML = blueRows || '<tr><td colspan="6">No Big E/W Odds found.</td></tr>';
       document.querySelector('#toprated-table tbody').innerHTML = topratedRows || '<tr><td colspan="6">No Top Rated Clear bets found.</td></tr>';
+      document.querySelector('#tonywatch-table tbody').innerHTML = tonywatchRows || '<tr><td colspan="6">No Tony Watch selections found.</td></tr>';
     })
     .catch(error => {
-      ['#multitag-table', '#sleepers-table', '#value-table', '#blue-table', '#toprated-table'].forEach(id => {
+      ['#multitag-table', '#sleepers-table', '#value-table', '#blue-table', '#toprated-table', '#tonywatch-table'].forEach(id => {
         document.querySelector(id + ' tbody').innerHTML =
           `<tr><td colspan="6" style="color: red;">Error loading value bets: ${error.message}</td></tr>`;
       });
