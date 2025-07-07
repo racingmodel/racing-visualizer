@@ -100,66 +100,53 @@ fetch('value_bets.json')
       a.race_datetime.split(' ')[1].localeCompare(b.race_datetime.split(' ')[1])
     );
 
-    function tagsLower(e) {
-      return Array.isArray(e.tags)
-        ? e.tags.map(t=>t.toLowerCase())
-        : typeof e.tags=='string'
-          ? e.tags.split(/[\s,|]+/).map(t=>t.toLowerCase())
-          : [];
+    function tagSet(entry) {
+      return Array.isArray(entry.tags)
+        ? [...new Set(entry.tags.map(t => t.toLowerCase()))]
+        : [];
     }
 
     function icons(tags) {
-      return tags.map(t=>(
-        t === 'top-rated-clear' ? '🥇 Top Rated Clear'
-        : t === 'sleeper' ? '🌑 Sleeper'
-        : t === 'value' ? '💰 Value'
-        : t === 'blue' ? '🔵 BIG e/w Odds'
-        : t === 'tony-watch' ? '👀 Tony Watch'
-        : t === 'raw-value' ? '📉 Raw Value'
-        : t.charAt(0).toUpperCase()+t.slice(1)
-      )).join(' | ');
+      return tags.map(t=>
+        t === 'top-rated-clear' ? '🥇 Top Rated Clear' :
+        t === 'sleeper'         ? '🌑 Sleeper' :
+        t === 'value'           ? '💰 Value' :
+        t === 'blue'            ? '🔵 BIG e/w Odds' :
+        t === 'tony-watch'      ? '👀 Tony Watch' :
+        t === 'raw-value'       ? '📉 Raw Value' :
+        t.charAt(0).toUpperCase()+t.slice(1)
+      ).join(" | ");
     }
 
- function rowHtml(entry, tagIcons, rowClass = "", showRaw = false, fullOdds = false) {
-  const rawOddsDisplay = entry.raw_odds ? entry.raw_odds : "-";
-  return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-    <td>${entry.race_datetime}</td>
-    <td>${entry.course}</td>
-    <td>${entry.horse}</td>
-    <td>${entry.bookie_odds}</td>
-    ${fullOdds ? `<td>${rawOddsDisplay}</td>` : ""}
-    <td>${showRaw ? rawOddsDisplay : entry.model_odds}</td>
-    <td>${tagIcons}</td>
-  </tr>`;
-}
+    function rowHtml(entry, tagList, rowClass = "", showRaw = false, fullOdds = false) {
+      const raw = entry.raw_odds || "-";
+      const tags = icons(tagList);
+      return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+        <td>${entry.race_datetime}</td>
+        <td>${entry.course}</td>
+        <td>${entry.horse}</td>
+        <td>${entry.bookie_odds}</td>
+        ${fullOdds ? `<td>${raw}</td>` : ""}
+        <td>${showRaw ? raw : entry.model_odds}</td>
+        <td>${tags}</td>
+      </tr>`;
+    }
 
     let multi='', sleepers='', value='', rawv='', blue='', top='', tony='';
 
-    entries.forEach(e => {
-      const t = tagsLower(e);
-      const count = [...new Set(t)].filter(Boolean).length;
+    entries.forEach(entry => {
+      const tags = tagSet(entry);
 
-      if (count >= 2) multi += rowHtml(e, t, 'multi-tag-row', true, true);
-      if (t.includes('sleeper')) sleepers += rowHtml(e, t, 'sleeper-row');
-      if (t.includes('value')) value += rowHtml(e, t, 'value-row');
-      if (t.includes('raw-value')) rawv += rowHtml(e, t, 'rawvalue-row', true);
-      if (t.includes('blue')) blue += rowHtml(e, t, 'blue-row');
-      if (t.includes('top-rated-clear')) top += rowHtml(e, t, 'toprated-row');
-      if (t.includes('tony-watch')) tony += rowHtml(e, t, 'tonywatch-row');
+      if (tags.length > 1) multi += rowHtml(entry, tags, "multi-tag-row", false, true);
+      if (tags.includes('sleeper')) sleepers += rowHtml(entry, tags, "sleeper-row");
+      if (tags.includes('value')) value += rowHtml(entry, tags, "value-row");
+      if (tags.includes('raw-value')) rawv += rowHtml(entry, tags, "rawvalue-row", true);
+      if (tags.includes('blue')) blue += rowHtml(entry, tags, "blue-row");
+      if (tags.includes('top-rated-clear')) top += rowHtml(entry, tags, "toprated-row");
+      if (tags.includes('tony-watch')) tony += rowHtml(entry, tags, "tonywatch-row");
     });
 
-    document.querySelector('#multitag-table thead').innerHTML = `
-      <tr>
-        <th>⏰ Race Time</th>
-        <th>📍 Course</th>
-        <th>🏇 Horse</th>
-        <th>🎲 Bookie Odds</th>
-        <th>📉 Raw Odds</th>
-        <th>🔥 Model 100%</th>
-        <th>Tags</th>
-      </tr>`;
-    document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="7">No multi-tag picks.</td></tr>';
-
+    document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="7">No multi-tag bets found.</td></tr>';
     document.querySelector('#sleepers-table tbody').innerHTML = sleepers || '<tr><td colspan="6">No Sleepers found.</td></tr>';
     document.querySelector('#value-table tbody').innerHTML = value || '<tr><td colspan="6">No Value bets found.</td></tr>';
     document.querySelector('#rawvalue-table tbody').innerHTML = rawv || '<tr><td colspan="6">No Raw Value bets found.</td></tr>';
