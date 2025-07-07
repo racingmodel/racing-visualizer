@@ -120,17 +120,18 @@ fetch('value_bets.json')
       )).join(' | ');
     }
 
-    function rowHtml(e,tags,rowClass,showRaw=false,fullOdds=false) {
-      return `<tr class="${rowClass}">
-        <td>${e.race_datetime}</td>
-        <td>${e.course}</td>
-        <td>${e.horse}</td>
-        <td>${e.bookie_odds}</td>
-        ${fullOdds ? `<td>${e.raw_odds || "-"}</td>` : ""}
-        <td>${e.model_odds}</td>
-        <td>${icons(tags)}</td>
-      </tr>`;
-    }
+ function rowHtml(entry, tagIcons, rowClass = "", showRaw = false, fullOdds = false) {
+  const rawOddsDisplay = entry.raw_odds ? entry.raw_odds : "-";
+  return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+    <td>${entry.race_datetime}</td>
+    <td>${entry.course}</td>
+    <td>${entry.horse}</td>
+    <td>${entry.bookie_odds}</td>
+    ${fullOdds ? `<td>${rawOddsDisplay}</td>` : ""}
+    <td>${showRaw ? rawOddsDisplay : entry.model_odds}</td>
+    <td>${tagIcons}</td>
+  </tr>`;
+}
 
     let multi='', sleepers='', value='', rawv='', blue='', top='', tony='';
 
