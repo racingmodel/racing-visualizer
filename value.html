@@ -25,6 +25,7 @@
     tr.multi-tag-row { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
     tr.aibest-row { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
     tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
+    tr.single-row { background: #2a2a3d !important; color: #ddd; font-weight: bold; }
     tr.sleeper-row { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
     tr.toprated-row { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
     tr.blue-row { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
@@ -32,7 +33,7 @@
     tr.rawvalue-row { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
     tr.rawlay-row { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
-    tr.multi-tag-row small.reason { color: #000; }
+    tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
   </style>
 </head>
@@ -47,6 +48,9 @@
 
   <h2>🤖 AI Suggested Bets</h2>
   <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>AI Tag</th><th>Reason</th></tr></thead><tbody></tbody></table>
+
+  <h2>💰 Value & Watchlist Bets</h2>
+  <table id="valueonly-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
 <script>
 Promise.all([
@@ -112,7 +116,7 @@ Promise.all([
     return tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
   }
 
-  let multi='', aihtml='';
+  let multi='', aihtml='', valueonly='';
 
   entries.forEach(entry => {
     const tags = tagSet(entry);
@@ -131,12 +135,16 @@ Promise.all([
         <td><small class="reason">🧠 ${reason}</small></td>
       </tr>`;
     }
+
+    if (tags.length === 1 && !aiTag) {
+      valueonly += twoLineRow(entry, tags, "value-row");
+    }
   });
 
   document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="4">No multi-tag bets found.</td></tr>';
   document.querySelector('#aibets-table tbody').innerHTML = aihtml || '<tr><td colspan="5">No AI suggested bets found.</td></tr>';
+  document.querySelector('#valueonly-table tbody').innerHTML = valueonly || '<tr><td colspan="4">No single-tag value bets found.</td></tr>';
 });
 </script>
 </body>
 </html>
-
