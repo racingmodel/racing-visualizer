@@ -7,7 +7,7 @@
   <style>
     body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
     h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
-    h2 { color: #ffd700; margin-top: 2.5rem; border-bottom: 2px solid #444; padding-bottom: 0.3rem;}
+    h2 { color: #ffd700; margin-top: 2.5rem; border-bottom: 2px solid #444; padding-bottom: 0.3rem; }
     .nav-link { text-align: center; margin-bottom: 2rem; }
     .nav-link a { color: #00bfff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
     .nav-link a:hover { text-decoration: underline; }
@@ -19,19 +19,12 @@
       overflow: hidden;
       margin-bottom: 2rem;
     }
-    th, td { padding: 0.8rem 1rem; text-align: center; }
+    th, td { padding: 0.6rem 1rem; text-align: center; vertical-align: top; }
     th { background: #444; color: #ffd700; }
     tr:nth-child(even) { background: #2a2a3d; }
-    tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
-    tr.sleeper-row { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
-    tr.toprated-row { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
     tr.multi-tag-row { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; }
-    tr.blue-row { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
-    tr.tonywatch-row { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
-    tr.rawvalue-row { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
-    tr.rawlay-row { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
     tr.aibest-row { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
-    tr:hover { background: #3a3a4d !important; color: #fff !important; }
+    small.reason { display: block; color: #ccc; font-weight: normal; font-size: 0.85em; margin-top: 0.3em; }
   </style>
 </head>
 <body>
@@ -41,31 +34,10 @@
   </div>
 
   <h2>🌟 Multi-Tag Selections</h2>
-  <table id="multitag-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>📉 Raw Odds</th><th>Tags</th><th>Reason</th></tr></thead><tbody></tbody></table>
+  <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
   <h2>🤖 AI Suggested Bets</h2>
-  <table id="aibets-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>📉 Raw Odds</th><th>🔥 Model 100%</th><th>Reason</th></tr></thead><tbody></tbody></table>
-
-  <h2>🔴 Raw Lays</h2>
-  <table id="rawlays-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>📉 Raw Odds</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>🌑 Sleepers</h2>
-  <table id="sleepers-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>💰 Value</h2>
-  <table id="value-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>📉 Raw Value</h2>
-  <table id="rawvalue-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>📉 Raw Odds</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>🔵 BIG e/w Odds</h2>
-  <table id="blue-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>🥇 Top Rated Clear</h2>
-  <table id="toprated-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tag</th></tr></thead><tbody></tbody></table>
-
-  <h2>👀 Tony Watch</h2>
-  <table id="tonywatch-table"><thead><tr><th>⏰ Race Time</th><th>📍 Course</th><th>🏇 Horse</th><th>🎲 Bookie Odds</th><th>🔥 Model 100%</th><th>Tag</th></tr></thead><tbody></tbody></table>
+  <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
 <script>
 Promise.all([
@@ -107,59 +79,32 @@ Promise.all([
     ).join(" | ");
   }
 
-  function rowHtml(entry, tagList, rowClass = "", showRaw = false, fullOdds = false, showReason = false) {
+  function twoLineRow(entry, tagList, rowClass = "") {
+    const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
     const raw = entry.raw_odds || "-";
     const tags = icons(tagList);
-    const reason = showReason ? (entry.reason || "-") : "";
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td>${entry.race_datetime}</td>
-      <td>${entry.course}</td>
-      <td>${entry.horse}</td>
-      <td>${entry.bookie_odds}</td>
-      ${fullOdds ? `<td>${raw}</td>` : ""}
-      <td>${tags}</td>
-      <td>${reason}</td>
+      <td><div>${entry.race_datetime.split(" ")[1]}</div><div>${entry.course}</div></td>
+      <td><div>${entry.horse}</div>${reason}</td>
+      <td><div>${entry.bookie_odds}</div><div>${raw}</div></td>
+      <td><div>${tags}</div></td>
     </tr>`;
   }
 
-  let multi='', sleepers='', value='', rawv='', rawlays='', blue='', top='', tony='', aihtml='';
+  let multi='', aihtml='';
 
   entries.forEach(entry => {
     const tags = tagSet(entry);
     const key = `${entry.race_datetime}_${entry.horse}`;
-    const hasReason = tags.includes('best-of-day') && reasonMap.has(key);
-    if (tags.length > 1) multi += rowHtml(entry, tags, "multi-tag-row", false, true, hasReason);
-    if (tags.includes('sleeper')) sleepers += rowHtml(entry, tags, "sleeper-row");
-    if (tags.includes('value')) value += rowHtml(entry, tags, "value-row");
-    if (tags.includes('raw-value')) rawv += rowHtml(entry, tags, "rawvalue-row", true);
-    if (tags.includes('raw-lay')) rawlays += rowHtml(entry, tags, "rawlay-row", true);
-    if (tags.includes('blue')) blue += rowHtml(entry, tags, "blue-row");
-    if (tags.includes('top-rated-clear')) top += rowHtml(entry, tags, "toprated-row");
-    if (tags.includes('tony-watch')) tony += rowHtml(entry, tags, "tonywatch-row");
+    if (tags.length > 1) multi += twoLineRow(entry, tags, "multi-tag-row");
     if (tags.includes('best-of-day') && reasonMap.has(key)) {
-      aihtml += `<tr class="aibest-row">
-        <td>${entry.race_datetime}</td>
-        <td>${entry.course}</td>
-        <td>${entry.horse}</td>
-        <td>${entry.bookie_odds}</td>
-        <td>${entry.raw_odds || '-'}</td>
-        <td>${entry.model_odds}</td>
-        <td>${entry.reason}</td>
-      </tr>`;
+      aihtml += twoLineRow(entry, tags, "aibest-row");
     }
   });
 
-  document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="7">No multi-tag bets found.</td></tr>';
-  document.querySelector('#aibets-table tbody').innerHTML = aihtml || '<tr><td colspan="7">No AI suggested bets found.</td></tr>';
-  document.querySelector('#rawlays-table tbody').innerHTML = rawlays || '<tr><td colspan="6">No Raw Lays found.</td></tr>';
-  document.querySelector('#sleepers-table tbody').innerHTML = sleepers || '<tr><td colspan="6">No Sleepers found.</td></tr>';
-  document.querySelector('#value-table tbody').innerHTML = value || '<tr><td colspan="6">No Value bets found.</td></tr>';
-  document.querySelector('#rawvalue-table tbody').innerHTML = rawv || '<tr><td colspan="6">No Raw Value bets found.</td></tr>';
-  document.querySelector('#blue-table tbody').innerHTML = blue || '<tr><td colspan="6">No Big E/W Odds found.</td></tr>';
-  document.querySelector('#toprated-table tbody').innerHTML = top || '<tr><td colspan="6">No Top Rated Clear bets found.</td></tr>';
-  document.querySelector('#tonywatch-table tbody').innerHTML = tony || '<tr><td colspan="6">No Tony Watch selections found.</td></tr>';
+  document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="4">No multi-tag bets found.</td></tr>';
+  document.querySelector('#aibets-table tbody').innerHTML = aihtml || '<tr><td colspan="4">No AI suggested bets found.</td></tr>';
 });
 </script>
 </body>
 </html>
-
