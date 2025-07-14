@@ -88,6 +88,7 @@ Promise.all([
   const valueKeys = new Set(valueData.map(e => `${e.race_datetime}_${e.horse}`));
   const aiKeys = new Set(aiData.map(e => `${e.race_datetime}_${e.horse}`));
   const sharedKeys = new Set([...valueKeys].filter(k => aiKeys.has(k)));
+  const valueMap = new Map(valueData.map(e => [`${e.race_datetime}_${e.horse}`, e]));
 
   [...valueData, ...aiData].forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
@@ -123,7 +124,7 @@ Promise.all([
 
   function twoLineRow(entry, tagList, rowClass = "") {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
-    const showOdds = sharedKeys.has(`${entry.race_datetime}_${entry.horse}`);
+    const showOdds = true; // Always show in non-AI sections
     const bookie = showOdds ? entry.bookie_odds : "-";
     const raw = showOdds ? (entry.raw_odds || "-") : "-";
     const tags = iconsOnly(tagList);
@@ -134,7 +135,6 @@ Promise.all([
       <td><div>${tags}</div></td>
     </tr>`;
   }
-
 
   function renderAITag(tag) {
     return tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
@@ -148,12 +148,17 @@ Promise.all([
     const aiTag = aiTagMap.get(key);
 
     if (tags.length > 1) multi += twoLineRow(entry, tags, "multi-tag-row");
+
     if (aiTag) {
       const reason = reasonMap.get(key) || "";
+      const valueEntry = valueMap.get(key);
+      const bookie = valueEntry?.bookie_odds || entry.bookie_odds || "-";
+      const raw = valueEntry?.raw_odds || entry.raw_odds || "-";
+
       aihtml += `<tr class="aibest-row">
         <td><div>${entry.race_datetime.split(" ")[1]}</div><div>${entry.course}</div></td>
         <td>${entry.horse}</td>
-        <td><div>${entry.bookie_odds}</div><div>${entry.raw_odds || '-'}</div></td>
+        <td><div>${bookie}</div><div>${raw}</div></td>
         <td>${renderAITag(aiTag)}</td>
         <td><small class="reason">🧠 ${reason}</small></td>
       </tr>`;
@@ -181,3 +186,4 @@ Promise.all([
 </script>
 </body>
 </html>
+
