@@ -85,6 +85,10 @@ Promise.all([
   });
 
   const merged = new Map();
+  const valueKeys = new Set(valueData.map(e => `${e.race_datetime}_${e.horse}`));
+  const aiKeys = new Set(aiData.map(e => `${e.race_datetime}_${e.horse}`));
+  const sharedKeys = new Set([...valueKeys].filter(k => aiKeys.has(k)));
+
   [...valueData, ...aiData].forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
     const existing = merged.get(key);
@@ -119,15 +123,18 @@ Promise.all([
 
   function twoLineRow(entry, tagList, rowClass = "") {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
-    const raw = entry.raw_odds || "-";
+    const showOdds = sharedKeys.has(`${entry.race_datetime}_${entry.horse}`);
+    const bookie = showOdds ? entry.bookie_odds : "-";
+    const raw = showOdds ? (entry.raw_odds || "-") : "-";
     const tags = iconsOnly(tagList);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td><div>${entry.race_datetime.split(" ")[1]}</div><div>${entry.course}</div></td>
       <td><div>${entry.horse}</div>${reason}</td>
-      <td><div>${entry.bookie_odds}</div><div>${raw}</div></td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
     </tr>`;
   }
+
 
   function renderAITag(tag) {
     return tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
