@@ -72,7 +72,8 @@
 <script>
 Promise.all([
   fetch('value_bets.json').then(r => r.json()),
-  fetch('ai_bets.json').then(r => r.json())
+  fetch('ai_bets.json').then(r => r.json()).catch(() => [])
+])
 ]).then(([valueData, aiData]) => {
   const merged = new Map();
   const valueMap = new Map(valueData.map(e => [`${e.race_datetime}_${e.horse}`, e]));
