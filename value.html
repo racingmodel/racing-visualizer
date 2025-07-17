@@ -140,6 +140,15 @@ Promise.all([
     if (tags.includes("top-rated-clear")) top += twoLineRow(entry, tags, "toprated-row");
   });
 
+   aiData.sort((a, b) => {
+    const getDate = str => {
+      const [d, t] = str.split(" ");
+      const [day, month, year] = d.split("/").map(Number);
+      return new Date(year, month - 1, day, ...t.split(":").map(Number));
+    };
+    return getDate(a.race_datetime) - getDate(b.race_datetime);
+  });
+
   aiData.forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
@@ -158,6 +167,7 @@ Promise.all([
       <td><small class="reason">🧠 ${reason}</small></td>
     </tr>`;
   });
+
 
   document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="4">No Must Back bets found.</td></tr>';
   document.querySelector('#rawlays-table tbody').innerHTML = rawlays || '<tr><td colspan="4">No Must Lay bets found.</td></tr>';
