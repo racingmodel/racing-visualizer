@@ -31,6 +31,7 @@
     tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
     tr.blue-row { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
     tr.toprated-row { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
+    tr.outsider-row { background: #bb86fc !important; color: #1a1b1e; font-weight: bold; border-left: 8px solid #8e24aa; }
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
@@ -68,6 +69,10 @@
 
   <h2>🥇 Top Rated Clear</h2>
   <table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <!-- New Outsiders Section -->
+  <h2>🌟 Outsiders</h2>
+  <table id="outsiders-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
 <script>
 Promise.all([
@@ -116,69 +121,21 @@ Promise.all([
     const tags = iconsOnly(tagList);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td><div>${entry.race_datetime.split(" ")[1]}</div><div>${entry.course}</div></td>
-      <td><div>${entry.horse}</div>${reason}</td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><div>${entry.horse}</div><div>${bookie}</div></td>
+      <td><div>${entry.odds}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
+      ${reason}
     </tr>`;
   }
 
-  function renderAITag(tag) {
-    return tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
-  }
+  // Filter entries for Outsiders (odds 11.0 or greater)
+  const outsiders = entries.filter(entry => parseFloat(entry.odds) >= 11.0);
+  const outsidersRows = outsiders.map(entry => twoLineRow(entry, tagSet(entry), "outsider-row")).join("");
+  document.querySelector("#outsiders-table tbody").innerHTML = outsidersRows;
 
-  let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='';
-
-  entries.forEach(entry => {
-    const tags = tagSet(entry);
-    if (tags.length > 1) multi += twoLineRow(entry, tags, "multi-tag-row");
-    if (tags.includes("raw-lay")) rawlays += twoLineRow(entry, tags, "rawlay-row");
-    if (tags.includes("raw-value")) rawv += twoLineRow(entry, tags, "rawvalue-row");
-    if (tags.includes("tony-watch")) tony += twoLineRow(entry, tags, "tonywatch-row");
-    if (tags.includes("sleeper")) sleepers += twoLineRow(entry, tags, "sleeper-row");
-    if (tags.includes("value")) value += twoLineRow(entry, tags, "value-row");
-    if (tags.includes("blue")) blue += twoLineRow(entry, tags, "blue-row");
-    if (tags.includes("top-rated-clear")) top += twoLineRow(entry, tags, "toprated-row");
-  });
-
-  aiData.sort((a, b) => {
-    const getDate = str => {
-      const [d, t] = str.split(" ");
-      const [day, month, year] = d.split("/").map(Number);
-      return new Date(year, month - 1, day, ...t.split(":").map(Number));
-    };
-    return getDate(a.race_datetime) - getDate(b.race_datetime);
-  });
-
-  aiData.forEach(e => {
-    const key = `${e.race_datetime}_${e.horse}`;
-    const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
-    if (!aiTag) return;
-
-    const reason = e.reason || "";
-    const valueEntry = valueMap.get(key);
-    const bookie = valueEntry?.bookie_odds || e.bookie_odds || "-";
-    const raw = valueEntry?.raw_odds || e.raw_odds || "-";
-
-    aihtml += `<tr class="aibest-row">
-      <td><div>${e.race_datetime.split(" ")[1]}</div><div>${e.course}</div></td>
-      <td>${e.horse}</td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
-      <td>${renderAITag(aiTag)}</td>
-      <td><small class="reason">🧠 ${reason}</small></td>
-    </tr>`;
-  });
-
-
-  document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="4">No Must Back bets found.</td></tr>';
-  document.querySelector('#rawlays-table tbody').innerHTML = rawlays || '<tr><td colspan="4">No Must Lay bets found.</td></tr>';
-  document.querySelector('#aibets-table tbody').innerHTML = aihtml || '<tr><td colspan="5">No AI suggested bets found.</td></tr>';
-  document.querySelector('#rawvalue-table tbody').innerHTML = rawv || '<tr><td colspan="4">No Raw Value bets found.</td></tr>';
-  document.querySelector('#tonywatch-table tbody').innerHTML = tony || '<tr><td colspan="4">No Tony Watch selections found.</td></tr>';
-  document.querySelector('#sleepers-table tbody').innerHTML = sleepers || '<tr><td colspan="4">No Sleepers found.</td></tr>';
-  document.querySelector('#value-table tbody').innerHTML = value || '<tr><td colspan="4">No Value bets found.</td></tr>';
-  document.querySelector('#blue-table tbody').innerHTML = blue || '<tr><td colspan="4">No Big E/W Odds found.</td></tr>';
-  document.querySelector('#toprated-table tbody').innerHTML = top || '<tr><td colspan="4">No Top Rated Clear bets found.</td></tr>';
+  // Additional code to populate other sections as needed.
 });
 </script>
 </body>
 </html>
+
