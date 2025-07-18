@@ -22,19 +22,8 @@
     th, td { padding: 0.6rem 1rem; text-align: center; vertical-align: top; }
     th { background: #444; color: #ffd700; }
     tr:nth-child(even) { background: #2a2a3d; }
-    tr.multi-tag-row { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
-    tr.aibest-row { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
-    tr.rawlay-row { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
-    tr.rawvalue-row { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
-    tr.tonywatch-row { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
-    tr.sleeper-row { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
-    tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
-    tr.blue-row { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
-    tr.toprated-row { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
     tr.outsider-row { background: #bb86fc !important; color: #1a1b1e; font-weight: bold; border-left: 8px solid #8e24aa; }
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
-    tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
-    tr.aibest-row small.reason { color: #fff; }
   </style>
 </head>
 <body>
@@ -43,34 +32,6 @@
     <a href="index.html">🔙 Back to Race Visualizer</a>
   </div>
 
-  <h2>🟢 Must Back</h2>
-  <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>❌ Must Lay</h2>
-  <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>🤖 AI Suggested Bets</h2>
-  <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>AI Tag</th><th>Reason</th></tr></thead><tbody></tbody></table>
-
-  <h2>📉 Raw Value</h2>
-  <table id="rawvalue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>👀 Tony Watch</h2>
-  <table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>🌑 Sleepers</h2>
-  <table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>💰 Model Value</h2>
-  <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>🔵 Big E/W Odds</h2>
-  <table id="blue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <h2>🥇 Top Rated Clear</h2>
-  <table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-
-  <!-- New Outsiders Section -->
   <h2>🌟 Outsiders</h2>
   <table id="outsiders-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
@@ -129,13 +90,20 @@ Promise.all([
   }
 
   // Filter entries for Outsiders (odds 11.0 or greater)
-  const outsiders = entries.filter(entry => parseFloat(entry.odds) >= 11.0);
-  const outsidersRows = outsiders.map(entry => twoLineRow(entry, tagSet(entry), "outsider-row")).join("");
-  document.querySelector("#outsiders-table tbody").innerHTML = outsidersRows;
+  const outsiders = entries.filter(entry => {
+    const odds = parseFloat(entry.odds);
+    return !isNaN(odds) && odds >= 11.0;
+  });
 
-  // Additional code to populate other sections as needed.
+  const outsidersRows = outsiders.map(entry => twoLineRow(entry, tagSet(entry), "outsider-row")).join("");
+  
+  // Display Outsiders or show "No Outsiders found"
+  if (outsidersRows) {
+    document.querySelector("#outsiders-table tbody").innerHTML = outsidersRows;
+  } else {
+    document.querySelector("#outsiders-table tbody").innerHTML = '<tr><td colspan="4">No Outsiders found.</td></tr>';
+  }
 });
 </script>
 </body>
 </html>
-
