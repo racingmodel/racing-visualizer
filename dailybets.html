@@ -1,156 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Daily Best Bets</title>
-  <style>
-    :root{
-      --bg:#1e1e2f;--panel:#2c2c3e;--panel-2:#2a2a3d;--ink:#fff;--gold:#ffd700;--muted:#a8b3cf;--line:#444;--accent:#00bfff;
-      --row-best:#0f3057;--row-lean:#3e235e;--row-best-ink:#fff;--row-lean-ink:#e0aaff;
+{
+  "date": "Mon 11 Aug 2025",
+  "sports": [
+    {
+      "sport": "Darts",
+      "competition": "MODUS Super Series",
+      "picks": [
+        {
+          "type": "Win",
+          "time": "10:45",
+          "match": "Graham Usher vs Shane McGuirk",
+          "selection": "Shane McGuirk",
+          "odds_fractional": "5/6",
+          "reason": "Recent MODUS week winner with 100+ avg ceiling; profile edges Usher in a race-to-4."
+        },
+        {
+          "type": "Win",
+          "time": "12:15",
+          "match": "Graham Usher vs Jimmy van Schie",
+          "selection": "Jimmy van Schie",
+          "odds_fractional": "1/1",
+          "reason": "Recent MODUS winner; even money against a softer recent baseline is fair."
+        },
+        {
+          "type": "Win",
+          "time": "11:05",
+          "match": "Jurjen van der Velde vs Scott Taylor",
+          "selection": "Jurjen van der Velde",
+          "odds_fractional": "8/11",
+          "reason": "100+ average spikes and stronger doubling trend vs Taylor’s baseline."
+        },
+        {
+          "type": "Win",
+          "time": "13:05",
+          "match": "Jurjen van der Velde vs Graham Usher",
+          "selection": "Jurjen van der Velde",
+          "odds_fractional": "10/11",
+          "reason": "We rate Jurjen ~57–60% (implied 1.67–1.75); at 10/11 (52.4%) he’s still a value side."
+        },
+        {
+          "type": "Win",
+          "time": "12:50",
+          "match": "Scott Taylor vs Shane McGuirk",
+          "selection": "Shane McGuirk",
+          "odds_fractional": "4/6",
+          "reason": "Higher ceiling and recent winning form outweigh short-format variance."
+        }
+      ]
     }
-    *{box-sizing:border-box}
-    body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,Arial,sans-serif;padding:2rem;line-height:1.4}
-    header{display:flex;flex-direction:column;gap:.25rem;align-items:center;margin-bottom:1.25rem}
-    h1{color:var(--gold);margin:0;font-size:clamp(1.4rem,2.2vw,2rem);text-align:center}
-    .sub{color:var(--muted);font-size:.95rem}
-    nav{margin:1rem 0 2rem;text-align:center}
-    nav a{color:var(--accent);text-decoration:none;font-weight:600}
-    nav a:hover{text-decoration:underline}
-    section{margin:2rem auto;max-width:1100px}
-    h2{color:var(--gold);margin:1.25rem 0 .5rem;border-bottom:2px solid var(--line);padding-bottom:.35rem;display:flex;gap:.5rem;align-items:center}
-    .wrap{background:var(--panel);border-radius:10px;overflow:hidden}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:.65rem .9rem;text-align:center;vertical-align:top}
-    th{background:#444;color:var(--gold)}
-    tr:nth-child(even){background:var(--panel-2)}
-    .pill{display:inline-block;padding:.15rem .45rem;border-radius:999px;font-size:.75rem;font-weight:700}
-    .pill-best{background:#00d9ff22;border:1px solid #00d9ff55;color:#c8f4ff}
-    .pill-lean{background:#a855f722;border:1px solid #a855f755;color:#f0d9ff}
-    .row-best{background:var(--row-best) !important;color:var(--row-best-ink);font-weight:700}
-    .row-lean{background:var(--row-lean) !important;color:var(--row-lean-ink);font-weight:700}
-    small.reason{display:block;font-weight:600;font-size:.85em;margin-top:.25rem;color:#d7e9ff}
-    .grid{display:grid;gap:1.25rem}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-    .card{background:var(--panel);border-radius:12px;padding:1rem}
-    .muted{color:var(--muted)}
-    .tag{font-weight:700}
-  </style>
-</head>
-<body>
-  <header>
-    <h1>🔥 Daily Best Bets</h1>
-    <div class="sub" id="dateLine">Loading date…</div>
-  </header>
+  ]
+}
 
-  <nav>
-    <a href="index.html">🏠 Race Visualizer</a> &nbsp;•&nbsp;
-    <a href="value.html">💰 Value Bets</a>
-  </nav>
-
-  <main id="content"></main>
-
-  <script>
-  // --- tiny helpers ---
-  const sportIcon = (s)=>({
-    'Darts':'🎯','Horse Racing':'🏇','Football':'⚽','Tennis':'🎾','Cricket':'🏏','Golf':'⛳'
-  }[s]||'🧠');
-
-  const fmtDec = (n)=> (typeof n==='number' ? (Math.round(n*100)/100).toFixed(2) : n||'-');
-
-  function makeTable(headers, rows, rowClassFn){
-    const thead = '<thead><tr>'+headers.map(h=>`<th>${h}</th>`).join('')+'</tr></thead>';
-    const tbody = '<tbody>'+ (rows.length ? rows.map(r=>{
-      const cls = rowClassFn? rowClassFn(r): '';
-      const tds = r.map(c=>`<td>${c}</td>`).join('');
-      return `<tr${cls?` class="${cls}"`:''}>${tds}</tr>`;
-    }).join('') : `<tr><td colspan="${headers.length}">No data.</td></tr>`) +'</tbody>';
-    return `<div class="wrap"><table>${thead}${tbody}</table></div>`;
-  }
-
-  fetch('daily_bets.json').then(r=>r.json()).then(data=>{
-    // Header date line
-    const d = data?.date || '';
-    document.getElementById('dateLine').textContent = d ? `Bets for ${d}` : 'Bets';
-
-    const root = document.getElementById('content');
-    root.innerHTML = '';
-
-    (data?.sports||[]).forEach(sp=>{
-      const sec = document.createElement('section');
-
-      // Title
-      const icon = sportIcon(sp.sport||'');
-      const title = document.createElement('h2');
-      title.innerHTML = `${icon} ${sp.sport || 'Sport'}${sp.competition ? ' — '+sp.competition : ''}`;
-      sec.appendChild(title);
-
-      // Best bets (top)
-      const best = (sp.picks||[]).filter(p=> (p.type||'best')==='best');
-      const lean = (sp.picks||[]).filter(p=> (p.type||'best')==='lean');
-
-      const bestRows = best.map(p=>[
-        `${p.time||'-'}<div class="muted">${sp.timezone||''}</div>`,
-        `${p.match||'-'}<small class="reason">🧠 ${p.reason||''}</small>`,
-        `<span class="tag">${p.selection||'-'}</span><div class="muted">${p.market||''}</div>`,
-        `${p.odds_fractional||'-'}<div class="muted">${fmtDec(p.odds_decimal)}</div>`,
-        `<span class="pill pill-best">AI Back</span>`
-      ]);
-
-      const leanRows = lean.map(p=>[
-        `${p.time||'-'}<div class="muted">${sp.timezone||''}</div>`,
-        `${p.match||'-'}<small class="reason">🧠 ${p.reason||''}</small>`,
-        `<span class="tag">${p.selection||'-'}</span><div class="muted">${p.market||''}</div>`,
-        `${p.odds_fractional||'-'}<div class="muted">${fmtDec(p.odds_decimal)}</div>`,
-        `<span class="pill pill-lean">Lean</span>`
-      ]);
-
-      if (bestRows.length){
-        const h3 = document.createElement('div');
-        h3.innerHTML = '<h3 style="margin:.25rem 0 .5rem;color:#c2e7ff">Best Bets</h3>';
-        sec.appendChild(h3);
-        const tbl = document.createElement('div');
-        tbl.innerHTML = makeTable(['Time','Match / Notes','Tip','Odds (Frac / Dec)','Type'], bestRows, ()=> 'row-best');
-        sec.appendChild(tbl);
-      }
-
-      if (leanRows.length){
-        const h3 = document.createElement('div');
-        h3.innerHTML = '<h3 style="margin:1rem 0 .5rem;color:#e0aaff">Leans / Acca Legs</h3>';
-        sec.appendChild(h3);
-        const tbl = document.createElement('div');
-        tbl.innerHTML = makeTable(['Time','Match / Notes','Tip','Odds (Frac / Dec)','Type'], leanRows, ()=> 'row-lean');
-        sec.appendChild(tbl);
-      }
-
-      // Fixtures (bottom)
-      const fixtures = sp.fixtures||[];
-      if (fixtures.length){
-        const h3 = document.createElement('div');
-        h3.innerHTML = '<h3 style="margin:1rem 0 .5rem;color:#ffd700">All Fixtures</h3>';
-        sec.appendChild(h3);
-
-        const fRows = fixtures
-          .slice()
-          .sort((a,b)=> (a.time||'').localeCompare(b.time||''))
-          .map(f=>[
-            `${f.time||'-'}<div class="muted">${sp.timezone||''}</div>`,
-            `${f.home||'-'} vs ${f.away||'-'}`,
-            `${f.home_odds_frac||'-'}<div class="muted">${fmtDec(f.home_odds_dec)}</div>`,
-            `${f.away_odds_frac||'-'}<div class="muted">${fmtDec(f.away_odds_dec)}</div>`
-        ]);
-        const tbl = document.createElement('div');
-        tbl.innerHTML = makeTable(['Time','Fixture','Home','Away'], fRows);
-        sec.appendChild(tbl);
-      }
-
-      root.appendChild(sec);
-    });
-  }).catch(e=>{
-    document.getElementById('content').innerHTML =
-      `<div class="card">Could not load daily_bets.json<br/><span class="muted">${e}</span></div>`;
-  });
-  </script>
-</body>
-</html>
 
