@@ -70,32 +70,66 @@
   <table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
 <script>
-Promise.all([
-  fetch('value_bets.json').then(r => r.json()),
-  fetch('ai_bets.json').then(r => r.json())
-]).then(([valueData, aiData]) => {
-  const merged = new Map();
-  const valueMap = new Map(valueData.map(e => [`${e.race_datetime}_${e.horse}`, e]));
+(async () => {
+  // --- Helpers
+  const safeJSON = async (url) => {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.statusText);
+      return await r.json();
+    } catch (e) {
+      console.warn(`⚠️ Could not load ${url}:`, e.message || e);
+      return []; // graceful fallback
+    }
+  };
 
-  [...valueData, ...aiData].forEach(e => {
-    const key = `${e.race_datetime}_${e.horse}`;
-    const existing = merged.get(key);
-    const tags = new Set([...(existing?.tags || []), ...(e.tags || [])]);
-    merged.set(key, { ...existing, ...e, tags: Array.from(tags), reason: e.reason || existing?.reason || "" });
-  });
+  const timeFromRaceDT = (raceDT) => {
+    if (!raceDT || typeof raceDT !== 'string') return '';
+    const parts = raceDT.split(' ');
+    return parts.length > 1 ? parts[1] : raceDT;
+  };
 
-  const entries = Array.from(merged.values()).sort((a,b) =>
-    a.race_datetime.split(' ')[1].localeCompare(b.race_datetime.split(' ')[1])
+  const parseRaceDT = (raceDT) => {
+    // expects "DD/MM/YYYY HH:MM"
+    try {
+      const [d, t='00:00'] = (raceDT || '').split(' ');
+      const [day, month, year] = d.split('/').map(Number);
+      const [hh=0, mm=0] = t.split(':').map(Number);
+      return new Date(year, (month || 1) - 1, day || 1, hh, mm);
+    } catch {
+      return new Date(0);
+    }
+  };
+
+  // --- Load data (robust)
+  const valueData = await safeJSON('value_bets.json');
+  const aiData = await safeJSON('ai_bets.json');
+
+  // Map for quick lookup when enriching AI rows with bookie/raw odds
+  const valueMap = new Map(
+    valueData.map(e => [`${e.race_datetime}_${e.horse}`, e])
   );
 
-  function tagSet(entry) {
-    return Array.isArray(entry.tags)
-      ? [...new Set(entry.tags.map(t => t.toLowerCase()))]
-      : [];
-  }
+  // Merge (dedupe by race_datetime+horse), union tags, prefer latest reason
+  const merged = new Map();
+  [...valueData, ...aiData].forEach(e => {
+    const key = `${e.race_datetime}_${e.horse}`;
+    const existing = merged.get(key) || {};
+    const existingTags = Array.isArray(existing.tags) ? existing.tags : [];
+    const newTags = Array.isArray(e.tags) ? e.tags : [];
+    const tags = Array.from(new Set([...existingTags, ...newTags]));
+    merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
+  });
 
-  function iconsOnly(tags) {
-    return tags.map(t =>
+  // Sort by race time within the day (keeps your daily card nicely ordered)
+  const entries = Array.from(merged.values()).sort((a,b) =>
+    timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime))
+  );
+
+  const tagSet = (entry) =>
+    Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
+
+  const iconsOnly = (tags) => tags.map(t =>
       t === 'top-rated-clear' ? '🥇' :
       t === 'sleeper'         ? '🌑' :
       t === 'value'           ? '💰' :
@@ -104,81 +138,77 @@ Promise.all([
       t === 'raw-value'       ? '📉' :
       t === 'raw-lay'         ? '❌' :
       t === 'ai-back'         ? '🟢' :
-      t === 'ai-lay'          ? '❌' :
-      ''
-    ).join(' ');
-  }
+      t === 'ai-lay'          ? '❌' : ''
+  ).join(' ');
 
-  function twoLineRow(entry, tagList, rowClass = "") {
+  const twoLineRow = (entry, tagList, rowClass = "") => {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
-    const bookie = entry.bookie_odds || "-";
-    const raw = entry.raw_odds || "-";
+    const bookie = entry.bookie_odds ?? "-";
+    const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td><div>${entry.race_datetime.split(" ")[1]}</div><div>${entry.course}</div></td>
-      <td><div>${entry.horse}</div>${reason}</td>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${entry.horse ?? ""}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
     </tr>`;
-  }
+  };
 
-  function renderAITag(tag) {
-    return tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
-  }
+  const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
 
+  // --- Build buckets
   let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='';
 
   entries.forEach(entry => {
     const tags = tagSet(entry);
-    if (tags.length > 1) multi += twoLineRow(entry, tags, "multi-tag-row");
-    if (tags.includes("raw-lay")) rawlays += twoLineRow(entry, tags, "rawlay-row");
-    if (tags.includes("raw-value")) rawv += twoLineRow(entry, tags, "rawvalue-row");
-    if (tags.includes("tony-watch")) tony += twoLineRow(entry, tags, "tonywatch-row");
-    if (tags.includes("sleeper")) sleepers += twoLineRow(entry, tags, "sleeper-row");
-    if (tags.includes("value")) value += twoLineRow(entry, tags, "value-row");
-    if (tags.includes("blue")) blue += twoLineRow(entry, tags, "blue-row");
-    if (tags.includes("top-rated-clear")) top += twoLineRow(entry, tags, "toprated-row");
+    if (tags.length > 1)                multi    += twoLineRow(entry, tags, "multi-tag-row");
+    if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
+    if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
+    if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
+    if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
+    if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
+    if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
+    if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
   });
 
-  aiData.sort((a, b) => {
-    const getDate = str => {
-      const [d, t] = str.split(" ");
-      const [day, month, year] = d.split("/").map(Number);
-      return new Date(year, month - 1, day, ...t.split(":").map(Number));
-    };
-    return getDate(a.race_datetime) - getDate(b.race_datetime);
-  });
-
+  // --- AI list (independent render, enriched from valueMap where possible)
+  aiData.sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
   aiData.forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
     if (!aiTag) return;
 
-    const reason = e.reason || "";
     const valueEntry = valueMap.get(key);
-    const bookie = valueEntry?.bookie_odds || e.bookie_odds || "-";
-    const raw = valueEntry?.raw_odds || e.raw_odds || "-";
+    const bookie = (valueEntry?.bookie_odds ?? e.bookie_odds) ?? "-";
+    const raw    = (valueEntry?.raw_odds    ?? e.raw_odds)    ?? "-";
+    const reason = e.reason || "";
 
     aihtml += `<tr class="aibest-row">
-      <td><div>${e.race_datetime.split(" ")[1]}</div><div>${e.course}</div></td>
-      <td>${e.horse}</td>
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td>${e.horse ?? ""}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td>${renderAITag(aiTag)}</td>
       <td><small class="reason">🧠 ${reason}</small></td>
     </tr>`;
   });
 
+  // --- Write tables
+  const setBody = (sel, html, cols=4) => {
+    const el = document.querySelector(sel + ' tbody');
+    el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
+  };
 
-  document.querySelector('#multitag-table tbody').innerHTML = multi || '<tr><td colspan="4">No Must Back bets found.</td></tr>';
-  document.querySelector('#rawlays-table tbody').innerHTML = rawlays || '<tr><td colspan="4">No Must Lay bets found.</td></tr>';
-  document.querySelector('#aibets-table tbody').innerHTML = aihtml || '<tr><td colspan="5">No AI suggested bets found.</td></tr>';
-  document.querySelector('#rawvalue-table tbody').innerHTML = rawv || '<tr><td colspan="4">No Raw Value bets found.</td></tr>';
-  document.querySelector('#tonywatch-table tbody').innerHTML = tony || '<tr><td colspan="4">No Tony Watch selections found.</td></tr>';
-  document.querySelector('#sleepers-table tbody').innerHTML = sleepers || '<tr><td colspan="4">No Sleepers found.</td></tr>';
-  document.querySelector('#value-table tbody').innerHTML = value || '<tr><td colspan="4">No Value bets found.</td></tr>';
-  document.querySelector('#blue-table tbody').innerHTML = blue || '<tr><td colspan="4">No Big E/W Odds found.</td></tr>';
-  document.querySelector('#toprated-table tbody').innerHTML = top || '<tr><td colspan="4">No Top Rated Clear bets found.</td></tr>';
-});
+  setBody('#multitag-table',  multi);
+  setBody('#rawlays-table',   rawlays);
+  setBody('#aibets-table',    aihtml, 5);
+  setBody('#rawvalue-table',  rawv);
+  setBody('#tonywatch-table', tony);
+  setBody('#sleepers-table',  sleepers);
+  setBody('#value-table',     value);
+  setBody('#blue-table',      blue);
+  setBody('#toprated-table',  top);
+})();
 </script>
 </body>
 </html>
+
