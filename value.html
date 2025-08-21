@@ -138,7 +138,6 @@
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
 
-  // --- ICONS: include robot for AI tags
   const iconsOnly = (tags) => tags.map(t =>
       t === 'top-rated-clear' ? '🥇' :
       t === 'sleeper'         ? '🌑' :
@@ -147,8 +146,8 @@
       t === 'tony-watch'      ? '👀' :
       t === 'raw-value'       ? '📉' :
       t === 'raw-lay'         ? '❌' :
-      t === 'ai-back'         ? '🤖🟢' :
-      t === 'ai-lay'          ? '🤖❌' : ''
+      t === 'ai-back'         ? '🟢' :
+      t === 'ai-lay'          ? '❌' : ''
   ).join(' ');
 
   const twoLineRow = (entry, tagList, rowClass = "") => {
@@ -166,27 +165,11 @@
 
   const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
 
-  // --- Build an AI index so AI tags show in Must Back even if dates differ
-  aiData = aiData.filter(filterValid);
-  const aiIndex = new Map();
-  aiData.forEach(e => {
-    const aiTags = (e.tags || []).map(x => String(x).toLowerCase());
-    const hasAI = aiTags.includes('ai-back') || aiTags.includes('ai-lay');
-    if (!hasAI) return;
-    const key = `${(e.course||'').toLowerCase()}|${(e.horse||'').toLowerCase()}|${timeFromRaceDT(e.race_datetime)}`;
-    aiIndex.set(key, aiTags.filter(x => x === 'ai-back' || x === 'ai-lay'));
-  });
-
   // --- Build buckets
   let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='';
 
   entries.forEach(entry => {
-    const baseTags = tagSet(entry);
-    // Fallback augment: if there's an AI bet with same course+horse+HH:MM, surface the AI tag
-    const aiKey = `${(entry.course||'').toLowerCase()}|${(entry.horse||'').toLowerCase()}|${timeFromRaceDT(entry.race_datetime)}`;
-    const aiTags = aiIndex.get(aiKey) || [];
-    const tags = [...new Set([...baseTags, ...aiTags])];
-
+    const tags = tagSet(entry);
     if (tags.length > 1)                multi    += twoLineRow(entry, tags, "multi-tag-row");
     if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
     if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
@@ -197,8 +180,10 @@
     if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
   });
 
-  // --- AI list (independent render, enriched, and sorted by datetime)
-  aiData.sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  // --- AI list (independent render, enriched, and filtered)
+  aiData = aiData.filter(filterValid)  // ✅ discard weak-confidence AI bets
+                 .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
   aiData.forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
