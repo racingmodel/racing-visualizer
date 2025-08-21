@@ -103,7 +103,14 @@
 
   // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
-  const aiData = await safeJSON('ai_bets.json');
+  let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
+
+  // --- Quality filter: require BOTH >= 90
+  const filterValid = (entry) => {
+    const coverage   = Number(entry?.data_coverage ?? 100);
+    const confidence = Number(entry?.race_data_confidence ?? 100);
+    return (coverage >= 90 && confidence >= 90);
+  };
 
   // Map for quick lookup when enriching AI rows with bookie/raw odds
   const valueMap = new Map(
@@ -121,10 +128,12 @@
     merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
   });
 
-  // Sort by race time within the day (keeps your daily card nicely ordered)
-  const entries = Array.from(merged.values()).sort((a,b) =>
-    timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime))
-  );
+  // Filter & sort by race time within the day
+  const entries = Array.from(merged.values())
+    .filter(filterValid)  // ✅ only keep good-quality entries
+    .sort((a,b) =>
+      timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime))
+    );
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -171,8 +180,10 @@
     if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
   });
 
-  // --- AI list (independent render, enriched from valueMap where possible)
-  aiData.sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  // --- AI list (independent render, enriched, and filtered)
+  aiData = aiData.filter(filterValid)  // ✅ discard weak-confidence AI bets
+                 .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
   aiData.forEach(e => {
     const key = `${e.race_datetime}_${e.horse}`;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
@@ -211,3 +222,4 @@
 </script>
 </body>
 </html>
+
