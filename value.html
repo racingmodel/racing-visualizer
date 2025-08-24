@@ -22,15 +22,20 @@
     th, td { padding: 0.6rem 1rem; text-align: center; vertical-align: top; }
     th { background: #444; color: #ffd700; }
     tr:nth-child(even) { background: #2a2a3d; }
-    tr.multi-tag-row { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
-    tr.aibest-row { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
-    tr.rawlay-row { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
-    tr.rawvalue-row { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
-    tr.tonywatch-row { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
-    tr.sleeper-row { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
-    tr.value-row { background: #ffd700 !important; color: #222; font-weight: bold; }
-    tr.blue-row { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
-    tr.toprated-row { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
+
+    tr.multi-tag-row  { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
+    tr.aibest-row     { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
+    tr.rawlay-row     { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
+    tr.rawvalue-row   { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
+    tr.tonywatch-row  { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
+    tr.sleeper-row    { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
+    tr.value-row      { background: #ffd700 !important; color: #222; font-weight: bold; }
+    tr.blue-row       { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
+    tr.toprated-row   { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
+
+    /* NEW: rank overlay highlight */
+    tr.overlay-row    { background: #0b3d2e !important; color: #c2ffd7; font-weight: bold; border-left: 8px solid #2ee59d; }
+
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
@@ -62,6 +67,21 @@
 
   <h2>💰 Model Value</h2>
   <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <!-- NEW: Rank Overlays section (directly under Model Value) -->
+  <h2>📊 Rank Overlays (Model ≪ Market)</h2>
+  <table id="overlay-table">
+    <thead>
+      <tr>
+        <th>Race</th>
+        <th>Horse</th>
+        <th>Odds</th>
+        <th>Δ (Market − Model)</th>
+        <th>Ranks (Mdl / Mkt)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <h2>🔵 Big E/W Odds</h2>
   <table id="blue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
@@ -147,7 +167,8 @@
       t === 'raw-value'       ? '📉' :
       t === 'raw-lay'         ? '❌' :
       t === 'ai-back'         ? '🟢' :
-      t === 'ai-lay'          ? '❌' : ''
+      t === 'ai-lay'          ? '❌'  :
+      t === 'rank-overlay'    ? '📊'  : ''
   ).join(' ');
 
   const twoLineRow = (entry, tagList, rowClass = "") => {
@@ -163,10 +184,27 @@
     </tr>`;
   };
 
+  // NEW: compact renderer for Rank Overlays table
+  const overlayRow = (entry, tagList, rowClass = "") => {
+    const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
+    const bookie = entry.bookie_odds ?? "-";
+    const raw    = entry.raw_odds ?? "-";
+    const delta  = (entry.rank_delta ?? "");
+    const rModel = (entry.rank_model ?? "");
+    const rMarket= (entry.rank_market ?? "");
+    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${entry.horse ?? ""}</div>${reason}</td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><strong>${delta}</strong></td>
+      <td>${rModel || ""} / ${rMarket || ""}</td>
+    </tr>`;
+  };
+
   const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
 
   // --- Build buckets
-  let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='';
+  let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
 
   entries.forEach(entry => {
     const tags = tagSet(entry);
@@ -180,8 +218,17 @@
     if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
   });
 
+  // --- Rank Overlays: biggest Δ first
+  const overlayEntries = entries
+    .filter(e => tagSet(e).includes("rank-overlay"))
+    .sort((a,b) => Number(b.rank_delta || 0) - Number(a.rank_delta || 0));
+
+  overlayEntries.forEach(e => {
+    overlay += overlayRow(e, tagSet(e), "overlay-row");
+  });
+
   // --- AI list (independent render, enriched, and filtered)
-  aiData = aiData.filter(filterValid)  // ✅ discard weak-confidence AI bets
+  aiData = aiData.filter(filterValid)
                  .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   aiData.forEach(e => {
@@ -216,10 +263,10 @@
   setBody('#tonywatch-table', tony);
   setBody('#sleepers-table',  sleepers);
   setBody('#value-table',     value);
+  setBody('#overlay-table',   overlay, 5);  // NEW: overlays
   setBody('#blue-table',      blue);
   setBody('#toprated-table',  top);
 })();
 </script>
 </body>
 </html>
-
