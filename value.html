@@ -206,17 +206,23 @@
   // --- Build buckets
   let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
 
-  entries.forEach(entry => {
-    const tags = tagSet(entry);
-    if (tags.length > 1)                multi    += twoLineRow(entry, tags, "multi-tag-row");
-    if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
-    if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
-    if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
-    if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
-    if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
-    if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
-    if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
-  });
+entries.forEach(entry => {
+  const tags = tagSet(entry);
+
+  // treat overlay tags as "decorative", don't count them for multi
+  const isOverlayTag = t => t === "rank-overlay" || t.startsWith("overlay+");
+  const coreTags = tags.filter(t => !isOverlayTag(t));
+
+  if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
+  if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
+  if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
+  if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
+  if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
+  if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
+  if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
+  if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
+});
+
 
   // --- Rank Overlays: biggest Δ first
   const overlayEntries = entries
