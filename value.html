@@ -209,8 +209,8 @@
 entries.forEach(entry => {
   const tags = tagSet(entry);
 
-  // treat overlay tags as "decorative", don't count them for multi
-  const isOverlayTag = t => t === "rank-overlay" || t.startsWith("overlay+");
+  // treat overlay+N tags as decorative, but DO count rank-overlay
+  const isOverlayTag = t => t.startsWith("overlay+");
   const coreTags = tags.filter(t => !isOverlayTag(t));
 
   if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
