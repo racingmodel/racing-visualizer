@@ -9,7 +9,7 @@
       --bg:#0B162A; --panel:#1E2A47; --panel2:#2B3A67; --ink:#fff;
       --gold:#FFD700; --muted:#a8b3cf; --line:#333;
       --bk:#2d3f73; --bk-ink:#00FFB0; --md:#26355a; --md-ink:#FFB347;
-      --win:#1f6f3b; --win-ink:#fff; --accent:#FF3C00;
+      --accent:#FF3C00;
     }
     *{box-sizing:border-box}
     body{background:var(--bg);color:var(--ink);font-family:'Segoe UI',system-ui,Arial,sans-serif;padding:2rem 1rem;line-height:1.45}
@@ -30,7 +30,6 @@
     tr.bk{background:var(--bk);color:var(--bk-ink)}
     tr.md{background:var(--md);color:var(--md-ink)}
     .src{font-weight:800;letter-spacing:.3px;white-space:nowrap}
-    .win{background:var(--win)!important;color:var(--win-ink)!important;border-color:#1a5b31!important}
     .note{padding:.35rem 1rem;color:var(--muted);font-size:.9rem}
     .empty{opacity:.6}
     .weeks{margin:0 auto 1rem;max-width:1150px}
@@ -69,6 +68,7 @@
     container.appendChild(hdr);
 
     const tbl = document.createElement('table');
+
     const thead = document.createElement('thead');
     thead.innerHTML = `
       <tr>
@@ -94,12 +94,6 @@
         <td>${fmt1(line.spread)}</td>
         <td>${fmt1(line.total)}</td>
       `;
-      const h = tr.querySelector('.hcell');
-      const a = tr.querySelector('.acell');
-      const hn = Number(hScore), an = Number(aScore);
-      if (!Number.isNaN(hn) && !Number.isNaN(an)) {
-        if (hn > an) h.classList.add('win'); else if (an > hn) a.classList.add('win');
-      }
       return tr;
     };
 
@@ -112,12 +106,14 @@
     return container;
   }
 
+  // Load week JSON
   fetch('nfl_week.json')
     .then(r=>r.json())
     .then(data=>{
       document.getElementById('weekLine').textContent =
         data?.title ? data.title : (data?.week ? `Week ${data.week}` : 'Week');
 
+      // weeks list (if provided)
       const wl = document.getElementById('weeksList');
       const weeks = (data?.weeks||[]);
       if (weeks.length){
