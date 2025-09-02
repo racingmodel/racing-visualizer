@@ -35,6 +35,10 @@
     .weeks{margin:0 auto 1rem;max-width:1150px}
     .weeks a{color:#d7e9ff;margin-right:.75rem;text-decoration:none}
     .weeks a:hover{text-decoration:underline}
+    .player-panel{background:var(--panel2);padding:.5rem 1rem;margin:.5rem;border-radius:8px;font-size:.9rem}
+    .player-panel h4{margin:.2rem 0;color:var(--gold)}
+    .player-panel ul{list-style:none;padding-left:0;margin:0}
+    .player-panel li{margin:.2rem 0}
   </style>
 </head>
 <body>
@@ -68,7 +72,6 @@
     container.appendChild(hdr);
 
     const tbl = document.createElement('table');
-
     const thead = document.createElement('thead');
     thead.innerHTML = `
       <tr>
@@ -101,25 +104,52 @@
     tbody.appendChild(mkRow('bk', 'Bookmaker', g.book||{}));
     tbody.appendChild(mkRow('md', 'Model',     g.model||{}));
     tbl.appendChild(tbody);
-
     container.appendChild(tbl);
+
+    // ---- Player Panel ----
+    if ((g.top_td_scorers && g.top_td_scorers.length) ||
+        (g.top_rusher && g.top_rusher.length) ||
+        (g.top_receiver && g.top_receiver.length)) {
+
+      const panel = document.createElement('div');
+      panel.className = 'player-panel';
+      let html = '<h4>Key Player Predictions</h4><ul>';
+
+      if (g.top_td_scorers && g.top_td_scorers.length){
+        const tds = g.top_td_scorers.map(p =>
+          `${p.player_name} (${(p.prob_anytime_td*100).toFixed(0)}%, ${fmt2(p.fair_odds)})`
+        ).join(', ');
+        html += `<li>🔥 TD Scorers: ${tds}</li>`;
+      }
+
+      if (g.top_rusher && g.top_rusher.length){
+        const r = g.top_rusher[0];
+        html += `<li>🏃 Rushing: ${r.player_name} (${fmt1(r.rush_yards)} yds)</li>`;
+      }
+
+      if (g.top_receiver && g.top_receiver.length){
+        const r = g.top_receiver[0];
+        html += `<li>🎯 Receiving: ${r.player_name} (${fmt1(r.rec_yards)} yds)</li>`;
+      }
+
+      html += '</ul>';
+      panel.innerHTML = html;
+      container.appendChild(panel);
+    }
+
     return container;
   }
 
-  // Load week JSON
   fetch('nfl_week.json')
     .then(r=>r.json())
     .then(data=>{
       document.getElementById('weekLine').textContent =
         data?.title ? data.title : (data?.week ? `Week ${data.week}` : 'Week');
-
-      // weeks list (if provided)
       const wl = document.getElementById('weeksList');
       const weeks = (data?.weeks||[]);
       if (weeks.length){
         wl.innerHTML = 'Weeks: ' + weeks.map(w => `<a href="week${w}.html">Week ${w}</a>`).join('');
       }
-
       const root = document.getElementById('root');
       root.innerHTML = '';
       const fixtures = (data?.fixtures||[]);
