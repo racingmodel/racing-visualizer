@@ -1,14 +1,131 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8" />
-<title>NFL — Index</title>
+<head>
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>NFL — Model Picks Index</title>
+<style>
+:root {
+  --bg:#0d1424; --panel:#121c33; --card:#172443; --card2:#15223c;
+  --text:#eaf1ff; --muted:#93a7cc; --accent:#e83f3f; --accent2:#1d9bf0; --good:#21d09d; --ring: rgba(232,63,63,.45);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; background:var(--bg); color:var(--text); font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+.nav { position:sticky; top:0; z-index:10; background:linear-gradient(90deg, #101a31 0%, #121e3a 60%, #0f1a33 100%); border-bottom:1px solid #1d2a4d; }
+.nav-inner { max-width:1200px; margin:0 auto; padding:14px 16px; display:flex; align-items:center; gap:10px; }
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--text); }
+.logo .ball { width:34px; height:34px; border-radius:50%;
+  background: radial-gradient(110% 110% at 30% 20%, #ff7a3d 0%, #c43d1f 60%, #7a230f 100%);
+  box-shadow:0 0 0 3px rgba(255,255,255,.06), inset 0 0 0 2px rgba(255,255,255,.08);
+  position:relative; }
+.logo .ball:after { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) rotate(10deg);
+  width:18px; height:3px; background:#fff; border-radius:2px; box-shadow:0 -6px 0 #fff, 0 6px 0 #fff; }
+.logo span { font-weight:800; letter-spacing:.2px; }
+.logo small { color:var(--muted); margin-left:6px; font-weight:600; letter-spacing:.3px; }
+
+.hero { background:
+    radial-gradient(1200px 400px at 20% -100px, rgba(29,155,240,.25) 0%, transparent 60%),
+    radial-gradient(900px 500px at 95% 0px, rgba(232,63,63,.25) 0%, transparent 55%),
+    linear-gradient(180deg, #0f1b33 0%, #0e172b 100%);
+  border-bottom:1px solid #1b2a52; }
+.hero-inner { max-width:1200px; margin:0 auto; padding:26px 16px 14px; }
+.kicker { color:#ffcfb6; font-weight:700; letter-spacing:.4px; text-transform:uppercase; font-size:12px; }
+.title { margin:6px 0 4px; font-size:28px; font-weight:900; letter-spacing:.2px; }
+.subtitle { margin:0; color:var(--muted); }
+
+.container { max-width:1200px; margin:10px auto 48px; padding:0 16px; }
+
+.controls { display:flex; gap:10px; align-items:center; justify-content:space-between; margin:18px 0 8px; }
+.controls .hint { color:var(--muted); font-size:12px; }
+
+.grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+
+.card { background:linear-gradient(180deg, var(--card) 0%, var(--card2) 100%); border:1px solid #1c2a52;
+  border-radius:14px; padding:14px; box-shadow:0 6px 18px rgba(0,0,0,.25); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.card:hover { transform: translateY(-2px); border-color:#27407a; box-shadow:0 10px 26px rgba(0,0,0,.35); }
+.card.latest { outline:2px solid var(--ring); }
+
+.card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.week-pill { display:inline-block; padding:6px 10px; border-radius:999px; background:linear-gradient(90deg, rgba(29,155,240,.15), rgba(232,63,63,.15)); border:1px solid #27407a; font-weight:700; letter-spacing:.3px; }
+.badge { display:inline-block; padding:3px 8px; border-radius:8px; font-size:12px; color:#ffd9d9; background:rgba(232,63,63,.2); border:1px solid rgba(232,63,63,.5); }
+
+.card-actions { display:flex; gap:10px; }
+.btn { text-decoration:none; display:inline-block; padding:10px 12px; border-radius:10px; font-weight:800; letter-spacing:.3px; border:1px solid #2a3b69; background:#162446; color:#e8f1ff; transition: all .15s ease; }
+.btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,.25); }
+
+.btn-primary { background:linear-gradient(90deg, var(--accent2), #4ab0ff); border-color:#2d7fc4; color:#07101d; }
+.btn-primary:hover { filter:saturate(1.1); }
+.btn-ghost { background:#111a34; }
+.btn-ghost:hover { background:#0e162b; }
+
+.empty { padding:20px; text-align:center; color:var(--muted); border:1px dashed #2a3b69; border-radius:12px; }
+
+.footer { text-align:center; color:var(--muted); font-size:12px; margin:24px 0 40px; }
+.footer a { color:#ffd7c0; }
+</style>
 </head>
 <body>
-<h2>NFL — Index</h2>
-<ul>
-<li>Week 3: <a href="week3.html">Full</a> &nbsp;|&nbsp; <a href="value_week3.html">Value</a></li>
-<li>Week 2: <a href="week2.html">Full</a> &nbsp;|&nbsp; <a href="value_week2.html">Value</a></li>
-<li>Week 1: <a href="week1.html">Full</a> &nbsp;|&nbsp; <a href="value_week1.html">Value</a></li>
-</ul>
-</body></html>
+  <div class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="nflindex.html">
+        <div class="ball"></div>
+        <span>NFL Model Picks</span><small>2025</small>
+      </a>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="kicker">🏈 Analytics-powered predictions</div>
+      <h1 class="title">Weekly Game Previews & Value Bets</h1>
+      <p class="subtitle">Compare modeled scores to bookmaker lines — jump into any week below.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="controls">
+      <div class="hint">Latest: Week 3</div>
+      <div class="hint">Full = all matchup detail • Value = best betting angles</div>
+    </div>
+
+    <section class="grid">
+      
+<div class="card latest">
+  <div class="card-top">
+    <div class="week-pill">Week 3</div>
+    <span class="badge">Latest</span>
+  </div>
+  <div class="card-actions">
+    <a class="btn btn-primary" href="week3.html">Full</a>
+    <a class="btn btn-ghost" href="value_week3.html">Value</a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-top">
+    <div class="week-pill">Week 2</div>
+    
+  </div>
+  <div class="card-actions">
+    <a class="btn btn-primary" href="week2.html">Full</a>
+    <a class="btn btn-ghost" href="value_week2.html">Value</a>
+  </div>
+</div>
+<div class="card">
+  <div class="card-top">
+    <div class="week-pill">Week 1</div>
+    
+  </div>
+  <div class="card-actions">
+    <a class="btn btn-primary" href="week1.html">Full</a>
+    <a class="btn btn-ghost" href="value_week1.html">Value</a>
+  </div>
+</div>
+    </section>
+
+    <div class="footer">
+      Generated 2025-09-21 16:02:35 • Built from your model outputs.
+      &nbsp;•&nbsp; <a href="value_week3.html">View latest value picks →</a>
+    </div>
+  </main>
+</body>
+</html>
