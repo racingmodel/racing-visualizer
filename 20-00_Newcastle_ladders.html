@@ -16,18 +16,20 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px auto; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
+  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
-  .delta { margin-left:8px; font-size:12px; background:var(--chip); padding:4px 8px; border-radius:999px; border:1px solid #465265; }
+  .delta { margin-left:0; font-size:12px; background:var(--chip); padding:4px 8px; border-radius:999px; border:1px solid #465265; text-align:center; display:inline-block; min-width:48px; }
   .delta.up { color:#86efac; border-color:#294a36; }
   .delta.down { color:#fca5a5; border-color:#5a2a2a; }
-  .tag { margin-left:8px; font-size:11px; padding:3px 7px; border-radius:999px; border:1px solid; }
+  .delta.eq { color:#9aa4b2; border-color:#3a4150; }
+  .tag { font-size:11px; padding:3px 7px; border-radius:999px; border:1px solid; }
   .tag.back-win { color:#16a34a; border-color:#14532d; background:rgba(22,163,74,.12); }
   .tag.back-ew  { color:#22c55e; border-color:#14532d; background:rgba(34,197,94,.10); }
   .tag.lay      { color:#ef4444; border-color:#7f1d1d; background:rgba(239,68,68,.12); }
-  .ew { margin-left:6px; font-size:10px; color:#eab308; border:1px solid #5b4b00; padding:2px 6px; border-radius:999px; }
+  .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
@@ -38,7 +40,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">20:00 Newcastle — Happy Birthday Phil From Probio-Energy Handicap</div>
     </div>
-    <div class="sub">Generated 17 Oct 2025 20:01</div>
+    <div class="sub">Generated 17 Oct 2025 20:18</div>
   </header>
 
   <div class="wrap">
@@ -56,33 +58,33 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='The Childe Of Hale'><span class='rk'>1</span><span class='nm'>The Childe Of Hale</span><span class='od'>4.33</span><span class='delta down'>−2</span></li>
-<li data-horse='Political Power' title='Market over-ranks (Δ−5); real 4.33 ≪ model 28.39'><span class='rk'>2</span><span class='nm'>Political Power</span><span class='od'>4.33</span><span class='delta down'>−5</span><span class='tag lay'>Lay</span></li>
-<li data-horse='Yaajooz'><span class='rk'>3</span><span class='nm'>Yaajooz</span><span class='od'>4.50</span><span class='delta up'>+2</span></li>
-<li data-horse='Bambalam'><span class='rk'>4</span><span class='nm'>Bambalam</span><span class='od'>6.00</span></li>
-<li data-horse='King's School' title='Model ranks much higher (Δ+3); model odds shorter (4.11 < 9.00); 4 places'><span class='rk'>5</span><span class='nm'>King's School</span><span class='od'>9.00</span><span class='delta up'>+3</span><span class='tag back-ew'>Back — E/W</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Kirkdale'><span class='rk'>6</span><span class='nm'>Kirkdale</span><span class='od'>9.00</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Lessay'><span class='rk'>7</span><span class='nm'>Lessay</span><span class='od'>17.00</span><span class='delta down'>−1</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Swiss Ace' title='Market over-ranks (Δ−3); real 17.00 ≪ model 48.68'><span class='rk'>8</span><span class='nm'>Swiss Ace</span><span class='od'>17.00</span><span class='delta down'>−3</span><span class='tag lay'>Lay</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Cusack'><span class='rk'>9</span><span class='nm'>Cusack</span><span class='od'>21.00</span><span class='delta up'>+4</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Samra Star'><span class='rk'>10</span><span class='nm'>Samra Star</span><span class='od'>23.00</span><span class='delta up'>+1</span><span class='ew'>E/W zone</span></li>
-<li data-horse='Angel Of England'><span class='rk'>11</span><span class='nm'>Angel Of England</span><span class='od'>34.00</span><span class='delta up'>+1</span></li>
-<li data-horse='Neapolitan'><span class='rk'>12</span><span class='nm'>Neapolitan</span><span class='od'>51.00</span></li></ol>
+        <ol class="ladder" id="mkt"><li data-horse='The Childe Of Hale' title='Market over-ranks (Δ−4); real 4.33 ≪ model 13.18'><span class='rk'>1</span><span class='nm'>The Childe Of Hale</span><span class='od'>4.33</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Political Power'><span class='rk'>2</span><span class='nm'>Political Power</span><span class='od'>4.50</span><span class='delta down'>−2</span><span class='act'></span></li>
+<li data-horse='Yaajooz' title='Ranks agree near top (Mkt 3, Model 2); model odds 4.10 ≤ real 4.60'><span class='rk'>3</span><span class='nm'>Yaajooz</span><span class='od'>4.60</span><span class='delta up'>+1</span><span class='act'><span class='tag back-win'>Back — Win</span></span></li>
+<li data-horse='Bambalam'><span class='rk'>4</span><span class='nm'>Bambalam</span><span class='od'>6.50</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='King's School' title='Model ranks much higher (Δ+4); model odds shorter (3.83 < 10.00); 4 places'><span class='rk'>5</span><span class='nm'>King's School</span><span class='od'>10.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Kirkdale'><span class='rk'>6</span><span class='nm'>Kirkdale</span><span class='od'>10.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Swiss Ace' title='Market over-ranks (Δ−3); real 19.00 ≪ model 50.49'><span class='rk'>7</span><span class='nm'>Swiss Ace</span><span class='od'>19.00</span><span class='delta down'>−3</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Lessay'><span class='rk'>8</span><span class='nm'>Lessay</span><span class='od'>19.00</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Cusack'><span class='rk'>9</span><span class='nm'>Cusack</span><span class='od'>21.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Samra Star'><span class='rk'>10</span><span class='nm'>Samra Star</span><span class='od'>26.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Angel Of England'><span class='rk'>11</span><span class='nm'>Angel Of England</span><span class='od'>34.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Neapolitan'><span class='rk'>12</span><span class='nm'>Neapolitan</span><span class='od'>51.00</span><span class='delta eq'>-</span><span class='act'></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Yaajooz'><span class='rk'>1</span><span class='nm'>Yaajooz</span><span class='od'>2.92</span></li>
-<li data-horse='King's School'><span class='rk'>2</span><span class='nm'>King's School</span><span class='od'>4.11</span></li>
-<li data-horse='The Childe Of Hale'><span class='rk'>3</span><span class='nm'>The Childe Of Hale</span><span class='od'>7.13</span></li>
-<li data-horse='Bambalam'><span class='rk'>4</span><span class='nm'>Bambalam</span><span class='od'>20.69</span></li>
-<li data-horse='Cusack'><span class='rk'>5</span><span class='nm'>Cusack</span><span class='od'>22.10</span></li>
-<li data-horse='Kirkdale'><span class='rk'>6</span><span class='nm'>Kirkdale</span><span class='od'>25.81</span></li>
-<li data-horse='Political Power'><span class='rk'>7</span><span class='nm'>Political Power</span><span class='od'>28.39</span></li>
-<li data-horse='Lessay'><span class='rk'>8</span><span class='nm'>Lessay</span><span class='od'>35.73</span></li>
-<li data-horse='Samra Star'><span class='rk'>9</span><span class='nm'>Samra Star</span><span class='od'>40.07</span></li>
-<li data-horse='Angel Of England'><span class='rk'>10</span><span class='nm'>Angel Of England</span><span class='od'>47.15</span></li>
-<li data-horse='Swiss Ace'><span class='rk'>11</span><span class='nm'>Swiss Ace</span><span class='od'>48.68</span></li>
-<li data-horse='Neapolitan'><span class='rk'>12</span><span class='nm'>Neapolitan</span><span class='od'>88.79</span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='King's School'><span class='rk'>1</span><span class='nm'>King's School</span><span class='od'>3.83</span><span></span><span class='act'></span></li>
+<li data-horse='Yaajooz'><span class='rk'>2</span><span class='nm'>Yaajooz</span><span class='od'>4.10</span><span></span><span class='act'></span></li>
+<li data-horse='Bambalam'><span class='rk'>3</span><span class='nm'>Bambalam</span><span class='od'>7.49</span><span></span><span class='act'></span></li>
+<li data-horse='Political Power'><span class='rk'>4</span><span class='nm'>Political Power</span><span class='od'>12.71</span><span></span><span class='act'></span></li>
+<li data-horse='The Childe Of Hale'><span class='rk'>5</span><span class='nm'>The Childe Of Hale</span><span class='od'>13.18</span><span></span><span class='act'></span></li>
+<li data-horse='Kirkdale'><span class='rk'>6</span><span class='nm'>Kirkdale</span><span class='od'>16.18</span><span></span><span class='act'></span></li>
+<li data-horse='Cusack'><span class='rk'>7</span><span class='nm'>Cusack</span><span class='od'>24.07</span><span></span><span class='act'></span></li>
+<li data-horse='Samra Star'><span class='rk'>8</span><span class='nm'>Samra Star</span><span class='od'>33.20</span><span></span><span class='act'></span></li>
+<li data-horse='Lessay'><span class='rk'>9</span><span class='nm'>Lessay</span><span class='od'>39.31</span><span></span><span class='act'></span></li>
+<li data-horse='Swiss Ace'><span class='rk'>10</span><span class='nm'>Swiss Ace</span><span class='od'>50.49</span><span></span><span class='act'></span></li>
+<li data-horse='Angel Of England'><span class='rk'>11</span><span class='nm'>Angel Of England</span><span class='od'>54.65</span><span></span><span class='act'></span></li>
+<li data-horse='Neapolitan'><span class='rk'>12</span><span class='nm'>Neapolitan</span><span class='od'>105.20</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
