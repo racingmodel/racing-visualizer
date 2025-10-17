@@ -8,6 +8,9 @@
   .title { font-weight:700; letter-spacing:.2px; }
   .sub { color:var(--muted); font-size:13px; }
   .wrap { max-width:1100px; margin:0 auto; padding:20px; }
+  .toolbar { display:flex; gap:8px; margin:0 0 14px; }
+  .btn { font-size:12px; padding:6px 10px; border:1px solid var(--line); background:#0e1625; color:var(--text); border-radius:8px; cursor:pointer; }
+  .btn.active { outline:2px solid #3b82f6; }
   .grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px; }
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
@@ -20,6 +23,14 @@
   .delta { margin-left:8px; font-size:12px; background:var(--chip); padding:4px 8px; border-radius:999px; border:1px solid #465265; }
   .delta.up { color:#86efac; border-color:#294a36; }
   .delta.down { color:#fca5a5; border-color:#5a2a2a; }
+  .tag { margin-left:8px; font-size:11px; padding:3px 7px; border-radius:999px; border:1px solid; }
+  .tag.ai-back { color:#16a34a; border-color:#14532d; background:rgba(22,163,74,.12); }
+  .tag.ai-lay  { color:#ef4444; border-color:#7f1d1d; background:rgba(239,68,68,.12); }
+  .ew { margin-left:6px; font-size:10px; color:#eab308; border:1px solid #5b4b00; padding:2px 6px; border-radius:999px; }
+  .edgebar { margin-left:10px; height:6px; width:90px; background:#0e1625; border:1px solid #1d2a3f; border-radius:999px; overflow:hidden; display:inline-block; vertical-align:middle; }
+  .edgebar i { display:block; height:100%; background:#16a34a; }
+  li.dim { opacity:.35; }
+  li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -28,44 +39,93 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">19:30 Newcastle — Mini Golf At High Gosforth Park Handicap</div>
     </div>
-    <div class="sub">Generated 17 Oct 2025 18:58</div>
+    <div class="sub">Generated 17 Oct 2025 19:19</div>
   </header>
+
   <div class="wrap">
+    <div class="toolbar">
+      <button class="btn active" data-filter="all">All</button>
+      <button class="btn" data-filter="back">ai-back</button>
+      <button class="btn" data-filter="lay">ai-lay</button>
+      <span class="hint" style="margin-left:8px;">Green edgebar shows size of model edge. E/W badge marks typical each-way zone (8–26).</span>
+    </div>
+
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder"><li><span class='rk'>1</span><span class='nm'>One More Bottle</span><span class='od'>4.33</span></li>
-<li><span class='rk'>2</span><span class='nm'>Woodrafff</span><span class='od'>5.00</span><span class='delta down'>−2</span></li>
-<li><span class='rk'>3</span><span class='nm'>Coramento</span><span class='od'>5.50</span><span class='delta down'>−2</span></li>
-<li><span class='rk'>4</span><span class='nm'>Operation Gimcrack</span><span class='od'>6.00</span><span class='delta up'>+2</span></li>
-<li><span class='rk'>5</span><span class='nm'>Ring Of Gold</span><span class='od'>6.50</span><span class='delta up'>+2</span></li>
-<li><span class='rk'>6</span><span class='nm'>Filey Beach</span><span class='od'>13.00</span></li>
-<li><span class='rk'>7</span><span class='nm'>Ignac Lamar</span><span class='od'>13.00</span><span class='delta down'>−2</span></li>
-<li><span class='rk'>8</span><span class='nm'>Teardrops</span><span class='od'>15.00</span><span class='delta down'>−6</span></li>
-<li><span class='rk'>9</span><span class='nm'>Yaahobby</span><span class='od'>17.00</span><span class='delta down'>−1</span></li>
-<li><span class='rk'>10</span><span class='nm'>Mission In Malton</span><span class='od'>21.00</span><span class='delta down'>−2</span></li>
-<li><span class='rk'>11</span><span class='nm'>Langholm</span><span class='od'>23.00</span><span class='delta up'>+4</span></li>
-<li><span class='rk'>12</span><span class='nm'>Sold Out</span><span class='od'>29.00</span><span class='delta down'>−1</span></li>
-<li><span class='rk'>13</span><span class='nm'>Madame Plaintiff</span><span class='od'>34.00</span><span class='delta up'>+5</span></li>
-<li><span class='rk'>14</span><span class='nm'>Cable Beach</span><span class='od'>51.00</span><span class='delta up'>+3</span></li></ol>
+        <ol class="ladder" id="mkt"><li data-horse='One More Bottle'><span class='rk'>1</span><span class='nm'>One More Bottle</span><span class='od'>4.33</span><span class='tag ai-lay'>ai-lay</span><span class='edgebar'><i style='width:62%;'></i></span></li>
+<li data-horse='Operation Gimcrack'><span class='rk'>2</span><span class='nm'>Operation Gimcrack</span><span class='od'>5.00</span><span class='tag ai-lay'>ai-lay</span><span class='edgebar'><i style='width:63%;'></i></span></li>
+<li data-horse='Woodrafff'><span class='rk'>3</span><span class='nm'>Woodrafff</span><span class='od'>5.00</span><span class='delta down'>−1</span><span class='tag ai-lay'>ai-lay</span><span class='edgebar'><i style='width:65%;'></i></span></li>
+<li data-horse='Coramento'><span class='rk'>4</span><span class='nm'>Coramento</span><span class='od'>5.50</span><span class='delta down'>−1</span><span class='tag ai-lay'>ai-lay</span><span class='edgebar'><i style='width:60%;'></i></span></li>
+<li data-horse='Ring Of Gold'><span class='rk'>5</span><span class='nm'>Ring Of Gold</span><span class='od'>6.50</span><span class='delta up'>+2</span></li>
+<li data-horse='Filey Beach'><span class='rk'>6</span><span class='nm'>Filey Beach</span><span class='od'>13.00</span><span class='ew'>E/W</span></li>
+<li data-horse='Ignac Lamar'><span class='rk'>7</span><span class='nm'>Ignac Lamar</span><span class='od'>13.00</span><span class='delta down'>−2</span><span class='tag ai-lay'>ai-lay</span><span class='ew'>E/W</span><span class='edgebar'><i style='width:56%;'></i></span></li>
+<li data-horse='Teardrops'><span class='rk'>8</span><span class='nm'>Teardrops</span><span class='od'>15.00</span><span class='delta down'>−6</span><span class='tag ai-lay'>ai-lay</span><span class='ew'>E/W</span><span class='edgebar'><i style='width:52%;'></i></span></li>
+<li data-horse='Yaahobby'><span class='rk'>9</span><span class='nm'>Yaahobby</span><span class='od'>17.00</span><span class='delta down'>−1</span><span class='tag ai-lay'>ai-lay</span><span class='ew'>E/W</span><span class='edgebar'><i style='width:42%;'></i></span></li>
+<li data-horse='Mission In Malton'><span class='rk'>10</span><span class='nm'>Mission In Malton</span><span class='od'>21.00</span><span class='delta down'>−2</span><span class='tag ai-lay'>ai-lay</span><span class='ew'>E/W</span><span class='edgebar'><i style='width:31%;'></i></span></li>
+<li data-horse='Langholm'><span class='rk'>11</span><span class='nm'>Langholm</span><span class='od'>23.00</span><span class='delta up'>+4</span><span class='tag ai-back'>ai-back</span><span class='ew'>E/W</span><span class='edgebar'><i style='width:44%;'></i></span></li>
+<li data-horse='Sold Out'><span class='rk'>12</span><span class='nm'>Sold Out</span><span class='od'>29.00</span><span class='delta down'>−1</span></li>
+<li data-horse='Madame Plaintiff'><span class='rk'>13</span><span class='nm'>Madame Plaintiff</span><span class='od'>34.00</span><span class='delta up'>+5</span></li>
+<li data-horse='Cable Beach'><span class='rk'>14</span><span class='nm'>Cable Beach</span><span class='od'>51.00</span><span class='delta up'>+3</span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder"><li><span class='rk'>1</span><span class='nm'>One More Bottle</span><span class='od'>5.95</span></li>
-<li><span class='rk'>2</span><span class='nm'>Operation Gimcrack</span><span class='od'>7.31</span></li>
-<li><span class='rk'>3</span><span class='nm'>Ring Of Gold</span><span class='od'>7.44</span></li>
-<li><span class='rk'>4</span><span class='nm'>Woodrafff</span><span class='od'>7.46</span></li>
-<li><span class='rk'>5</span><span class='nm'>Coramento</span><span class='od'>8.21</span></li>
-<li><span class='rk'>6</span><span class='nm'>Filey Beach</span><span class='od'>10.50</span></li>
-<li><span class='rk'>7</span><span class='nm'>Langholm</span><span class='od'>11.34</span></li>
-<li><span class='rk'>8</span><span class='nm'>Madame Plaintiff</span><span class='od'>46.63</span></li>
-<li><span class='rk'>9</span><span class='nm'>Ignac Lamar</span><span class='od'>47.82</span></li>
-<li><span class='rk'>10</span><span class='nm'>Yaahobby</span><span class='od'>59.67</span></li>
-<li><span class='rk'>11</span><span class='nm'>Cable Beach</span><span class='od'>62.83</span></li>
-<li><span class='rk'>12</span><span class='nm'>Mission In Malton</span><span class='od'>62.97</span></li>
-<li><span class='rk'>13</span><span class='nm'>Sold Out</span><span class='od'>63.37</span></li>
-<li><span class='rk'>14</span><span class='nm'>Teardrops</span><span class='od'>68.32</span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='One More Bottle'><span class='rk'>1</span><span class='nm'>One More Bottle</span><span class='od'>5.95</span></li>
+<li data-horse='Operation Gimcrack'><span class='rk'>2</span><span class='nm'>Operation Gimcrack</span><span class='od'>7.31</span></li>
+<li data-horse='Ring Of Gold'><span class='rk'>3</span><span class='nm'>Ring Of Gold</span><span class='od'>7.44</span></li>
+<li data-horse='Woodrafff'><span class='rk'>4</span><span class='nm'>Woodrafff</span><span class='od'>7.46</span></li>
+<li data-horse='Coramento'><span class='rk'>5</span><span class='nm'>Coramento</span><span class='od'>8.21</span></li>
+<li data-horse='Filey Beach'><span class='rk'>6</span><span class='nm'>Filey Beach</span><span class='od'>10.50</span></li>
+<li data-horse='Langholm'><span class='rk'>7</span><span class='nm'>Langholm</span><span class='od'>11.35</span></li>
+<li data-horse='Madame Plaintiff'><span class='rk'>8</span><span class='nm'>Madame Plaintiff</span><span class='od'>46.63</span></li>
+<li data-horse='Ignac Lamar'><span class='rk'>9</span><span class='nm'>Ignac Lamar</span><span class='od'>47.82</span></li>
+<li data-horse='Yaahobby'><span class='rk'>10</span><span class='nm'>Yaahobby</span><span class='od'>59.67</span></li>
+<li data-horse='Cable Beach'><span class='rk'>11</span><span class='nm'>Cable Beach</span><span class='od'>62.83</span></li>
+<li data-horse='Mission In Malton'><span class='rk'>12</span><span class='nm'>Mission In Malton</span><span class='od'>62.97</span></li>
+<li data-horse='Sold Out'><span class='rk'>13</span><span class='nm'>Sold Out</span><span class='od'>63.37</span></li>
+<li data-horse='Teardrops'><span class='rk'>14</span><span class='nm'>Teardrops</span><span class='od'>68.31</span></li></ol>
       </div>
     </div>
   </div>
+
+  <script>
+    // hover sync across ladders
+    function syncHover(listIdA, listIdB) {
+      const A = document.getElementById(listIdA);
+      const B = document.getElementById(listIdB);
+      const mapB = {};
+      B.querySelectorAll('li').forEach(li => { mapB[li.dataset.horse] = li; });
+      A.querySelectorAll('li').forEach(li => {
+        li.addEventListener('mouseenter', () => {
+          const peer = mapB[li.dataset.horse];
+          if (peer) peer.classList.add('hl');
+        });
+        li.addEventListener('mouseleave', () => {
+          const peer = mapB[li.dataset.horse];
+          if (peer) peer.classList.remove('hl');
+        });
+      });
+    }
+    syncHover('mkt','raw'); syncHover('raw','mkt');
+
+    // filter buttons
+    const btns = document.querySelectorAll('.btn');
+    function applyFilter(kind) {
+      const lists = [document.getElementById('mkt'), document.getElementById('raw')];
+      lists.forEach(ol => {
+        ol.querySelectorAll('li').forEach(li => {
+          const hasBack = li.querySelector('.tag.ai-back');
+          const hasLay  = li.querySelector('.tag.ai-lay');
+          li.classList.remove('dim');
+          if (kind === 'back' && !hasBack) li.classList.add('dim');
+          if (kind === 'lay'  && !hasLay)  li.classList.add('dim');
+        });
+      });
+    }
+    btns.forEach(b => b.addEventListener('click', () => {
+      btns.forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      applyFilter(b.dataset.filter);
+    }));
+  </script>
 </body></html>
