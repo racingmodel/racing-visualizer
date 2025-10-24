@@ -36,6 +36,10 @@
     /* NEW: rank overlay highlight */
     tr.overlay-row    { background: #0b3d2e !important; color: #c2ffd7; font-weight: bold; border-left: 8px solid #2ee59d; }
 
+    /* NEW: FC/TC highlight rows */
+    tr.fc-row         { background: #23364d !important; color: #d5e9ff; font-weight: bold; border-left: 8px solid #00bfff; }
+    tr.tc-row         { background: #2d213a !important; color: #f1d7ff; font-weight: bold; border-left: 8px solid #be7bff; }
+
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
@@ -53,6 +57,24 @@
   <h2>❌ Must Lay</h2>
   <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
+  <!-- NEW: FC/TC sections inserted directly BELOW Must Lay -->
+  <h2>🔗 Forecasts (Top 2 clear)</h2>
+  <table id="fc-table">
+    <thead>
+      <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>🔗 Tricasts (Top 3 clear)</h2>
+  <table id="tc-table">
+    <thead>
+      <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <!-- END FC/TC -->
+
   <h2>🤖 AI Suggested Bets</h2>
   <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>AI Tag</th><th>Reason</th></tr></thead><tbody></tbody></table>
 
@@ -68,7 +90,7 @@
   <h2>💰 Model Value</h2>
   <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
-  <!-- NEW: Rank Overlays section (directly under Model Value) -->
+  <!-- Rank Overlays section -->
   <h2>📊 Rank Overlays (Model ≪ Market)</h2>
   <table id="overlay-table">
     <thead>
@@ -150,10 +172,8 @@
 
   // Filter & sort by race time within the day
   const entries = Array.from(merged.values())
-    .filter(filterValid)  // ✅ only keep good-quality entries
-    .sort((a,b) =>
-      timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime))
-    );
+    .filter(filterValid)
+    .sort((a,b) => timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime)));
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -206,23 +226,22 @@
   // --- Build buckets
   let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
 
-entries.forEach(entry => {
-  const tags = tagSet(entry);
+  entries.forEach(entry => {
+    const tags = tagSet(entry);
 
-  // treat overlay+N tags as decorative, but DO count rank-overlay
-  const isOverlayTag = t => t.startsWith("overlay+");
-  const coreTags = tags.filter(t => !isOverlayTag(t));
+    // treat overlay+N tags as decorative, but DO count rank-overlay
+    const isOverlayTag = t => t.startsWith("overlay+");
+    const coreTags = tags.filter(t => !isOverlayTag(t));
 
-  if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
-  if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
-  if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
-  if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
-  if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
-  if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
-  if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
-  if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
-});
-
+    if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
+    if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
+    if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
+    if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
+    if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
+    if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
+    if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
+    if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
+  });
 
   // --- Rank Overlays: biggest Δ first
   const overlayEntries = entries
@@ -231,6 +250,37 @@ entries.forEach(entry => {
 
   overlayEntries.forEach(e => {
     overlay += overlayRow(e, tagSet(e), "overlay-row");
+  });
+
+  // --- Forecasts / Tricasts from value_bets.json combos (use raw valueData, not merged)
+  const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
+  const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
+
+  const fcEntries = valueData
+    .filter(filterValid)
+    .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
+    .sort(byRaceTime);
+
+  const tcEntries = valueData
+    .filter(filterValid)
+    .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
+    .sort(byRaceTime);
+
+  let fcHtml = '', tcHtml = '';
+  fcEntries.forEach(e => {
+    fcHtml += `<tr class="fc-row">
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td><b>${asComboLabel(e)}</b></td>
+      <td><small class="reason">${e.reason ?? ""}</small></td>
+    </tr>`;
+  });
+
+  tcEntries.forEach(e => {
+    tcHtml += `<tr class="tc-row">
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td><b>${asComboLabel(e)}</b></td>
+      <td><small class="reason">${e.reason ?? ""}</small></td>
+    </tr>`;
   });
 
   // --- AI list (independent render, enriched, and filtered)
@@ -264,15 +314,21 @@ entries.forEach(entry => {
 
   setBody('#multitag-table',  multi);
   setBody('#rawlays-table',   rawlays);
+
+  // NEW: FC/TC render
+  setBody('#fc-table',        fcHtml, 3);
+  setBody('#tc-table',        tcHtml, 3);
+
   setBody('#aibets-table',    aihtml, 5);
   setBody('#rawvalue-table',  rawv);
   setBody('#tonywatch-table', tony);
   setBody('#sleepers-table',  sleepers);
   setBody('#value-table',     value);
-  setBody('#overlay-table',   overlay, 5);  // NEW: overlays
+  setBody('#overlay-table',   overlay, 5);
   setBody('#blue-table',      blue);
   setBody('#toprated-table',  top);
 })();
 </script>
 </body>
 </html>
+
