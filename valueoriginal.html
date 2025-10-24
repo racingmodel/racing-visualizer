@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Value Bets</title>
+  <style>
+    body { background: #1e1e2f; color: #fff; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
+    h1 { color: #ffd700; text-align: center; margin-bottom: 1rem; }
+    h2 { color: #ffd700; margin-top: 2.5rem; border-bottom: 2px solid #444; padding-bottom: 0.3rem; }
+    .nav-link { text-align: center; margin-bottom: 2rem; }
+    .nav-link a { color: #00bfff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
+    .nav-link a:hover { text-decoration: underline; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #2c2c3e;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+    th, td { padding: 0.6rem 1rem; text-align: center; vertical-align: top; }
+    th { background: #444; color: #ffd700; }
+    tr:nth-child(even) { background: #2a2a3d; }
+
+    tr.multi-tag-row  { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
+    tr.aibest-row     { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
+    tr.rawlay-row     { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
+    tr.rawvalue-row   { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
+    tr.tonywatch-row  { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
+    tr.sleeper-row    { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
+    tr.value-row      { background: #ffd700 !important; color: #222; font-weight: bold; }
+    tr.blue-row       { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
+    tr.toprated-row   { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
+
+    /* NEW: rank overlay highlight */
+    tr.overlay-row    { background: #0b3d2e !important; color: #c2ffd7; font-weight: bold; border-left: 8px solid #2ee59d; }
+
+    small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
+    tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
+    tr.aibest-row small.reason { color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>🔥 Automated Best Bet Selections 🔥</h1>
+  <div class="nav-link">
+    <a href="index.html">🔙 Back to Race Visualizer</a>
+  </div>
+
+  <h2>🟢 Must Back</h2>
+  <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>❌ Must Lay</h2>
+  <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>🤖 AI Suggested Bets</h2>
+  <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>AI Tag</th><th>Reason</th></tr></thead><tbody></tbody></table>
+
+  <h2>📉 Raw Value</h2>
+  <table id="rawvalue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>👀 Tony Watch</h2>
+  <table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>🌑 Sleepers</h2>
+  <table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>💰 Model Value</h2>
+  <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <!-- NEW: Rank Overlays section (directly under Model Value) -->
+  <h2>📊 Rank Overlays (Model ≪ Market)</h2>
+  <table id="overlay-table">
+    <thead>
+      <tr>
+        <th>Race</th>
+        <th>Horse</th>
+        <th>Odds</th>
+        <th>Δ (Market − Model)</th>
+        <th>Ranks (Mdl / Mkt)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>🔵 Big E/W Odds</h2>
+  <table id="blue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>🥇 Top Rated Clear</h2>
+  <table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+<script>
+(async () => {
+  // --- Helpers
+  const safeJSON = async (url) => {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.statusText);
+      return await r.json();
+    } catch (e) {
+      console.warn(`⚠️ Could not load ${url}:`, e.message || e);
+      return []; // graceful fallback
+    }
+  };
+
+  const timeFromRaceDT = (raceDT) => {
+    if (!raceDT || typeof raceDT !== 'string') return '';
+    const parts = raceDT.split(' ');
+    return parts.length > 1 ? parts[1] : raceDT;
+  };
+
+  const parseRaceDT = (raceDT) => {
+    // expects "DD/MM/YYYY HH:MM"
+    try {
+      const [d, t='00:00'] = (raceDT || '').split(' ');
+      const [day, month, year] = d.split('/').map(Number);
+      const [hh=0, mm=0] = t.split(':').map(Number);
+      return new Date(year, (month || 1) - 1, day || 1, hh, mm);
+    } catch {
+      return new Date(0);
+    }
+  };
+
+  // --- Load data (robust)
+  const valueData = await safeJSON('value_bets.json');
+  let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
+
+  // --- Quality filter: require BOTH >= 90
+  const filterValid = (entry) => {
+    const coverage   = Number(entry?.data_coverage ?? 100);
+    const confidence = Number(entry?.race_data_confidence ?? 100);
+    return (coverage >= 90 && confidence >= 90);
+  };
+
+  // Map for quick lookup when enriching AI rows with bookie/raw odds
+  const valueMap = new Map(
+    valueData.map(e => [`${e.race_datetime}_${e.horse}`, e])
+  );
+
+  // Merge (dedupe by race_datetime+horse), union tags, prefer latest reason
+  const merged = new Map();
+  [...valueData, ...aiData].forEach(e => {
+    const key = `${e.race_datetime}_${e.horse}`;
+    const existing = merged.get(key) || {};
+    const existingTags = Array.isArray(existing.tags) ? existing.tags : [];
+    const newTags = Array.isArray(e.tags) ? e.tags : [];
+    const tags = Array.from(new Set([...existingTags, ...newTags]));
+    merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
+  });
+
+  // Filter & sort by race time within the day
+  const entries = Array.from(merged.values())
+    .filter(filterValid)  // ✅ only keep good-quality entries
+    .sort((a,b) =>
+      timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime))
+    );
+
+  const tagSet = (entry) =>
+    Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
+
+  const iconsOnly = (tags) => tags.map(t =>
+      t === 'top-rated-clear' ? '🥇' :
+      t === 'sleeper'         ? '🌑' :
+      t === 'value'           ? '💰' :
+      t === 'blue'            ? '🔵' :
+      t === 'tony-watch'      ? '👀' :
+      t === 'raw-value'       ? '📉' :
+      t === 'raw-lay'         ? '❌' :
+      t === 'ai-back'         ? '🟢' :
+      t === 'ai-lay'          ? '❌'  :
+      t === 'rank-overlay'    ? '📊'  : ''
+  ).join(' ');
+
+  const twoLineRow = (entry, tagList, rowClass = "") => {
+    const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
+    const bookie = entry.bookie_odds ?? "-";
+    const raw = entry.raw_odds ?? "-";
+    const tags = iconsOnly(tagList);
+    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${entry.horse ?? ""}</div>${reason}</td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><div>${tags}</div></td>
+    </tr>`;
+  };
+
+  // NEW: compact renderer for Rank Overlays table
+  const overlayRow = (entry, tagList, rowClass = "") => {
+    const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
+    const bookie = entry.bookie_odds ?? "-";
+    const raw    = entry.raw_odds ?? "-";
+    const delta  = (entry.rank_delta ?? "");
+    const rModel = (entry.rank_model ?? "");
+    const rMarket= (entry.rank_market ?? "");
+    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${entry.horse ?? ""}</div>${reason}</td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><strong>${delta}</strong></td>
+      <td>${rModel || ""} / ${rMarket || ""}</td>
+    </tr>`;
+  };
+
+  const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
+
+  // --- Build buckets
+  let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
+
+entries.forEach(entry => {
+  const tags = tagSet(entry);
+
+  // treat overlay+N tags as decorative, but DO count rank-overlay
+  const isOverlayTag = t => t.startsWith("overlay+");
+  const coreTags = tags.filter(t => !isOverlayTag(t));
+
+  if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
+  if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
+  if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
+  if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
+  if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
+  if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
+  if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
+  if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
+});
+
+
+  // --- Rank Overlays: biggest Δ first
+  const overlayEntries = entries
+    .filter(e => tagSet(e).includes("rank-overlay"))
+    .sort((a,b) => Number(b.rank_delta || 0) - Number(a.rank_delta || 0));
+
+  overlayEntries.forEach(e => {
+    overlay += overlayRow(e, tagSet(e), "overlay-row");
+  });
+
+  // --- AI list (independent render, enriched, and filtered)
+  aiData = aiData.filter(filterValid)
+                 .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+  aiData.forEach(e => {
+    const key = `${e.race_datetime}_${e.horse}`;
+    const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
+    if (!aiTag) return;
+
+    const valueEntry = valueMap.get(key);
+    const bookie = (valueEntry?.bookie_odds ?? e.bookie_odds) ?? "-";
+    const raw    = (valueEntry?.raw_odds    ?? e.raw_odds)    ?? "-";
+    const reason = e.reason || "";
+
+    aihtml += `<tr class="aibest-row">
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td>${e.horse ?? ""}</td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td>${renderAITag(aiTag)}</td>
+      <td><small class="reason">🧠 ${reason}</small></td>
+    </tr>`;
+  });
+
+  // --- Write tables
+  const setBody = (sel, html, cols=4) => {
+    const el = document.querySelector(sel + ' tbody');
+    el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
+  };
+
+  setBody('#multitag-table',  multi);
+  setBody('#rawlays-table',   rawlays);
+  setBody('#aibets-table',    aihtml, 5);
+  setBody('#rawvalue-table',  rawv);
+  setBody('#tonywatch-table', tony);
+  setBody('#sleepers-table',  sleepers);
+  setBody('#value-table',     value);
+  setBody('#overlay-table',   overlay, 5);  // NEW: overlays
+  setBody('#blue-table',      blue);
+  setBody('#toprated-table',  top);
+})();
+</script>
+</body>
+</html>
