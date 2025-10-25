@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,15 +37,33 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
   <header>
     <div>
       <div class="title">Two-Ladder View</div>
-      <div class="sub">13:45 Cheltenham — Play William Hill's Final One Standing Novices' Hurdle (GBB Race) <span class="badge">Confidence: 7840.9%</span></div>
+      <div class="sub">13:45 Cheltenham — Play William Hill's Final One Standing Novices' Hurdle (GBB Race) <span class="badge">Confidence: 8653.8%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 09:46</div>
+    <div class="sub">Generated 25 Oct 2025 11:18</div>
   </header>
 
   <div class="wrap">
@@ -51,7 +73,7 @@
       <button class="btn" data-filter="back-ew">Back — E/W</button>
       <button class="btn" data-filter="lay">Lay</button>
       <span class="hint" style="margin-left:8px;">
-        Places assumed: 3. Back — Win = ranks agree near top & model not colder.
+        Places assumed: 4. Back — Win = ranks agree near top & model not colder.
         Back — E/W = model ≫ market + shorter model odds, near/inside places. Lay = market ≫ model + real ≪ model.
       </span>
     </div>
@@ -59,31 +81,35 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='Pour Les Filles'><span class='rk'>1</span><span class='nm'>Pour Les Filles</span><span class='od'>3.75</span><span class='delta down'>−3</span><span class='act'></span></li>
-<li data-horse='Conman John'><span class='rk'>2</span><span class='nm'>Conman John</span><span class='od'>5.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+        <ol class="ladder" id="mkt"><li data-horse='Pour Les Filles' title='Market over-ranks (Δ−7); real 3.75 ≪ model 15.10'><span class='rk'>1</span><span class='nm'>Pour Les Filles</span><span class='od'>3.75</span><span class='delta down'>−7</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Conman John' title='Market over-ranks (Δ−4); real 4.50 ≪ model 9.65'><span class='rk'>2</span><span class='nm'>Conman John</span><span class='od'>4.50</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
 <li data-horse='Minella Supreme'><span class='rk'>3</span><span class='nm'>Minella Supreme</span><span class='od'>7.50</span><span class='delta up'>+2</span><span class='act'></span></li>
-<li data-horse='Inishcorker'><span class='rk'>4</span><span class='nm'>Inishcorker</span><span class='od'>10.00</span><span class='delta down'>−3</span><span class='act'></span></li>
-<li data-horse='Catchintsavo'><span class='rk'>5</span><span class='nm'>Catchintsavo</span><span class='od'>11.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Kasino Des Mottes' title='Market over-ranks (Δ−4); real 13.00 ≪ model 71.80'><span class='rk'>6</span><span class='nm'>Kasino Des Mottes</span><span class='od'>13.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='Easy Love'><span class='rk'>7</span><span class='nm'>Easy Love</span><span class='od'>15.00</span><span class='delta down'>−2</span><span class='act'></span></li>
-<li data-horse='Sporting Glance' title='Model ranks much higher (Δ+5); model odds shorter (7.58 < 15.00); 3 places'><span class='rk'>8</span><span class='nm'>Sporting Glance</span><span class='od'>15.00</span><span class='delta up'>+5</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
-<li data-horse='Soldiers World'><span class='rk'>9</span><span class='nm'>Soldiers World</span><span class='od'>17.00</span><span class='delta up'>+4</span><span class='act'></span></li>
-<li data-horse='Great Fleet'><span class='rk'>10</span><span class='nm'>Great Fleet</span><span class='od'>23.00</span><span class='delta up'>+2</span><span class='act'></span></li>
-<li data-horse='Island Bridge'><span class='rk'>11</span><span class='nm'>Island Bridge</span><span class='od'>34.00</span><span class='delta eq'>-</span><span class='act'></span></li></ol>
+<li data-horse='Miss Goldfire'><span class='rk'>4</span><span class='nm'>Miss Goldfire</span><span class='od'>11.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Inishcorker' title='Market over-ranks (Δ−4); real 11.00 ≪ model 28.60'><span class='rk'>5</span><span class='nm'>Inishcorker</span><span class='od'>11.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Catchintsavo' title='Market over-ranks (Δ−4); real 12.00 ≪ model 46.77'><span class='rk'>6</span><span class='nm'>Catchintsavo</span><span class='od'>12.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Easy Love' title='Model ranks much higher (Δ+4); model odds shorter (8.44 < 13.00); 4 places'><span class='rk'>7</span><span class='nm'>Easy Love</span><span class='od'>13.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Kasino Des Mottes' title='Market over-ranks (Δ−4); real 13.00 ≪ model 109.22'><span class='rk'>8</span><span class='nm'>Kasino Des Mottes</span><span class='od'>13.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Soldiers World' title='Model ranks much higher (Δ+4); model odds shorter (9.30 < 15.00); 4 places'><span class='rk'>9</span><span class='nm'>Soldiers World</span><span class='od'>15.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Sporting Glance'><span class='rk'>10</span><span class='nm'>Sporting Glance</span><span class='od'>17.00</span><span class='delta up'>+3</span><span class='act'></span></li>
+<li data-horse='Great Fleet'><span class='rk'>11</span><span class='nm'>Great Fleet</span><span class='od'>23.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Island Bridge'><span class='rk'>12</span><span class='nm'>Island Bridge</span><span class='od'>34.00</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Sotchi' title='Model ranks much higher (Δ+9); model odds shorter (8.82 < 81.00); 4 places'><span class='rk'>13</span><span class='nm'>Sotchi</span><span class='od'>81.00</span><span class='delta up'>+9</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Minella Supreme'><span class='rk'>1</span><span class='nm'>Minella Supreme</span><span class='od'>3.56</span><span></span><span class='act'></span></li>
-<li data-horse='Conman John'><span class='rk'>2</span><span class='nm'>Conman John</span><span class='od'>5.87</span><span></span><span class='act'></span></li>
-<li data-horse='Sporting Glance'><span class='rk'>3</span><span class='nm'>Sporting Glance</span><span class='od'>7.58</span><span></span><span class='act'></span></li>
-<li data-horse='Pour Les Filles'><span class='rk'>4</span><span class='nm'>Pour Les Filles</span><span class='od'>9.37</span><span></span><span class='act'></span></li>
-<li data-horse='Soldiers World'><span class='rk'>5</span><span class='nm'>Soldiers World</span><span class='od'>9.84</span><span></span><span class='act'></span></li>
-<li data-horse='Catchintsavo'><span class='rk'>6</span><span class='nm'>Catchintsavo</span><span class='od'>12.89</span><span></span><span class='act'></span></li>
-<li data-horse='Inishcorker'><span class='rk'>7</span><span class='nm'>Inishcorker</span><span class='od'>17.96</span><span></span><span class='act'></span></li>
-<li data-horse='Great Fleet'><span class='rk'>8</span><span class='nm'>Great Fleet</span><span class='od'>33.65</span><span></span><span class='act'></span></li>
-<li data-horse='Easy Love'><span class='rk'>9</span><span class='nm'>Easy Love</span><span class='od'>56.05</span><span></span><span class='act'></span></li>
-<li data-horse='Kasino Des Mottes'><span class='rk'>10</span><span class='nm'>Kasino Des Mottes</span><span class='od'>71.80</span><span></span><span class='act'></span></li>
-<li data-horse='Island Bridge'><span class='rk'>11</span><span class='nm'>Island Bridge</span><span class='od'>71.82</span><span></span><span class='act'></span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='Minella Supreme'><span class='rk'>1</span><span class='nm'>Minella Supreme</span><span class='od'>5.98</span><span></span><span class='act'></span></li>
+<li data-horse='Miss Goldfire'><span class='rk'>2</span><span class='nm'>Miss Goldfire</span><span class='od'>6.73</span><span></span><span class='act'></span></li>
+<li data-horse='Easy Love'><span class='rk'>3</span><span class='nm'>Easy Love</span><span class='od'>8.44</span><span></span><span class='act'></span></li>
+<li data-horse='Sotchi'><span class='rk'>4</span><span class='nm'>Sotchi</span><span class='od'>8.82</span><span></span><span class='act'></span></li>
+<li data-horse='Soldiers World'><span class='rk'>5</span><span class='nm'>Soldiers World</span><span class='od'>9.30</span><span></span><span class='act'></span></li>
+<li data-horse='Conman John'><span class='rk'>6</span><span class='nm'>Conman John</span><span class='od'>9.65</span><span></span><span class='act'></span></li>
+<li data-horse='Sporting Glance'><span class='rk'>7</span><span class='nm'>Sporting Glance</span><span class='od'>12.31</span><span></span><span class='act'></span></li>
+<li data-horse='Pour Les Filles'><span class='rk'>8</span><span class='nm'>Pour Les Filles</span><span class='od'>15.10</span><span></span><span class='act'></span></li>
+<li data-horse='Inishcorker'><span class='rk'>9</span><span class='nm'>Inishcorker</span><span class='od'>28.60</span><span></span><span class='act'></span></li>
+<li data-horse='Catchintsavo'><span class='rk'>10</span><span class='nm'>Catchintsavo</span><span class='od'>46.77</span><span></span><span class='act'></span></li>
+<li data-horse='Great Fleet'><span class='rk'>11</span><span class='nm'>Great Fleet</span><span class='od'>52.47</span><span></span><span class='act'></span></li>
+<li data-horse='Kasino Des Mottes'><span class='rk'>12</span><span class='nm'>Kasino Des Mottes</span><span class='od'>109.22</span><span></span><span class='act'></span></li>
+<li data-horse='Island Bridge'><span class='rk'>13</span><span class='nm'>Island Bridge</span><span class='od'>109.25</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
