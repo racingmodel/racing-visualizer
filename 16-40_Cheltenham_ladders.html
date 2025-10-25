@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,6 +37,24 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -41,7 +63,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">16:40 Cheltenham — Oddschecker Open NH Flat Race (GBB Race) <span class="badge">Confidence: 5340.9%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 09:50</div>
+    <div class="sub">Generated 25 Oct 2025 11:22</div>
   </header>
 
   <div class="wrap">
@@ -61,7 +83,7 @@
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
         <ol class="ladder" id="mkt"><li data-horse='Chicker' title='Ranks agree near top (Mkt 1, Model 1); model odds 2.59 ≤ real 3.00'><span class='rk'>1</span><span class='nm'>Chicker</span><span class='od'>3.00</span><span class='delta eq'>-</span><span class='act'><span class='tag back-win'>Back — Win</span></span></li>
 <li data-horse='Le Beau Madrik'><span class='rk'>2</span><span class='nm'>Le Beau Madrik</span><span class='od'>4.50</span><span class='delta down'>−2</span><span class='act'></span></li>
-<li data-horse='Collanisi' title='Market over-ranks (Δ−5); real 6.50 ≪ model 32.08'><span class='rk'>3</span><span class='nm'>Collanisi</span><span class='od'>6.50</span><span class='delta down'>−5</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Collanisi' title='Market over-ranks (Δ−5); real 6.00 ≪ model 32.08'><span class='rk'>3</span><span class='nm'>Collanisi</span><span class='od'>6.00</span><span class='delta down'>−5</span><span class='act'><span class='tag lay'>Lay</span></span></li>
 <li data-horse='Not Without Danger'><span class='rk'>4</span><span class='nm'>Not Without Danger</span><span class='od'>8.50</span><span class='delta up'>+2</span><span class='act'></span></li>
 <li data-horse='Crossgales King'><span class='rk'>5</span><span class='nm'>Crossgales King</span><span class='od'>8.50</span><span class='delta eq'>-</span><span class='act'></span></li>
 <li data-horse='Bells Grove'><span class='rk'>6</span><span class='nm'>Bells Grove</span><span class='od'>9.00</span><span class='delta up'>+3</span><span class='act'></span></li>
@@ -79,7 +101,7 @@
 <li data-horse='Le Beau Madrik'><span class='rk'>4</span><span class='nm'>Le Beau Madrik</span><span class='od'>8.35</span><span></span><span class='act'></span></li>
 <li data-horse='Crossgales King'><span class='rk'>5</span><span class='nm'>Crossgales King</span><span class='od'>16.45</span><span></span><span class='act'></span></li>
 <li data-horse='Wonder Flying'><span class='rk'>6</span><span class='nm'>Wonder Flying</span><span class='od'>26.72</span><span></span><span class='act'></span></li>
-<li data-horse='Le Fabuleux Buck's'><span class='rk'>7</span><span class='nm'>Le Fabuleux Buck's</span><span class='od'>30.55</span><span></span><span class='act'></span></li>
+<li data-horse='Le Fabuleux Buck's'><span class='rk'>7</span><span class='nm'>Le Fabuleux Buck's</span><span class='od'>30.56</span><span></span><span class='act'></span></li>
 <li data-horse='Collanisi'><span class='rk'>8</span><span class='nm'>Collanisi</span><span class='od'>32.08</span><span></span><span class='act'></span></li>
 <li data-horse='Hans Lippershey'><span class='rk'>9</span><span class='nm'>Hans Lippershey</span><span class='od'>35.63</span><span></span><span class='act'></span></li>
 <li data-horse='Escort'kheops'><span class='rk'>10</span><span class='nm'>Escort'kheops</span><span class='od'>70.47</span><span></span><span class='act'></span></li>
