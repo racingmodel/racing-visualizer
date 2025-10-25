@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,15 +37,33 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
   <header>
     <div>
       <div class="title">Two-Ladder View</div>
-      <div class="sub">16:55 Wolverhampton — Always Gamble Responsibly At BetMGM EBF Restricted Maiden Fillies' Stakes (GBB Race) <span class="badge">Confidence: 6153.8%</span></div>
+      <div class="sub">16:55 Wolverhampton — Always Gamble Responsibly At BetMGM EBF Restricted Maiden Fillies' Stakes (GBB Race) <span class="badge">Confidence: 5961.5%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 10:09</div>
+    <div class="sub">Generated 25 Oct 2025 11:33</div>
   </header>
 
   <div class="wrap">
@@ -59,23 +81,35 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"></ol>
+        <ol class="ladder" id="mkt"><li data-horse='Eastern Veil'><span class='rk'>1</span><span class='nm'>Eastern Veil</span><span class='od'>2.25</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Miss India' title='Market over-ranks (Δ−4); real 4.33 ≪ model 25.37'><span class='rk'>2</span><span class='nm'>Miss India</span><span class='od'>4.33</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Make Her Believe'><span class='rk'>3</span><span class='nm'>Make Her Believe</span><span class='od'>6.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Ar Diddy Dum Dum'><span class='rk'>4</span><span class='nm'>Ar Diddy Dum Dum</span><span class='od'>7.00</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='Emma's Letter'><span class='rk'>5</span><span class='nm'>Emma's Letter</span><span class='od'>8.00</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='Besondere' title='Market over-ranks (Δ−5); real 21.00 ≪ model 49.41'><span class='rk'>6</span><span class='nm'>Besondere</span><span class='od'>21.00</span><span class='delta down'>−5</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Exquisite Skye'><span class='rk'>7</span><span class='nm'>Exquisite Skye</span><span class='od'>26.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Fille Imbassee'><span class='rk'>8</span><span class='nm'>Fille Imbassee</span><span class='od'>34.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Shabti'><span class='rk'>9</span><span class='nm'>Shabti</span><span class='od'>41.00</span><span class='delta up'>+2</span><span class='act'></span></li>
+<li data-horse='Aunt Em'><span class='rk'>10</span><span class='nm'>Aunt Em</span><span class='od'>41.00</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='Cougar Force'><span class='rk'>11</span><span class='nm'>Cougar Force</span><span class='od'>51.00</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Moon Is Up'><span class='rk'>12</span><span class='nm'>Moon Is Up</span><span class='od'>51.00</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Time To Sparkle'><span class='rk'>13</span><span class='nm'>Time To Sparkle</span><span class='od'>67.00</span><span class='delta up'>+3</span><span class='act'></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Make Her Believe'><span class='rk'>1</span><span class='nm'>Make Her Believe</span><span class='od'>5.38</span><span></span><span class='act'></span></li>
-<li data-horse='Shabti'><span class='rk'>2</span><span class='nm'>Shabti</span><span class='od'>6.49</span><span></span><span class='act'></span></li>
-<li data-horse='Eastern Veil'><span class='rk'>3</span><span class='nm'>Eastern Veil</span><span class='od'>6.82</span><span></span><span class='act'></span></li>
-<li data-horse='Ar Diddy Dum Dum'><span class='rk'>4</span><span class='nm'>Ar Diddy Dum Dum</span><span class='od'>6.90</span><span></span><span class='act'></span></li>
-<li data-horse='Emma's Letter'><span class='rk'>5</span><span class='nm'>Emma's Letter</span><span class='od'>7.11</span><span></span><span class='act'></span></li>
-<li data-horse='Exquisite Skye'><span class='rk'>6</span><span class='nm'>Exquisite Skye</span><span class='od'>12.24</span><span></span><span class='act'></span></li>
-<li data-horse='Miss India'><span class='rk'>7</span><span class='nm'>Miss India</span><span class='od'>34.94</span><span></span><span class='act'></span></li>
-<li data-horse='Fille Imbassee'><span class='rk'>8</span><span class='nm'>Fille Imbassee</span><span class='od'>37.64</span><span></span><span class='act'></span></li>
-<li data-horse='Aunt Em'><span class='rk'>9</span><span class='nm'>Aunt Em</span><span class='od'>43.67</span><span></span><span class='act'></span></li>
-<li data-horse='Time To Sparkle'><span class='rk'>10</span><span class='nm'>Time To Sparkle</span><span class='od'>46.90</span><span></span><span class='act'></span></li>
-<li data-horse='Besondere'><span class='rk'>11</span><span class='nm'>Besondere</span><span class='od'>50.43</span><span></span><span class='act'></span></li>
-<li data-horse='Cougar Force'><span class='rk'>12</span><span class='nm'>Cougar Force</span><span class='od'>75.09</span><span></span><span class='act'></span></li>
-<li data-horse='Moon Is Up'><span class='rk'>13</span><span class='nm'>Moon Is Up</span><span class='od'>75.30</span><span></span><span class='act'></span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='Make Her Believe'><span class='rk'>1</span><span class='nm'>Make Her Believe</span><span class='od'>4.74</span><span></span><span class='act'></span></li>
+<li data-horse='Eastern Veil'><span class='rk'>2</span><span class='nm'>Eastern Veil</span><span class='od'>5.82</span><span></span><span class='act'></span></li>
+<li data-horse='Ar Diddy Dum Dum'><span class='rk'>3</span><span class='nm'>Ar Diddy Dum Dum</span><span class='od'>5.92</span><span></span><span class='act'></span></li>
+<li data-horse='Emma's Letter'><span class='rk'>4</span><span class='nm'>Emma's Letter</span><span class='od'>6.09</span><span></span><span class='act'></span></li>
+<li data-horse='Exquisite Skye'><span class='rk'>5</span><span class='nm'>Exquisite Skye</span><span class='od'>9.93</span><span></span><span class='act'></span></li>
+<li data-horse='Miss India'><span class='rk'>6</span><span class='nm'>Miss India</span><span class='od'>25.37</span><span></span><span class='act'></span></li>
+<li data-horse='Shabti'><span class='rk'>7</span><span class='nm'>Shabti</span><span class='od'>39.65</span><span></span><span class='act'></span></li>
+<li data-horse='Fille Imbassee'><span class='rk'>8</span><span class='nm'>Fille Imbassee</span><span class='od'>41.31</span><span></span><span class='act'></span></li>
+<li data-horse='Aunt Em'><span class='rk'>9</span><span class='nm'>Aunt Em</span><span class='od'>45.55</span><span></span><span class='act'></span></li>
+<li data-horse='Time To Sparkle'><span class='rk'>10</span><span class='nm'>Time To Sparkle</span><span class='od'>45.61</span><span></span><span class='act'></span></li>
+<li data-horse='Besondere'><span class='rk'>11</span><span class='nm'>Besondere</span><span class='od'>49.41</span><span></span><span class='act'></span></li>
+<li data-horse='Cougar Force'><span class='rk'>12</span><span class='nm'>Cougar Force</span><span class='od'>65.38</span><span></span><span class='act'></span></li>
+<li data-horse='Moon Is Up'><span class='rk'>13</span><span class='nm'>Moon Is Up</span><span class='od'>66.33</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
