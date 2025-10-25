@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,6 +37,24 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -41,7 +63,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">13:10 Cheltenham — William Hill Each Way Extra Novices' Limited Handicap Chase (GBB Race) <span class="badge">Confidence: 9910.7%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 09:46</div>
+    <div class="sub">Generated 25 Oct 2025 11:17</div>
   </header>
 
   <div class="wrap">
@@ -59,37 +81,37 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='Newton Tornado' title='Market over-ranks (Δ−6); real 4.33 ≪ model 19.25'><span class='rk'>1</span><span class='nm'>Newton Tornado</span><span class='od'>4.33</span><span class='delta down'>−6</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='Springs A Girl'><span class='rk'>2</span><span class='nm'>Springs A Girl</span><span class='od'>6.00</span><span class='delta down'>−3</span><span class='act'></span></li>
-<li data-horse='Kdeux Saint Fray'><span class='rk'>3</span><span class='nm'>Kdeux Saint Fray</span><span class='od'>7.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Darcy's Friend'><span class='rk'>4</span><span class='nm'>Darcy's Friend</span><span class='od'>8.00</span><span class='delta down'>−2</span><span class='act'></span></li>
-<li data-horse='Double Powerful'><span class='rk'>5</span><span class='nm'>Double Powerful</span><span class='od'>9.00</span><span class='delta up'>+4</span><span class='act'></span></li>
-<li data-horse='Inox Allen'><span class='rk'>6</span><span class='nm'>Inox Allen</span><span class='od'>9.00</span><span class='delta down'>−2</span><span class='act'></span></li>
-<li data-horse='Zurich'><span class='rk'>7</span><span class='nm'>Zurich</span><span class='od'>11.00</span><span class='delta up'>+3</span><span class='act'></span></li>
-<li data-horse='Crest Of Fortune' title='Model ranks much higher (Δ+6); model odds shorter (6.84 < 11.00); 4 places'><span class='rk'>8</span><span class='nm'>Crest Of Fortune</span><span class='od'>11.00</span><span class='delta up'>+6</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
-<li data-horse='Major Fortune' title='Market over-ranks (Δ−4); real 15.00 ≪ model 75.54'><span class='rk'>9</span><span class='nm'>Major Fortune</span><span class='od'>15.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='Rightsotom'><span class='rk'>10</span><span class='nm'>Rightsotom</span><span class='od'>17.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Blenkinsop'><span class='rk'>11</span><span class='nm'>Blenkinsop</span><span class='od'>19.00</span><span class='delta down'>−3</span><span class='act'></span></li>
-<li data-horse='West Away'><span class='rk'>12</span><span class='nm'>West Away</span><span class='od'>21.00</span><span class='delta up'>+3</span><span class='act'></span></li>
-<li data-horse='Scorsese'><span class='rk'>13</span><span class='nm'>Scorsese</span><span class='od'>23.00</span><span class='delta up'>+1</span><span class='act'></span></li>
+        <ol class="ladder" id="mkt"><li data-horse='Springs A Girl'><span class='rk'>1</span><span class='nm'>Springs A Girl</span><span class='od'>4.50</span><span class='delta down'>−3</span><span class='act'></span></li>
+<li data-horse='Newton Tornado' title='Market over-ranks (Δ−4); real 4.50 ≪ model 18.18'><span class='rk'>2</span><span class='nm'>Newton Tornado</span><span class='od'>4.50</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Kdeux Saint Fray'><span class='rk'>3</span><span class='nm'>Kdeux Saint Fray</span><span class='od'>5.50</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Darcy's Friend'><span class='rk'>4</span><span class='nm'>Darcy's Friend</span><span class='od'>8.50</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Inox Allen'><span class='rk'>5</span><span class='nm'>Inox Allen</span><span class='od'>10.00</span><span class='delta down'>−2</span><span class='act'></span></li>
+<li data-horse='Crest Of Fortune'><span class='rk'>6</span><span class='nm'>Crest Of Fortune</span><span class='od'>10.00</span><span class='delta up'>+4</span><span class='act'></span></li>
+<li data-horse='Double Powerful' title='Model ranks much higher (Δ+6); model odds shorter (2.98 < 11.00); 4 places'><span class='rk'>7</span><span class='nm'>Double Powerful</span><span class='od'>11.00</span><span class='delta up'>+6</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Zurich'><span class='rk'>8</span><span class='nm'>Zurich</span><span class='od'>12.00</span><span class='delta down'>−1</span><span class='act'></span></li>
+<li data-horse='Major Fortune' title='Market over-ranks (Δ−4); real 15.00 ≪ model 72.53'><span class='rk'>9</span><span class='nm'>Major Fortune</span><span class='od'>15.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Rightsotom'><span class='rk'>10</span><span class='nm'>Rightsotom</span><span class='od'>15.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Blenkinsop'><span class='rk'>11</span><span class='nm'>Blenkinsop</span><span class='od'>21.00</span><span class='delta down'>−3</span><span class='act'></span></li>
+<li data-horse='Scorsese'><span class='rk'>12</span><span class='nm'>Scorsese</span><span class='od'>23.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='West Away'><span class='rk'>13</span><span class='nm'>West Away</span><span class='od'>26.00</span><span class='delta up'>+5</span><span class='act'></span></li>
 <li data-horse='True Testimony'><span class='rk'>14</span><span class='nm'>True Testimony</span><span class='od'>29.00</span><span class='delta up'>+3</span><span class='act'></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Double Powerful'><span class='rk'>1</span><span class='nm'>Double Powerful</span><span class='od'>3.23</span><span></span><span class='act'></span></li>
-<li data-horse='Crest Of Fortune'><span class='rk'>2</span><span class='nm'>Crest Of Fortune</span><span class='od'>6.84</span><span></span><span class='act'></span></li>
-<li data-horse='Kdeux Saint Fray'><span class='rk'>3</span><span class='nm'>Kdeux Saint Fray</span><span class='od'>6.97</span><span></span><span class='act'></span></li>
-<li data-horse='Zurich'><span class='rk'>4</span><span class='nm'>Zurich</span><span class='od'>11.15</span><span></span><span class='act'></span></li>
-<li data-horse='Springs A Girl'><span class='rk'>5</span><span class='nm'>Springs A Girl</span><span class='od'>16.41</span><span></span><span class='act'></span></li>
-<li data-horse='Darcy's Friend'><span class='rk'>6</span><span class='nm'>Darcy's Friend</span><span class='od'>17.37</span><span></span><span class='act'></span></li>
-<li data-horse='Newton Tornado'><span class='rk'>7</span><span class='nm'>Newton Tornado</span><span class='od'>19.25</span><span></span><span class='act'></span></li>
-<li data-horse='Inox Allen'><span class='rk'>8</span><span class='nm'>Inox Allen</span><span class='od'>29.01</span><span></span><span class='act'></span></li>
-<li data-horse='West Away'><span class='rk'>9</span><span class='nm'>West Away</span><span class='od'>36.93</span><span></span><span class='act'></span></li>
-<li data-horse='Rightsotom'><span class='rk'>10</span><span class='nm'>Rightsotom</span><span class='od'>44.43</span><span></span><span class='act'></span></li>
-<li data-horse='True Testimony'><span class='rk'>11</span><span class='nm'>True Testimony</span><span class='od'>53.02</span><span></span><span class='act'></span></li>
-<li data-horse='Scorsese'><span class='rk'>12</span><span class='nm'>Scorsese</span><span class='od'>63.79</span><span></span><span class='act'></span></li>
-<li data-horse='Major Fortune'><span class='rk'>13</span><span class='nm'>Major Fortune</span><span class='od'>75.54</span><span></span><span class='act'></span></li>
-<li data-horse='Blenkinsop'><span class='rk'>14</span><span class='nm'>Blenkinsop</span><span class='od'>116.66</span><span></span><span class='act'></span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='Double Powerful'><span class='rk'>1</span><span class='nm'>Double Powerful</span><span class='od'>2.98</span><span></span><span class='act'></span></li>
+<li data-horse='Crest Of Fortune'><span class='rk'>2</span><span class='nm'>Crest Of Fortune</span><span class='od'>6.37</span><span></span><span class='act'></span></li>
+<li data-horse='Kdeux Saint Fray'><span class='rk'>3</span><span class='nm'>Kdeux Saint Fray</span><span class='od'>6.49</span><span></span><span class='act'></span></li>
+<li data-horse='Springs A Girl'><span class='rk'>4</span><span class='nm'>Springs A Girl</span><span class='od'>15.43</span><span></span><span class='act'></span></li>
+<li data-horse='Darcy's Friend'><span class='rk'>5</span><span class='nm'>Darcy's Friend</span><span class='od'>16.38</span><span></span><span class='act'></span></li>
+<li data-horse='Newton Tornado'><span class='rk'>6</span><span class='nm'>Newton Tornado</span><span class='od'>18.18</span><span></span><span class='act'></span></li>
+<li data-horse='Inox Allen'><span class='rk'>7</span><span class='nm'>Inox Allen</span><span class='od'>27.53</span><span></span><span class='act'></span></li>
+<li data-horse='West Away'><span class='rk'>8</span><span class='nm'>West Away</span><span class='od'>35.15</span><span></span><span class='act'></span></li>
+<li data-horse='Zurich'><span class='rk'>9</span><span class='nm'>Zurich</span><span class='od'>38.84</span><span></span><span class='act'></span></li>
+<li data-horse='Rightsotom'><span class='rk'>10</span><span class='nm'>Rightsotom</span><span class='od'>42.37</span><span></span><span class='act'></span></li>
+<li data-horse='True Testimony'><span class='rk'>11</span><span class='nm'>True Testimony</span><span class='od'>50.68</span><span></span><span class='act'></span></li>
+<li data-horse='Scorsese'><span class='rk'>12</span><span class='nm'>Scorsese</span><span class='od'>61.12</span><span></span><span class='act'></span></li>
+<li data-horse='Major Fortune'><span class='rk'>13</span><span class='nm'>Major Fortune</span><span class='od'>72.53</span><span></span><span class='act'></span></li>
+<li data-horse='Blenkinsop'><span class='rk'>14</span><span class='nm'>Blenkinsop</span><span class='od'>112.62</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
