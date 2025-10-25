@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,6 +37,24 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -41,7 +63,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">18:30 Wolverhampton — Bet 10 Get 40 With BetMGM Handicap <span class="badge">Confidence: 9895.8%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 10:18</div>
+    <div class="sub">Generated 25 Oct 2025 11:39</div>
   </header>
 
   <div class="wrap">
@@ -59,15 +81,15 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='Volto Di Medusa'><span class='rk'>1</span><span class='nm'>Volto Di Medusa</span><span class='od'>3.25</span><span class='delta down'>−1</span><span class='act'></span></li>
+        <ol class="ladder" id="mkt"><li data-horse='Volto Di Medusa'><span class='rk'>1</span><span class='nm'>Volto Di Medusa</span><span class='od'>3.50</span><span class='delta down'>−1</span><span class='act'></span></li>
 <li data-horse='Mc'ted' title='Ranks agree near top (Mkt 2, Model 1); model odds 3.36 ≤ real 4.33'><span class='rk'>2</span><span class='nm'>Mc'ted</span><span class='od'>4.33</span><span class='delta up'>+1</span><span class='act'><span class='tag back-win'>Back — Win</span></span></li>
-<li data-horse='Super Hit'><span class='rk'>3</span><span class='nm'>Super Hit</span><span class='od'>8.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Duca Di Lucca'><span class='rk'>4</span><span class='nm'>Duca Di Lucca</span><span class='od'>9.00</span><span class='delta down'>−3</span><span class='act'></span></li>
+<li data-horse='Super Hit'><span class='rk'>3</span><span class='nm'>Super Hit</span><span class='od'>7.50</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Duca Di Lucca'><span class='rk'>4</span><span class='nm'>Duca Di Lucca</span><span class='od'>7.50</span><span class='delta down'>−3</span><span class='act'></span></li>
 <li data-horse='Eden Storm'><span class='rk'>5</span><span class='nm'>Eden Storm</span><span class='od'>10.00</span><span class='delta up'>+1</span><span class='act'></span></li>
 <li data-horse='Inns Of Fear'><span class='rk'>6</span><span class='nm'>Inns Of Fear</span><span class='od'>10.00</span><span class='delta up'>+1</span><span class='act'></span></li>
-<li data-horse='Antiquity'><span class='rk'>7</span><span class='nm'>Antiquity</span><span class='od'>15.00</span><span class='delta down'>−3</span><span class='act'></span></li>
+<li data-horse='Oman' title='Market over-ranks (Δ−4); real 15.00 ≪ model 59.55'><span class='rk'>7</span><span class='nm'>Oman</span><span class='od'>15.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
 <li data-horse='Tortured Soul'><span class='rk'>8</span><span class='nm'>Tortured Soul</span><span class='od'>15.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Oman'><span class='rk'>9</span><span class='nm'>Oman</span><span class='od'>19.00</span><span class='delta down'>−2</span><span class='act'></span></li>
+<li data-horse='Antiquity'><span class='rk'>9</span><span class='nm'>Antiquity</span><span class='od'>17.00</span><span class='delta down'>−1</span><span class='act'></span></li>
 <li data-horse='Flatley'><span class='rk'>10</span><span class='nm'>Flatley</span><span class='od'>19.00</span><span class='delta up'>+2</span><span class='act'></span></li>
 <li data-horse='King Of Speed'><span class='rk'>11</span><span class='nm'>King Of Speed</span><span class='od'>21.00</span><span class='delta up'>+5</span><span class='act'></span></li>
 <li data-horse='Token Love'><span class='rk'>12</span><span class='nm'>Token Love</span><span class='od'>29.00</span><span class='delta eq'>-</span><span class='act'></span></li></ol>
@@ -80,10 +102,10 @@
 <li data-horse='Eden Storm'><span class='rk'>4</span><span class='nm'>Eden Storm</span><span class='od'>7.98</span><span></span><span class='act'></span></li>
 <li data-horse='Inns Of Fear'><span class='rk'>5</span><span class='nm'>Inns Of Fear</span><span class='od'>17.08</span><span></span><span class='act'></span></li>
 <li data-horse='King Of Speed'><span class='rk'>6</span><span class='nm'>King Of Speed</span><span class='od'>20.69</span><span></span><span class='act'></span></li>
-<li data-horse='Duca Di Lucca'><span class='rk'>7</span><span class='nm'>Duca Di Lucca</span><span class='od'>28.96</span><span></span><span class='act'></span></li>
+<li data-horse='Duca Di Lucca'><span class='rk'>7</span><span class='nm'>Duca Di Lucca</span><span class='od'>28.95</span><span></span><span class='act'></span></li>
 <li data-horse='Flatley'><span class='rk'>8</span><span class='nm'>Flatley</span><span class='od'>41.10</span><span></span><span class='act'></span></li>
 <li data-horse='Tortured Soul'><span class='rk'>9</span><span class='nm'>Tortured Soul</span><span class='od'>49.69</span><span></span><span class='act'></span></li>
-<li data-horse='Antiquity'><span class='rk'>10</span><span class='nm'>Antiquity</span><span class='od'>51.41</span><span></span><span class='act'></span></li>
+<li data-horse='Antiquity'><span class='rk'>10</span><span class='nm'>Antiquity</span><span class='od'>51.42</span><span></span><span class='act'></span></li>
 <li data-horse='Oman'><span class='rk'>11</span><span class='nm'>Oman</span><span class='od'>59.55</span><span></span><span class='act'></span></li>
 <li data-horse='Token Love'><span class='rk'>12</span><span class='nm'>Token Love</span><span class='od'>65.28</span><span></span><span class='act'></span></li></ol>
       </div>
