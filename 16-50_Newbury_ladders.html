@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,6 +37,24 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -41,7 +63,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">16:50 Newbury — Tony Penny 50th Birthday Handicap (GBBPlus Race) <span class="badge">Confidence: 10000.0%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 09:55</div>
+    <div class="sub">Generated 25 Oct 2025 11:27</div>
   </header>
 
   <div class="wrap">
@@ -59,35 +81,35 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='Atherstone Warrior' title='Market over-ranks (Δ−6); real 4.50 ≪ model 18.35'><span class='rk'>1</span><span class='nm'>Atherstone Warrior</span><span class='od'>4.50</span><span class='delta down'>−6</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='Mustazeed' title='Market over-ranks (Δ−4); real 5.00 ≪ model 11.37'><span class='rk'>2</span><span class='nm'>Mustazeed</span><span class='od'>5.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='King Al'><span class='rk'>3</span><span class='nm'>King Al</span><span class='od'>5.50</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Explode'><span class='rk'>4</span><span class='nm'>Explode</span><span class='od'>7.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Arcturus Flame'><span class='rk'>5</span><span class='nm'>Arcturus Flame</span><span class='od'>10.00</span><span class='delta up'>+1</span><span class='act'></span></li>
-<li data-horse='Alcaraz' title='Model ranks much higher (Δ+4); model odds shorter (6.28 < 11.00); 4 places'><span class='rk'>6</span><span class='nm'>Alcaraz</span><span class='od'>11.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
-<li data-horse='Jannas Journey' title='Model ranks much higher (Δ+6); model odds shorter (5.95 < 13.00); 4 places'><span class='rk'>7</span><span class='nm'>Jannas Journey</span><span class='od'>13.00</span><span class='delta up'>+6</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
-<li data-horse='Northwest Passage'><span class='rk'>8</span><span class='nm'>Northwest Passage</span><span class='od'>13.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Something Splendid'><span class='rk'>9</span><span class='nm'>Something Splendid</span><span class='od'>15.00</span><span class='delta down'>−2</span><span class='act'></span></li>
-<li data-horse='Sweet Reward'><span class='rk'>10</span><span class='nm'>Sweet Reward</span><span class='od'>15.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Tiger'><span class='rk'>11</span><span class='nm'>Tiger</span><span class='od'>17.00</span><span class='delta up'>+3</span><span class='act'></span></li>
-<li data-horse='Miletus'><span class='rk'>12</span><span class='nm'>Miletus</span><span class='od'>19.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Under The Sun'><span class='rk'>13</span><span class='nm'>Under The Sun</span><span class='od'>67.00</span><span class='delta eq'>-</span><span class='act'></span></li></ol>
+        <ol class="ladder" id="mkt"><li data-horse='Atherstone Warrior' title='Market over-ranks (Δ−9); real 5.00 ≪ model 25.57'><span class='rk'>1</span><span class='nm'>Atherstone Warrior</span><span class='od'>5.00</span><span class='delta down'>−9</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Mustazeed' title='Market over-ranks (Δ−7); real 5.00 ≪ model 16.35'><span class='rk'>2</span><span class='nm'>Mustazeed</span><span class='od'>5.00</span><span class='delta down'>−7</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='King Al'><span class='rk'>3</span><span class='nm'>King Al</span><span class='od'>5.50</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='Explode' title='Market over-ranks (Δ−4); real 6.00 ≪ model 11.69'><span class='rk'>4</span><span class='nm'>Explode</span><span class='od'>6.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Alcaraz'><span class='rk'>5</span><span class='nm'>Alcaraz</span><span class='od'>8.50</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Arcturus Flame' title='Model ranks much higher (Δ+3); model odds shorter (8.59 < 12.00); 4 places'><span class='rk'>6</span><span class='nm'>Arcturus Flame</span><span class='od'>12.00</span><span class='delta up'>+3</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Northwest Passage'><span class='rk'>7</span><span class='nm'>Northwest Passage</span><span class='od'>13.00</span><span class='delta up'>+1</span><span class='act'></span></li>
+<li data-horse='Tiger' title='Model ranks much higher (Δ+7); model odds shorter (7.82 < 13.00); 4 places'><span class='rk'>8</span><span class='nm'>Tiger</span><span class='od'>13.00</span><span class='delta up'>+7</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Sweet Reward'><span class='rk'>9</span><span class='nm'>Sweet Reward</span><span class='od'>15.00</span><span class='delta down'>−2</span><span class='act'></span></li>
+<li data-horse='Jannas Journey' title='Model ranks much higher (Δ+6); model odds shorter (8.94 < 17.00); 4 places'><span class='rk'>10</span><span class='nm'>Jannas Journey</span><span class='od'>17.00</span><span class='delta up'>+6</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Something Splendid'><span class='rk'>11</span><span class='nm'>Something Splendid</span><span class='od'>21.00</span><span class='delta up'>+4</span><span class='act'></span></li>
+<li data-horse='Miletus'><span class='rk'>12</span><span class='nm'>Miletus</span><span class='od'>23.00</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Under The Sun'><span class='rk'>13</span><span class='nm'>Under The Sun</span><span class='od'>101.00</span><span class='delta eq'>-</span><span class='act'></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Jannas Journey'><span class='rk'>1</span><span class='nm'>Jannas Journey</span><span class='od'>5.95</span><span></span><span class='act'></span></li>
-<li data-horse='Alcaraz'><span class='rk'>2</span><span class='nm'>Alcaraz</span><span class='od'>6.28</span><span></span><span class='act'></span></li>
-<li data-horse='King Al'><span class='rk'>3</span><span class='nm'>King Al</span><span class='od'>7.62</span><span></span><span class='act'></span></li>
-<li data-horse='Arcturus Flame'><span class='rk'>4</span><span class='nm'>Arcturus Flame</span><span class='od'>7.75</span><span></span><span class='act'></span></li>
-<li data-horse='Explode'><span class='rk'>5</span><span class='nm'>Explode</span><span class='od'>7.94</span><span></span><span class='act'></span></li>
-<li data-horse='Mustazeed'><span class='rk'>6</span><span class='nm'>Mustazeed</span><span class='od'>11.37</span><span></span><span class='act'></span></li>
-<li data-horse='Atherstone Warrior'><span class='rk'>7</span><span class='nm'>Atherstone Warrior</span><span class='od'>18.35</span><span></span><span class='act'></span></li>
-<li data-horse='Tiger'><span class='rk'>8</span><span class='nm'>Tiger</span><span class='od'>28.32</span><span></span><span class='act'></span></li>
-<li data-horse='Northwest Passage'><span class='rk'>9</span><span class='nm'>Northwest Passage</span><span class='od'>32.91</span><span></span><span class='act'></span></li>
-<li data-horse='Sweet Reward'><span class='rk'>10</span><span class='nm'>Sweet Reward</span><span class='od'>36.11</span><span></span><span class='act'></span></li>
-<li data-horse='Something Splendid'><span class='rk'>11</span><span class='nm'>Something Splendid</span><span class='od'>36.19</span><span></span><span class='act'></span></li>
-<li data-horse='Miletus'><span class='rk'>12</span><span class='nm'>Miletus</span><span class='od'>57.22</span><span></span><span class='act'></span></li>
-<li data-horse='Under The Sun'><span class='rk'>13</span><span class='nm'>Under The Sun</span><span class='od'>188.09</span><span></span><span class='act'></span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='Tiger'><span class='rk'>1</span><span class='nm'>Tiger</span><span class='od'>7.82</span><span></span><span class='act'></span></li>
+<li data-horse='King Al'><span class='rk'>2</span><span class='nm'>King Al</span><span class='od'>8.45</span><span></span><span class='act'></span></li>
+<li data-horse='Arcturus Flame'><span class='rk'>3</span><span class='nm'>Arcturus Flame</span><span class='od'>8.59</span><span></span><span class='act'></span></li>
+<li data-horse='Jannas Journey'><span class='rk'>4</span><span class='nm'>Jannas Journey</span><span class='od'>8.94</span><span></span><span class='act'></span></li>
+<li data-horse='Alcaraz'><span class='rk'>5</span><span class='nm'>Alcaraz</span><span class='od'>9.39</span><span></span><span class='act'></span></li>
+<li data-horse='Northwest Passage'><span class='rk'>6</span><span class='nm'>Northwest Passage</span><span class='od'>9.63</span><span></span><span class='act'></span></li>
+<li data-horse='Something Splendid'><span class='rk'>7</span><span class='nm'>Something Splendid</span><span class='od'>11.05</span><span></span><span class='act'></span></li>
+<li data-horse='Explode'><span class='rk'>8</span><span class='nm'>Explode</span><span class='od'>11.69</span><span></span><span class='act'></span></li>
+<li data-horse='Mustazeed'><span class='rk'>9</span><span class='nm'>Mustazeed</span><span class='od'>16.35</span><span></span><span class='act'></span></li>
+<li data-horse='Atherstone Warrior'><span class='rk'>10</span><span class='nm'>Atherstone Warrior</span><span class='od'>25.57</span><span></span><span class='act'></span></li>
+<li data-horse='Sweet Reward'><span class='rk'>11</span><span class='nm'>Sweet Reward</span><span class='od'>48.08</span><span></span><span class='act'></span></li>
+<li data-horse='Miletus'><span class='rk'>12</span><span class='nm'>Miletus</span><span class='od'>73.89</span><span></span><span class='act'></span></li>
+<li data-horse='Under The Sun'><span class='rk'>13</span><span class='nm'>Under The Sun</span><span class='od'>224.33</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
