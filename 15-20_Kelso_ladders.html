@@ -17,8 +17,12 @@
   .head { font-weight:700; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
   .hint { color:var(--muted); font-size:12px; }
   ol.ladder { margin:0; padding:0; list-style:none; }
-  /* Fixed 5 columns: Rank | Name | Odds | Delta | Action */
-  ol.ladder li { display:grid; grid-template-columns:40px 1fr 92px 64px 140px; gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223; }
+  /* Desktop / tablet default: Rank | Name | Odds | Delta | Action */
+  ol.ladder li {
+    display:grid;
+    grid-template-columns:40px minmax(140px,1fr) 92px 64px minmax(120px, 160px);
+    gap:10px; align-items:center; padding:10px; border-bottom:1px dashed #223;
+  }
   .rk { font-weight:700; width:36px; text-align:center; background:#0e1625; border:1px solid #1d2a3f; border-radius:8px; padding:6px 0; }
   .nm { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .od { font-variant-numeric: tabular-nums; text-align:right; }
@@ -33,6 +37,24 @@
   .act { display:flex; justify-content:flex-start; gap:6px; }
   li.dim { opacity:.35; }
   li.hl  { outline:1px dashed #3b82f6; background:rgba(59,130,246,.08); }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .wrap { padding: 14px; }
+    .head { flex-wrap: wrap; gap:6px; }
+    ol.ladder li {
+      grid-template-columns: 36px minmax(120px,1fr) 72px 50px minmax(92px, 130px);
+      gap:8px; padding:8px;
+    }
+    .nm { white-space: normal; line-height: 1.25; }
+    .od { font-size: 12px; }
+    .rk { width:32px; padding:5px 0; }
+    .delta { min-width: 44px; padding: 3px 6px; }
+    .tag { font-size: 10px; padding: 2px 6px; }
+    .act { gap:4px; }
+    .card { overflow-x: auto; }
+  }
+
   @media (max-width:900px) { .grid { grid-template-columns:1fr; } }
 </style></head>
 <body>
@@ -41,7 +63,7 @@
       <div class="title">Two-Ladder View</div>
       <div class="sub">15:20 Kelso — Midburn Construction Ltd Handicap Hurdle <span class="badge">Confidence: 9772.7%</span></div>
     </div>
-    <div class="sub">Generated 25 Oct 2025 10:00</div>
+    <div class="sub">Generated 25 Oct 2025 11:30</div>
   </header>
 
   <div class="wrap">
@@ -59,31 +81,31 @@
     <div class="grid">
       <div class="card">
         <div class="head"><span>Bookmaker Order</span><span class="hint">Favourite at top — Real Odds</span></div>
-        <ol class="ladder" id="mkt"><li data-horse='Heart Above'><span class='rk'>1</span><span class='nm'>Heart Above</span><span class='od'>2.50</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Inca Prince' title='Market over-ranks (Δ−5); real 6.00 ≪ model 23.36'><span class='rk'>2</span><span class='nm'>Inca Prince</span><span class='od'>6.00</span><span class='delta down'>−5</span><span class='act'><span class='tag lay'>Lay</span></span></li>
-<li data-horse='Magnolia'><span class='rk'>3</span><span class='nm'>Magnolia</span><span class='od'>7.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Well Educated'><span class='rk'>4</span><span class='nm'>Well Educated</span><span class='od'>8.00</span><span class='delta up'>+1</span><span class='act'></span></li>
-<li data-horse='Two Auld Pals'><span class='rk'>5</span><span class='nm'>Two Auld Pals</span><span class='od'>10.00</span><span class='delta down'>−3</span><span class='act'></span></li>
-<li data-horse='Star Of Guiting' title='Model ranks much higher (Δ+4); model odds shorter (3.88 < 11.00); 3 places'><span class='rk'>6</span><span class='nm'>Star Of Guiting</span><span class='od'>11.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
-<li data-horse='Hourless'><span class='rk'>7</span><span class='nm'>Hourless</span><span class='od'>11.00</span><span class='delta up'>+1</span><span class='act'></span></li>
-<li data-horse='Bathgate'><span class='rk'>8</span><span class='nm'>Bathgate</span><span class='od'>15.00</span><span class='delta up'>+3</span><span class='act'></span></li>
-<li data-horse='Rossbridge'><span class='rk'>9</span><span class='nm'>Rossbridge</span><span class='od'>15.00</span><span class='delta eq'>-</span><span class='act'></span></li>
-<li data-horse='Benson'><span class='rk'>10</span><span class='nm'>Benson</span><span class='od'>19.00</span><span class='delta down'>−1</span><span class='act'></span></li>
-<li data-horse='Darkest Day'><span class='rk'>11</span><span class='nm'>Darkest Day</span><span class='od'>41.00</span><span class='delta up'>+1</span><span class='act'></span></li></ol>
+        <ol class="ladder" id="mkt"><li data-horse='Heart Above'><span class='rk'>1</span><span class='nm'>Heart Above</span><span class='od'>2.62</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Inca Prince' title='Market over-ranks (Δ−6); real 6.50 ≪ model 26.81'><span class='rk'>2</span><span class='nm'>Inca Prince</span><span class='od'>6.50</span><span class='delta down'>−6</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Magnolia'><span class='rk'>3</span><span class='nm'>Magnolia</span><span class='od'>7.50</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Well Educated'><span class='rk'>4</span><span class='nm'>Well Educated</span><span class='od'>8.50</span><span class='delta eq'>-</span><span class='act'></span></li>
+<li data-horse='Two Auld Pals' title='Market over-ranks (Δ−4); real 10.00 ≪ model 32.52'><span class='rk'>5</span><span class='nm'>Two Auld Pals</span><span class='od'>10.00</span><span class='delta down'>−4</span><span class='act'><span class='tag lay'>Lay</span></span></li>
+<li data-horse='Hourless' title='Model ranks much higher (Δ+4); model odds shorter (6.10 < 11.00); 3 places'><span class='rk'>6</span><span class='nm'>Hourless</span><span class='od'>11.00</span><span class='delta up'>+4</span><span class='act'><span class='tag back-ew'>Back — E/W</span></span></li>
+<li data-horse='Rossbridge'><span class='rk'>7</span><span class='nm'>Rossbridge</span><span class='od'>12.00</span><span class='delta down'>−3</span><span class='act'></span></li>
+<li data-horse='Star Of Guiting'><span class='rk'>8</span><span class='nm'>Star Of Guiting</span><span class='od'>12.00</span><span class='delta up'>+3</span><span class='act'></span></li>
+<li data-horse='Benson'><span class='rk'>9</span><span class='nm'>Benson</span><span class='od'>13.00</span><span class='delta down'>−2</span><span class='act'></span></li>
+<li data-horse='Bathgate'><span class='rk'>10</span><span class='nm'>Bathgate</span><span class='od'>15.00</span><span class='delta up'>+3</span><span class='act'></span></li>
+<li data-horse='Darkest Day'><span class='rk'>11</span><span class='nm'>Darkest Day</span><span class='od'>41.00</span><span class='delta up'>+5</span><span class='act'></span></li></ol>
       </div>
       <div class="card">
         <div class="head"><span>Raw Model Order</span><span class="hint">Shortest raw odds at top</span></div>
-        <ol class="ladder" id="raw"><li data-horse='Heart Above'><span class='rk'>1</span><span class='nm'>Heart Above</span><span class='od'>3.65</span><span></span><span class='act'></span></li>
-<li data-horse='Star Of Guiting'><span class='rk'>2</span><span class='nm'>Star Of Guiting</span><span class='od'>3.88</span><span></span><span class='act'></span></li>
-<li data-horse='Well Educated'><span class='rk'>3</span><span class='nm'>Well Educated</span><span class='od'>8.37</span><span></span><span class='act'></span></li>
-<li data-horse='Magnolia'><span class='rk'>4</span><span class='nm'>Magnolia</span><span class='od'>8.61</span><span></span><span class='act'></span></li>
-<li data-horse='Bathgate'><span class='rk'>5</span><span class='nm'>Bathgate</span><span class='od'>18.77</span><span></span><span class='act'></span></li>
-<li data-horse='Hourless'><span class='rk'>6</span><span class='nm'>Hourless</span><span class='od'>19.43</span><span></span><span class='act'></span></li>
-<li data-horse='Inca Prince'><span class='rk'>7</span><span class='nm'>Inca Prince</span><span class='od'>23.36</span><span></span><span class='act'></span></li>
-<li data-horse='Two Auld Pals'><span class='rk'>8</span><span class='nm'>Two Auld Pals</span><span class='od'>27.56</span><span></span><span class='act'></span></li>
-<li data-horse='Rossbridge'><span class='rk'>9</span><span class='nm'>Rossbridge</span><span class='od'>49.52</span><span></span><span class='act'></span></li>
-<li data-horse='Darkest Day'><span class='rk'>10</span><span class='nm'>Darkest Day</span><span class='od'>64.45</span><span></span><span class='act'></span></li>
-<li data-horse='Benson'><span class='rk'>11</span><span class='nm'>Benson</span><span class='od'>75.69</span><span></span><span class='act'></span></li></ol>
+        <ol class="ladder" id="raw"><li data-horse='Heart Above'><span class='rk'>1</span><span class='nm'>Heart Above</span><span class='od'>2.96</span><span></span><span class='act'></span></li>
+<li data-horse='Hourless'><span class='rk'>2</span><span class='nm'>Hourless</span><span class='od'>6.10</span><span></span><span class='act'></span></li>
+<li data-horse='Magnolia'><span class='rk'>3</span><span class='nm'>Magnolia</span><span class='od'>8.20</span><span></span><span class='act'></span></li>
+<li data-horse='Well Educated'><span class='rk'>4</span><span class='nm'>Well Educated</span><span class='od'>8.99</span><span></span><span class='act'></span></li>
+<li data-horse='Star Of Guiting'><span class='rk'>5</span><span class='nm'>Star Of Guiting</span><span class='od'>13.85</span><span></span><span class='act'></span></li>
+<li data-horse='Darkest Day'><span class='rk'>6</span><span class='nm'>Darkest Day</span><span class='od'>19.25</span><span></span><span class='act'></span></li>
+<li data-horse='Bathgate'><span class='rk'>7</span><span class='nm'>Bathgate</span><span class='od'>20.68</span><span></span><span class='act'></span></li>
+<li data-horse='Inca Prince'><span class='rk'>8</span><span class='nm'>Inca Prince</span><span class='od'>26.81</span><span></span><span class='act'></span></li>
+<li data-horse='Two Auld Pals'><span class='rk'>9</span><span class='nm'>Two Auld Pals</span><span class='od'>32.52</span><span></span><span class='act'></span></li>
+<li data-horse='Rossbridge'><span class='rk'>10</span><span class='nm'>Rossbridge</span><span class='od'>65.39</span><span></span><span class='act'></span></li>
+<li data-horse='Benson'><span class='rk'>11</span><span class='nm'>Benson</span><span class='od'>108.18</span><span></span><span class='act'></span></li></ol>
       </div>
     </div>
   </div>
