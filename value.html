@@ -33,10 +33,10 @@
     tr.blue-row       { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
     tr.toprated-row   { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
 
-    /* NEW: rank overlay highlight */
+    /* rank overlay highlight */
     tr.overlay-row    { background: #0b3d2e !important; color: #c2ffd7; font-weight: bold; border-left: 8px solid #2ee59d; }
 
-    /* NEW: FC/TC highlight rows */
+    /* FC/TC highlight rows */
     tr.fc-row         { background: #23364d !important; color: #d5e9ff; font-weight: bold; border-left: 8px solid #00bfff; }
     tr.tc-row         { background: #2d213a !important; color: #f1d7ff; font-weight: bold; border-left: 8px solid #be7bff; }
 
@@ -44,7 +44,7 @@
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
 
-    /* NEW: Extra Places badge */
+    /* Extra Places badge */
     .ep-badge {
       display: inline-block;
       margin-left: 6px;
@@ -65,13 +65,13 @@
     <a href="index.html">🔙 Back to Race Visualizer</a>
   </div>
 
-  <h2>🟢 Must Back</h2>
+  <h2>💚 Big Priced E/W - Extra Places</h2>
   <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
   <h2>❌ Must Lay</h2>
   <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
-  <!-- NEW: FC/TC sections inserted directly BELOW Must Lay -->
+  <!-- FC/TC sections -->
   <h2>🔗 Forecasts (Top 2 clear)</h2>
   <table id="fc-table">
     <thead>
@@ -168,7 +168,10 @@
     }
   };
 
-  const raceKey = (dt, course) => `${dt}_${course}`;
+  // normalize key so course matching is case-insensitive + trimmed
+  const normCourse = s => (s || "").toString().trim().toLowerCase();
+  const normDT     = s => (s || "").toString().trim();
+  const raceKey    = (dt, course) => `${normDT(dt)}_${normCourse(course)}`;
 
   // --- Load Extra Places (JSON Lines) ---
   // File: extra_places.txt (one JSON object per line)
@@ -252,7 +255,7 @@
     const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
 
-    // NEW: show EP×N badge next to course
+    // show EP×N badge next to course
     const ep = getPlaces(entry);
     const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
                           : `${entry.course ?? ""}`;
@@ -265,7 +268,7 @@
     </tr>`;
   };
 
-  // NEW: compact renderer for Rank Overlays table
+  // compact renderer for Rank Overlays table
   const overlayRow = (entry, tagList, rowClass = "") => {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
     const bookie = entry.bookie_odds ?? "-";
@@ -298,7 +301,7 @@
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
 
-    // 🟢 Must Back = multi-tag rows, BUT ONLY IF the race is an extra-places race
+    // "Big Priced E/W - Extra Places" = multi-tag rows, ONLY IF race is an extra-places race
     if (coreTags.length > 1 && isExtraPlaceRace(entry)) {
       multi += twoLineRow(entry, tags, "multi-tag-row");
     }
@@ -390,7 +393,7 @@
   setBody('#multitag-table',  multi);
   setBody('#rawlays-table',   rawlays);
 
-  // NEW: FC/TC render
+  // FC/TC render
   setBody('#fc-table',        fcHtml, 3);
   setBody('#tc-table',        tcHtml, 3);
 
@@ -406,3 +409,4 @@
 </script>
 </body>
 </html>
+
