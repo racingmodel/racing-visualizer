@@ -311,6 +311,28 @@
 
   const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
 
+  // Odds parsing (supports decimal like "12.0" and fractional like "12/1")
+  const parseOdds = (v) => {
+    if (v == null) return NaN;
+    const s = String(v).trim();
+    if (!s) return NaN;
+    if (s.includes('/')) { // fractional
+      const [a, b] = s.split('/').map(Number);
+      if (!isNaN(a) && !isNaN(b) && b !== 0) return a / b + 1;
+      return NaN;
+    }
+    const n = parseFloat(s.replace(/[^\d.]/g, '')); // strip junk, keep decimals
+    return isNaN(n) ? NaN : n;
+  };
+  
+  // Big-priced = market (bookmaker) odds >= 10.00
+  const isBigPriced = (entry) => {
+    const dec = parseOdds(entry?.bookie_odds);
+    return !isNaN(dec) && dec >= 10.0;
+  };
+
+
+  
   // --- Build buckets
   let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
 
@@ -322,9 +344,11 @@
     const coreTags = tags.filter(t => !isOverlayTag(t));
 
     // "Big Priced E/W - Extra Places" = multi-tag rows, ONLY IF race is an extra-places race
-    if (coreTags.length > 1 && isExtraPlaceRace(entry)) {
+  // "Big Priced E/W - Extra Places" = multi-tag rows in extra-places races AND 10.00+ market odds
+    if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
       multi += twoLineRow(entry, tags, "multi-tag-row");
     }
+
 
     if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
     if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
