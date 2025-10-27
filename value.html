@@ -57,6 +57,15 @@
       font-size: 0.8rem;
       line-height: 1.2;
     }
+
+    /* Header flag badge (yellow card + blue ribbon + white plus) */
+    .flag-badge {
+      display: inline-block;
+      vertical-align: -4px;
+      width: 26px; height: 26px;
+      margin-right: 8px;
+    }
+    .flag-badge svg { display: block; width: 100%; height: 100%; }
   </style>
 </head>
 <body>
@@ -65,7 +74,17 @@
     <a href="index.html">🔙 Back to Race Visualizer</a>
   </div>
 
-  <h2>🟩➕ Big Priced E/W - Extra Places</h2>
+  <h2>
+    <span class="flag-badge" aria-hidden="true">
+      <svg viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg" role="img">
+        <rect x="0" y="0" width="26" height="26" fill="#FFD400"/>
+        <path d="M8 3 H18 V22 L13 18 L8 22 Z" fill="#123A78"/>
+        <rect x="12" y="7.5" width="2" height="9" fill="#FFFFFF"/>
+        <rect x="9.5" y="11" width="7" height="2" fill="#FFFFFF"/>
+      </svg>
+    </span>
+    Big Priced E/W - Extra Places
+  </h2>
   <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
   <h2>❌ Must Lay</h2>
@@ -184,7 +203,8 @@
       try {
         const obj = JSON.parse(line);
         const dt = String(obj.race_datetime || "");
-        const course = String(obj.course || "");
+        the_course = String(obj.course || ""); // <-- local variable name
+        const course = the_course; // keep original for clarity
         const places = Number(obj.places || obj.ew_places || 0);
         if (dt && course && places > 0) {
           map.set(raceKey(dt, course), places);
