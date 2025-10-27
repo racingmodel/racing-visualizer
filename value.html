@@ -43,6 +43,20 @@
     small.reason { display: block; font-weight: bold; font-size: 0.85em; margin-top: 0.3em; }
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
+
+    /* NEW: Extra Places badge */
+    .ep-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 0.05rem 0.4rem;
+      border-radius: 5px;
+      background: #111;
+      border: 1px solid #2ee59d;
+      color: #2ee59d;
+      font-weight: 700;
+      font-size: 0.8rem;
+      line-height: 1.2;
+    }
   </style>
 </head>
 <body>
@@ -125,6 +139,17 @@
     }
   };
 
+  const safeText = async (url) => {
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.statusText);
+      return await r.text();
+    } catch (e) {
+      console.warn(`⚠️ Could not load ${url}:`, e.message || e);
+      return "";
+    }
+  };
+
   const timeFromRaceDT = (raceDT) => {
     if (!raceDT || typeof raceDT !== 'string') return '';
     const parts = raceDT.split(' ');
@@ -143,6 +168,36 @@
     }
   };
 
+  const raceKey = (dt, course) => `${dt}_${course}`;
+
+  // --- Load Extra Places (JSON Lines) ---
+  // File: extra_places.txt (one JSON object per line)
+  // Example line: {"race_datetime":"27/10/2025 16:20","course":"Redcar","places":4}
+  const loadExtraPlaces = async (url) => {
+    const txt = await safeText(url);
+    const lines = (txt || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const map = new Map();
+    for (const line of lines) {
+      try {
+        const obj = JSON.parse(line);
+        const dt = String(obj.race_datetime || "");
+        const course = String(obj.course || "");
+        const places = Number(obj.places || obj.ew_places || 0);
+        if (dt && course && places > 0) {
+          map.set(raceKey(dt, course), places);
+        }
+      } catch (e) {
+        console.warn("⚠️ Bad JSON line in extra_places.txt:", line);
+      }
+    }
+    return map;
+  };
+
+  const extraPlaces = await loadExtraPlaces('extra_places.txt');
+
+  const getPlaces = (entry) => extraPlaces.get(raceKey(entry.race_datetime, entry.course));
+  const isExtraPlaceRace = (entry) => extraPlaces.has(raceKey(entry.race_datetime, entry.course));
+
   // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
   let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
@@ -156,13 +211,13 @@
 
   // Map for quick lookup when enriching AI rows with bookie/raw odds
   const valueMap = new Map(
-    valueData.map(e => [`${e.race_datetime}_${e.horse}`, e])
+    valueData.map(e => [raceKey(e.race_datetime, e.course) + "_" + e.horse, e])
   );
 
-  // Merge (dedupe by race_datetime+horse), union tags, prefer latest reason
+  // Merge (dedupe by race_datetime+course+horse), union tags, prefer latest reason
   const merged = new Map();
   [...valueData, ...aiData].forEach(e => {
-    const key = `${e.race_datetime}_${e.horse}`;
+    const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
     const existing = merged.get(key) || {};
     const existingTags = Array.isArray(existing.tags) ? existing.tags : [];
     const newTags = Array.isArray(e.tags) ? e.tags : [];
@@ -196,8 +251,14 @@
     const bookie = entry.bookie_odds ?? "-";
     const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
+
+    // NEW: show EP×N badge next to course
+    const ep = getPlaces(entry);
+    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
+                          : `${entry.course ?? ""}`;
+
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div></td>
       <td><div>${entry.horse ?? ""}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
@@ -212,8 +273,12 @@
     const delta  = (entry.rank_delta ?? "");
     const rModel = (entry.rank_model ?? "");
     const rMarket= (entry.rank_market ?? "");
+    const ep = getPlaces(entry);
+    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
+                          : `${entry.course ?? ""}`;
+
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${entry.course ?? ""}</div></td>
+      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div></td>
       <td><div>${entry.horse ?? ""}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><strong>${delta}</strong></td>
@@ -233,7 +298,11 @@
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
 
-    if (coreTags.length > 1)            multi    += twoLineRow(entry, tags, "multi-tag-row");
+    // 🟢 Must Back = multi-tag rows, BUT ONLY IF the race is an extra-places race
+    if (coreTags.length > 1 && isExtraPlaceRace(entry)) {
+      multi += twoLineRow(entry, tags, "multi-tag-row");
+    }
+
     if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
     if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
     if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
@@ -268,16 +337,20 @@
 
   let fcHtml = '', tcHtml = '';
   fcEntries.forEach(e => {
+    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
     fcHtml += `<tr class="fc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
       <td><b>${asComboLabel(e)}</b></td>
       <td><small class="reason">${e.reason ?? ""}</small></td>
     </tr>`;
   });
 
   tcEntries.forEach(e => {
+    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
     tcHtml += `<tr class="tc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
       <td><b>${asComboLabel(e)}</b></td>
       <td><small class="reason">${e.reason ?? ""}</small></td>
     </tr>`;
@@ -288,7 +361,7 @@
                  .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   aiData.forEach(e => {
-    const key = `${e.race_datetime}_${e.horse}`;
+    const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
     if (!aiTag) return;
 
@@ -296,9 +369,11 @@
     const bookie = (valueEntry?.bookie_odds ?? e.bookie_odds) ?? "-";
     const raw    = (valueEntry?.raw_odds    ?? e.raw_odds)    ?? "-";
     const reason = e.reason || "";
+    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
 
     aihtml += `<tr class="aibest-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${e.course ?? ""}</div></td>
+      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
       <td>${e.horse ?? ""}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td>${renderAITag(aiTag)}</td>
@@ -331,4 +406,3 @@
 </script>
 </body>
 </html>
-
