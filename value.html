@@ -223,10 +223,12 @@
 
   // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
-  let aiData = valueData.filter(e =>
-  	Array.isArray(e.tags) &&
-  	(e.tags.includes('ai-back') || e.tags.includes('ai-lay'))
-      );
+
+  // Load AI picks from ai_bets.json (or fallback to ai_best_bets.json)
+  let aiData = await safeJSON('ai_bets.json');
+  if (!aiData || aiData.length === 0) {
+    aiData = await safeJSON('ai_best_bets.json');
+  }
 
 
   // --- Quality filter: require BOTH >= 90
