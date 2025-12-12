@@ -91,7 +91,7 @@
   <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
   <!-- FC/TC sections -->
-  <h2>🔗 Forecasts (Top 2 clear)</h2>
+  <!-- <h2>🔗 Forecasts (Top 2 clear)</h2>
   <table id="fc-table">
     <thead>
       <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
@@ -105,7 +105,7 @@
       <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
     </thead>
     <tbody></tbody>
-  </table>
+  </table> -->
   <!-- END FC/TC -->
 
   <h2>🤖 AI Suggested Bets</h2>
@@ -375,39 +375,39 @@
   });
 
   // --- Forecasts / Tricasts from value_bets.json combos (use raw valueData, not merged)
-  const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
-  const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
+  // const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
+  // const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
 
-  const fcEntries = valueData
-    .filter(filterValid)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
-    .sort(byRaceTime);
+  // const fcEntries = valueData
+  //   .filter(filterValid)
+  //   .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
+  //   .sort(byRaceTime);
 
-  const tcEntries = valueData
-    .filter(filterValid)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
-    .sort(byRaceTime);
+  // const tcEntries = valueData
+  //   .filter(filterValid)
+  //   .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
+  //   .sort(byRaceTime);
 
-  let fcHtml = '', tcHtml = '';
-  fcEntries.forEach(e => {
-    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
-    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    fcHtml += `<tr class="fc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
-  });
+  // let fcHtml = '', tcHtml = '';
+  // fcEntries.forEach(e => {
+  //   const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+  //   const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
+  //   fcHtml += `<tr class="fc-row">
+  //     <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+  //     <td><b>${asComboLabel(e)}</b></td>
+  //     <td><small class="reason">${e.reason ?? ""}</small></td>
+  //   </tr>`;
+  // });
 
-  tcEntries.forEach(e => {
-    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
-    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    tcHtml += `<tr class="tc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
-  });
+  // tcEntries.forEach(e => {
+  //   const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+  //   const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
+  //   tcHtml += `<tr class="tc-row">
+  //     <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+  //     <td><b>${asComboLabel(e)}</b></td>
+  //     <td><small class="reason">${e.reason ?? ""}</small></td>
+  //   </tr>`;
+  // });
 
   // --- AI list (independent render, enriched, and filtered)
   aiData = aiData.filter(filterValid)
