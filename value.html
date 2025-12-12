@@ -223,7 +223,11 @@
 
   // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
-  let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
+  let aiData = valueData.filter(e =>
+  	Array.isArray(e.tags) &&
+  	(e.tags.includes('ai-back') || e.tags.includes('ai-lay'))
+      );
+
 
   // --- Quality filter: require BOTH >= 90
   const filterValid = (entry) => {
