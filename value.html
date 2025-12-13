@@ -223,13 +223,7 @@
 
   // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
-
-  // Load AI picks from ai_bets.json (or fallback to ai_best_bets.json)
-  let aiData = await safeJSON('ai_bets.json');
-  if (!aiData || aiData.length === 0) {
-    aiData = await safeJSON('ai_best_bets.json');
-  }
-
+  let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
 
   // --- Quality filter: require BOTH >= 90
   const filterValid = (entry) => {
