@@ -203,7 +203,8 @@
       try {
         const obj = JSON.parse(line);
         const dt = String(obj.race_datetime || "");
-        const course = String(obj.course || "");
+        the_course = String(obj.course || ""); // <-- local variable name
+        const course = the_course; // keep original for clarity
         const places = Number(obj.places || obj.ew_places || 0);
         if (dt && course && places > 0) {
           map.set(raceKey(dt, course), places);
