@@ -372,36 +372,36 @@
   const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
   const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
 
-  const fcEntries = valueData
-    .filter(filterValid)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
-    .sort(byRaceTime);
+  // const fcEntries = valueData
+  //   .filter(filterValid)
+  //   .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
+  //   .sort(byRaceTime);
 
-  const tcEntries = valueData
-    .filter(filterValid)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
-    .sort(byRaceTime);
+  // const tcEntries = valueData
+  //   .filter(filterValid)
+  //   .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
+  //   .sort(byRaceTime);
 
-  let fcHtml = '', tcHtml = '';
-  fcEntries.forEach(e => {
-    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
-    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    fcHtml += `<tr class="fc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
+  // let fcHtml = '', tcHtml = '';
+  // fcEntries.forEach(e => {
+  //   const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+  //   const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
+  //   fcHtml += `<tr class="fc-row">
+  //     <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+  //     <td><b>${asComboLabel(e)}</b></td>
+  //     <td><small class="reason">${e.reason ?? ""}</small></td>
+  //   </tr>`;
   });
 
-  tcEntries.forEach(e => {
-    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
-    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    tcHtml += `<tr class="tc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
-  });
+  // tcEntries.forEach(e => {
+  //   const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
+  //   const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
+  //   tcHtml += `<tr class="tc-row">
+  //     <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+  //     <td><b>${asComboLabel(e)}</b></td>
+  //     <td><small class="reason">${e.reason ?? ""}</small></td>
+  //   </tr>`;
+  // });
 
   // --- AI list (independent render, enriched, and filtered)
   aiData = aiData.filter(filterValid)
@@ -438,8 +438,8 @@
   setBody('#rawlays-table',   rawlays);
 
   // FC/TC render
-  setBody('#fc-table',        fcHtml, 3);
-  setBody('#tc-table',        tcHtml, 3);
+  // setBody('#fc-table',        fcHtml, 3);
+  // setBody('#tc-table',        tcHtml, 3);
 
   setBody('#aibets-table',    aihtml, 5);
   setBody('#rawvalue-table',  rawv);
