@@ -256,6 +256,22 @@
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
 
+    // --- Must Lay should be "lay only" (hide if any other core tag present)
+  const isLayOnly = (tags) => {
+    const isOverlayTag = t => t.startsWith("overlay+"); // decorative tags you may want to ignore
+
+    const core = (tags || []).filter(t => !isOverlayTag(t));  // ignore overlay+... if present
+    const layTags = new Set(["raw-lay", "ai-lay"]);           // treat either as a lay signal
+
+    const hasLay = core.some(t => layTags.has(t));
+    if (!hasLay) return false;
+
+    // "Lay only" means: after removing the lay tag(s), nothing else remains.
+    const nonLay = core.filter(t => !layTags.has(t));
+    return nonLay.length === 0;
+  };
+
+
   const iconsOnly = (tags) => tags.map(t =>
       t === 'top-rated-clear' ? '🥇' :
       t === 'sleeper'         ? '🌑' :
@@ -350,7 +366,7 @@
     }
 
 
-    if (tags.includes("raw-lay"))       rawlays  += twoLineRow(entry, tags, "rawlay-row");
+    if (isLayOnly(tags))               rawlays  += twoLineRow(entry, tags, "rawlay-row");
     if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
     if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
     if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
