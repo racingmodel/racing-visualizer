@@ -15,7 +15,7 @@
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: inline-block; }
 
-    /* ✅ NEW: meta row + badges */
+    /* ✅ meta row + badges */
     .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
     .badge {
       font-size: 0.78rem;
@@ -69,43 +69,71 @@
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
 
-  <!-- ✅ NEW: auto-enrich cards by scraping each linked race HTML -->
+  <!-- ✅ auto-enrich cards by scraping each linked race HTML -->
   <script>
     (function () {
-      const isRaceLink = (href) => {
-        if (!href) return false;
-        // Only enrich your per-race pages; skip ai/xg pages etc.
-        // Matches like "17-12_Newcastle.html"
-        return /^\d{2}-\d{2}_.+\.html$/i.test(href);
+      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
+
+      // --- STRICT extract helpers ---
+      const toNum = (v) => {
+        const n = parseFloat(String(v).replace(",", "."));
+        return Number.isFinite(n) ? n : null;
       };
 
-      const cleanNum = (s) => {
-        if (!s) return null;
-        const m = String(s).match(/(\d+(\.\d+)?)/);
-        return m ? m[1] : null;
+      const pickBest0to100 = (candidates) => {
+        const nums = candidates.map(toNum).filter(n => n !== null && n >= 0 && n <= 100);
+        if (!nums.length) return null;
+        // if multiple confidence numbers exist, prefer the largest (race coverage)
+        return Math.max(...nums);
       };
 
+      const pickInt1to40 = (candidates) => {
+        const nums = candidates
+          .map(v => parseInt(String(v), 10))
+          .filter(n => Number.isFinite(n) && n >= 1 && n <= 40);
+        if (!nums.length) return null;
+        // runners count should be realistic; prefer the largest match
+        return Math.max(...nums);
+      };
+
+      // ✅ STRICT meta parser (prevents "same number everywhere" issue)
       const parseMeta = (htmlText) => {
         const t = htmlText || "";
 
-        // Try a few common patterns; keep it tolerant.
-        // Runners:
-        let runners =
-          cleanNum((t.match(/Total\s*Runners[^0-9]{0,50}(\d{1,2})/i) || [])[1]) ||
-          cleanNum((t.match(/Runners[^0-9]{0,50}(\d{1,2})/i) || [])[1]) ||
-          null;
+        // ---- Runners ----
+        const runnerHits = [];
+        for (const re of [
+          /(?:Total\s*Runners|Runners)\s*[:\-]?\s*(\d{1,2})\b/gi,
+          /\bwith\s+(\d{1,2})\s+(?:runners|runner)\b/gi,
+          /\b(\d{1,2})\s+(?:runners|runner)\b/gi
+        ]) {
+          let m;
+          while ((m = re.exec(t)) !== null) runnerHits.push(m[1]);
+        }
+        const runners = pickInt1to40(runnerHits);
 
-        // Confidence:
-        let conf =
-          cleanNum((t.match(/Data\s*Confidence[^0-9]{0,50}(\d+(\.\d+)?)/i) || [])[1]) ||
-          cleanNum((t.match(/Confidence[^0-9]{0,50}(\d+(\.\d+)?)/i) || [])[1]) ||
-          null;
+        // ---- Confidence ----
+        const confHits = [];
 
-        // Extra place:
+        // Match only if % is present
+        {
+          const re = /Data\s*Confidence(?:\s*\(Race\))?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*%/gi;
+          let m; while ((m = re.exec(t)) !== null) confHits.push(m[1]);
+        }
+
+        // Or match your coverage field if present in HTML
+        {
+          const re = /\b_data_coverage\b[^0-9]{0,40}(\d+(?:\.\d+)?)/gi;
+          let m; while ((m = re.exec(t)) !== null) confHits.push(m[1]);
+        }
+
+        const conf = pickBest0to100(confHits);
+
+        // ---- Extra place ----
         const isEP =
-          /EP\s*[×x]\s*\d+/i.test(t) ||
-          /Extra\s*Place/i.test(t) ||
-          /extra[-\s]*places?/i.test(t);
+          /\bEP\s*[×x]\s*\d+\b/i.test(t) ||
+          /\bExtra\s*Place\b/i.test(t) ||
+          /\bextra[-\s]*places?\b/i.test(t);
 
         return { runners, conf, isEP };
       };
@@ -124,7 +152,6 @@
         const card = a.closest(".card");
         if (!card) return;
 
-        // Avoid duplicates if page rehydrates
         if (card.querySelector(".meta-row")) return;
 
         const row = document.createElement("div");
@@ -140,12 +167,12 @@
 
           row.innerHTML = "";
 
-          if (meta.runners) row.appendChild(badge(`👥 ${meta.runners} runners`));
-          else row.appendChild(badge("👥 runners ?"));
+          row.appendChild(
+            badge(meta.runners ? `👥 ${meta.runners} runners` : "👥 runners ?")
+          );
 
-          if (meta.conf) {
-            const c = parseFloat(meta.conf);
-            const cls = isFinite(c) ? (c >= 90 ? "badge-hi" : (c <= 70 ? "badge-lo" : "")) : "";
+          if (meta.conf !== null) {
+            const cls = meta.conf >= 90 ? "badge-hi" : (meta.conf <= 70 ? "badge-lo" : "");
             row.appendChild(badge(`✅ ${meta.conf}%`, cls));
           } else {
             row.appendChild(badge("✅ conf ?"));
