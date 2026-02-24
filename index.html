@@ -13,7 +13,24 @@
     .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
+    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: inline-block; }
+
+    /* ✅ NEW: meta row + badges */
+    .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+    .badge {
+      font-size: 0.78rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #ddd;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
+    .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
+    .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
+
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -22,12 +39,14 @@
   <header>
     <h1>🏇 Race Visualizer Index</h1>
   </header>
+
   <div class="container">
     <h2>🏁 Newcastle</h2>
     <div class="course-group">
       <div class="card"><a href="17-12_Newcastle.html">17:12 Newcastle</a></div>
       <div class="card"><a href="17-42_Newcastle.html">17:42 Newcastle</a></div>
     </div>
+
     <h2>🏁 Southwell</h2>
     <div class="course-group">
       <div class="card"><a href="17-00_Southwell.html">17:00 Southwell</a></div>
@@ -38,14 +57,112 @@
       <div class="card"><a href="19-30_Southwell.html">19:30 Southwell</a></div>
       <div class="card"><a href="20-00_Southwell.html">20:00 Southwell</a></div>
     </div>
+
     <h2>🏁 best_bets</h2>
     <div class="course-group">
       <div class="card"><a href="ai_best_bets.html">ai best_bets</a></div>
       <div class="card"><a href="xg_best_bets.html">xg best_bets</a></div>
     </div>
   </div>
+
   <footer>
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
+
+  <!-- ✅ NEW: auto-enrich cards by scraping each linked race HTML -->
+  <script>
+    (function () {
+      const isRaceLink = (href) => {
+        if (!href) return false;
+        // Only enrich your per-race pages; skip ai/xg pages etc.
+        // Matches like "17-12_Newcastle.html"
+        return /^\d{2}-\d{2}_.+\.html$/i.test(href);
+      };
+
+      const cleanNum = (s) => {
+        if (!s) return null;
+        const m = String(s).match(/(\d+(\.\d+)?)/);
+        return m ? m[1] : null;
+      };
+
+      const parseMeta = (htmlText) => {
+        const t = htmlText || "";
+
+        // Try a few common patterns; keep it tolerant.
+        // Runners:
+        let runners =
+          cleanNum((t.match(/Total\s*Runners[^0-9]{0,50}(\d{1,2})/i) || [])[1]) ||
+          cleanNum((t.match(/Runners[^0-9]{0,50}(\d{1,2})/i) || [])[1]) ||
+          null;
+
+        // Confidence:
+        let conf =
+          cleanNum((t.match(/Data\s*Confidence[^0-9]{0,50}(\d+(\.\d+)?)/i) || [])[1]) ||
+          cleanNum((t.match(/Confidence[^0-9]{0,50}(\d+(\.\d+)?)/i) || [])[1]) ||
+          null;
+
+        // Extra place:
+        const isEP =
+          /EP\s*[×x]\s*\d+/i.test(t) ||
+          /Extra\s*Place/i.test(t) ||
+          /extra[-\s]*places?/i.test(t);
+
+        return { runners, conf, isEP };
+      };
+
+      const badge = (text, cls) => {
+        const s = document.createElement("span");
+        s.className = "badge" + (cls ? " " + cls : "");
+        s.textContent = text;
+        return s;
+      };
+
+      async function enrichCard(a) {
+        const href = a.getAttribute("href");
+        if (!isRaceLink(href)) return;
+
+        const card = a.closest(".card");
+        if (!card) return;
+
+        // Avoid duplicates if page rehydrates
+        if (card.querySelector(".meta-row")) return;
+
+        const row = document.createElement("div");
+        row.className = "meta-row";
+        row.appendChild(badge("⏳ Loading…"));
+        card.appendChild(row);
+
+        try {
+          const res = await fetch(href, { cache: "no-store" });
+          if (!res.ok) throw new Error("fetch failed");
+          const html = await res.text();
+          const meta = parseMeta(html);
+
+          row.innerHTML = "";
+
+          if (meta.runners) row.appendChild(badge(`👥 ${meta.runners} runners`));
+          else row.appendChild(badge("👥 runners ?"));
+
+          if (meta.conf) {
+            const c = parseFloat(meta.conf);
+            const cls = isFinite(c) ? (c >= 90 ? "badge-hi" : (c <= 70 ? "badge-lo" : "")) : "";
+            row.appendChild(badge(`✅ ${meta.conf}%`, cls));
+          } else {
+            row.appendChild(badge("✅ conf ?"));
+          }
+
+          if (meta.isEP) row.appendChild(badge("⭐ Extra Place", "badge-ep"));
+
+        } catch (e) {
+          row.innerHTML = "";
+          row.appendChild(badge("⚠ meta unavailable"));
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".card a").forEach(enrichCard);
+      });
+    })();
+  </script>
 </body>
 </html>
