@@ -15,7 +15,7 @@
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
     .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: inline-block; }
 
-    /* ✅ meta row + badges */
+    /* meta row + badges */
     .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
     .badge {
       font-size: 0.78rem;
@@ -69,14 +69,12 @@
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
 
-  <!-- ✅ Robust meta enrichment: DOM-parse race pages (avoids regex grabbing color codes like #3b9e3f) -->
   <script>
     (function () {
-      const isRaceLink = (href) => {
-        if (!href) return false;
-        // Enrich only per-race pages like "17-12_Newcastle.html"
-        return /^\d{2}-\d{2}_.+\.html$/i.test(href);
-      };
+      // -----------------------------
+      // Helpers
+      // -----------------------------
+      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
 
       const badge = (text, cls) => {
         const s = document.createElement("span");
@@ -85,41 +83,119 @@
         return s;
       };
 
+      const pad2 = (n) => String(n).padStart(2, "0");
+
+      const extractTimeCourseFromAnchor = (a) => {
+        // "17:42 Newcastle"
+        const txt = String(a.textContent || "").trim();
+        const m = txt.match(/^(\d{1,2})[:.](\d{2})\s+(.+)$/);
+        if (!m) return null;
+        const hh = pad2(m[1]);
+        const mm = pad2(m[2]);
+        const course = String(m[3] || "").trim();
+        if (!course) return null;
+        return { hhmm: `${hh}:${mm}`, course };
+      };
+
+      const normCourse = (s) =>
+        String(s || "")
+          .toLowerCase()
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+      // -----------------------------
+      // Extra Places: load from extra_places.txt (JSON lines)
+      // Each line: {"race_datetime":"24/02/2026 17:42","course":"Newcastle","places":4}
+      // We match by (course + time) to flag races in the index.
+      // -----------------------------
+      let EP_MAP = new Map(); // key: "course|HH:MM" -> max places (dedupe)
+      let EP_LOADED = false;
+
+      async function loadExtraPlacesOnce() {
+        if (EP_LOADED) return;
+        EP_LOADED = true;
+
+        // 1) Prefer local file (GitHub Pages serves repo root)
+        // 2) Fallback to raw.githubusercontent (in case you view index.html locally / path differs)
+        const urls = [
+          "extra_places.txt",
+          "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
+        ];
+
+        let txt = null;
+        for (const url of urls) {
+          try {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) continue;
+            txt = await res.text();
+            if (txt) break;
+          } catch (e) {}
+        }
+        if (!txt) return;
+
+        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+        for (const line of lines) {
+          try {
+            const obj = JSON.parse(line);
+            const dt = String(obj.race_datetime || "").trim(); // "24/02/2026 17:42"
+            const course = normCourse(obj.course || "");
+            const places = parseInt(obj.places, 10);
+
+            const tm = dt.match(/\b(\d{1,2}):(\d{2})\b/);
+            if (!tm || !course) continue;
+            const hh = pad2(tm[1]);
+            const mm = pad2(tm[2]);
+            const hhmm = `${hh}:${mm}`;
+
+            const key = `${course}|${hhmm}`;
+            const prev = EP_MAP.get(key);
+            const next = Number.isFinite(places) ? places : prev;
+
+            // Dedup + keep the max places if duplicates exist
+            if (prev == null || (Number.isFinite(next) && next > prev)) EP_MAP.set(key, next);
+          } catch (e) {
+            // ignore non-JSON lines
+          }
+        }
+      }
+
+      function epPlacesForAnchor(a) {
+        const tc = extractTimeCourseFromAnchor(a);
+        if (!tc) return null;
+        const key = `${normCourse(tc.course)}|${tc.hhmm}`;
+        return EP_MAP.get(key) ?? null;
+      }
+
+      // -----------------------------
+      // Parse runners/confidence from the race HTML (DOM parse)
+      // -----------------------------
       function extractMetaFromDoc(doc) {
-        // Title signals (for EP)
-        const h1 = (doc.querySelector("h1")?.textContent || "").trim();
-        const title = (doc.title || "").trim();
-        const titleBlob = (h1 + " " + title).toLowerCase();
-
-        const isEP =
-          /ep\s*[×x]\s*\d+/i.test(titleBlob) ||
-          /extra\s*place/i.test(titleBlob) ||
-          /extra[-\s]*places?/i.test(titleBlob);
-
-        // Runners = number of rows in the main table body
-        // (Your per-race pages always render df.to_html(...) => table exists)
+        // Runners = table row count
         let runners = null;
         try {
           const trs = doc.querySelectorAll("table tbody tr");
           if (trs && trs.length) runners = trs.length;
         } catch (e) {}
 
-        // Confidence: find "Data Confidence (Race):" and grab the span text next to it
-        // This avoids pulling digits from style attributes (e.g., #3b9e3f)
+        // Confidence = span next to "Data Confidence (Race):"
+        // (Avoids matching style hex like #3b9e3f)
         let conf = null;
         try {
           const allDivs = Array.from(doc.querySelectorAll("div"));
           const confDiv = allDivs.find(d => (d.textContent || "").includes("Data Confidence (Race):"));
           if (confDiv) {
-            // usually: <div> <b>Data Confidence (Race):</b> <span>97.5%</span>
             const sp = confDiv.querySelector("span");
-            const raw = (sp?.textContent || confDiv.textContent || "").replace("Data Confidence (Race):", "").trim();
+            const raw = (sp?.textContent || confDiv.textContent || "")
+              .replace("Data Confidence (Race):", "")
+              .trim();
             const m = raw.match(/(\d+(\.\d+)?)/);
             if (m) conf = m[1];
           }
         } catch (e) {}
 
-        return { runners, conf, isEP };
+        return { runners, conf };
       }
 
       async function enrichCard(a) {
@@ -128,7 +204,6 @@
 
         const card = a.closest(".card");
         if (!card) return;
-
         if (card.querySelector(".meta-row")) return;
 
         const row = document.createElement("div");
@@ -137,6 +212,8 @@
         card.appendChild(row);
 
         try {
+          await loadExtraPlacesOnce();
+
           const res = await fetch(href, { cache: "no-store" });
           if (!res.ok) throw new Error("fetch failed: " + res.status);
 
@@ -144,10 +221,15 @@
           const doc = new DOMParser().parseFromString(html, "text/html");
           const meta = extractMetaFromDoc(doc);
 
+          // Extra place via file
+          const epPlaces = epPlacesForAnchor(a);
+
           row.innerHTML = "";
 
-          if (meta.runners) row.appendChild(badge(` ${meta.runners} runners`));
-          else row.appendChild(badge("👥 runners ?"));
+          // ✅ runners WITHOUT icon
+          row.appendChild(
+            badge(meta.runners ? `${meta.runners} runners` : "runners ?")
+          );
 
           if (meta.conf) {
             const c = parseFloat(meta.conf);
@@ -157,7 +239,9 @@
             row.appendChild(badge("✅ conf ?"));
           }
 
-          if (meta.isEP) row.appendChild(badge("⭐ Extra Place", "badge-ep"));
+          if (epPlaces != null) {
+            row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
+          }
 
         } catch (e) {
           row.innerHTML = "";
