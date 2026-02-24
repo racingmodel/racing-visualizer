@@ -30,8 +30,7 @@
     .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
     .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
     .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
-    /* NEW: "meh" confidence styling for < 90% */
-    .badge-mid { background: rgba(160, 160, 160, 0.14); border-color: rgba(160, 160, 160, 0.22); color: #e1e1e1; }
+    .badge-mid { background: rgba(180, 180, 180, 0.14); border-color: rgba(180, 180, 180, 0.25); color: #e6e6e6; }
 
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
@@ -68,7 +67,7 @@
       // -----------------------------
       // Helpers
       // -----------------------------
-      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
+      const isRaceLink = (href) => /^\\d{2}-\\d{2}_.+\\.html$/i.test(href || "");
 
       const badge = (text, cls) => {
         const s = document.createElement("span");
@@ -82,7 +81,7 @@
       const extractTimeCourseFromAnchor = (a) => {
         // "17:42 Newcastle"
         const txt = String(a.textContent || "").trim();
-        const m = txt.match(/^(\d{1,2})[:.](\d{2})\s+(.+)$/);
+        const m = txt.match(/^(\\d{1,2})[:.](\\d{2})\\s+(.+)$/);
         if (!m) return null;
         const hh = pad2(m[1]);
         const mm = pad2(m[2]);
@@ -95,7 +94,7 @@
         String(s || "")
           .toLowerCase()
           .replace(/[_-]+/g, " ")
-          .replace(/\s+/g, " ")
+          .replace(/\\s+/g, " ")
           .trim();
 
       // -----------------------------
@@ -110,8 +109,6 @@
         if (EP_LOADED) return;
         EP_LOADED = true;
 
-        // 1) Prefer local file (GitHub Pages serves repo root)
-        // 2) Fallback to raw.githubusercontent (in case you view index.html locally / path differs)
         const urls = [
           "extra_places.txt",
           "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
@@ -128,7 +125,7 @@
         }
         if (!txt) return;
 
-        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const lines = txt.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean);
 
         for (const line of lines) {
           try {
@@ -137,7 +134,7 @@
             const course = normCourse(obj.course || "");
             const places = parseInt(obj.places, 10);
 
-            const tm = dt.match(/\b(\d{1,2}):(\d{2})\b/);
+            const tm = dt.match(/\\b(\\d{1,2}):(\\d{2})\\b/);
             if (!tm || !course) continue;
             const hh = pad2(tm[1]);
             const mm = pad2(tm[2]);
@@ -147,11 +144,8 @@
             const prev = EP_MAP.get(key);
             const next = Number.isFinite(places) ? places : prev;
 
-            // Dedup + keep the max places if duplicates exist
             if (prev == null || (Number.isFinite(next) && next > prev)) EP_MAP.set(key, next);
-          } catch (e) {
-            // ignore non-JSON lines
-          }
+          } catch (e) {}
         }
       }
 
@@ -166,15 +160,15 @@
       // Parse runners/confidence from the race HTML (DOM parse)
       // -----------------------------
       function extractMetaFromDoc(doc) {
-        // Runners = table row count
+        // Runners = count table rows
         let runners = null;
         try {
           const trs = doc.querySelectorAll("table tbody tr");
           if (trs && trs.length) runners = trs.length;
         } catch (e) {}
 
-        // Confidence = span next to "Data Confidence (Race):"
-        // (Avoids matching style hex like #3b9e3f)
+        // Confidence = span near "Data Confidence (Race):"
+        // Avoid matching hex colors etc.
         let conf = null;
         try {
           const allDivs = Array.from(doc.querySelectorAll("div"));
@@ -184,7 +178,7 @@
             const raw = (sp?.textContent || confDiv.textContent || "")
               .replace("Data Confidence (Race):", "")
               .trim();
-            const m = raw.match(/(\d+(\.\d+)?)/);
+            const m = raw.match(/(\\d+(\\.\\d+)?)/);
             if (m) conf = m[1];
           }
         } catch (e) {}
@@ -215,39 +209,37 @@
           const doc = new DOMParser().parseFromString(html, "text/html");
           const meta = extractMetaFromDoc(doc);
 
-          // Extra place via file
           const epPlaces = epPlacesForAnchor(a);
 
           row.innerHTML = "";
 
-          // runners
-          row.appendChild(
-            badge(meta.runners ? `${meta.runners} runners` : "runners ?")
-          );
+          // runners (no left icon)
+          row.appendChild(badge(meta.runners ? `${meta.runners} runners` : "runners ?"));
 
-          // ✅ Confidence icon + colour gating at 90%
+          // Confidence icon logic:
+          // ✅ only if >=90; otherwise show ⛔ and muted/red styling
           if (meta.conf) {
             const c = parseFloat(meta.conf);
             if (isFinite(c) && c >= 90) {
               row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
             } else if (isFinite(c)) {
-              // Anything < 90% gets a negative icon + grey styling
-              row.appendChild(badge(`⚠ ${meta.conf}%`, "badge-mid"));
+              // choose grey for 70–89, red for <70
+              const cls = (c < 70) ? "badge-lo" : "badge-mid";
+              row.appendChild(badge(`⛔ ${meta.conf}%`, cls));
             } else {
-              row.appendChild(badge("⚠ conf ?", "badge-mid"));
+              row.appendChild(badge("⛔ conf ?", "badge-mid"));
             }
           } else {
-            row.appendChild(badge("⚠ conf ?", "badge-mid"));
+            row.appendChild(badge("⛔ conf ?", "badge-mid"));
           }
 
-          // Extra place
           if (epPlaces != null) {
             row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
           }
 
         } catch (e) {
           row.innerHTML = "";
-          row.appendChild(badge("⚠ meta unavailable", "badge-mid"));
+          row.appendChild(badge("⚠ meta unavailable"));
         }
       }
 
