@@ -69,73 +69,13 @@
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
 
-  <!-- ✅ auto-enrich cards by scraping each linked race HTML -->
+  <!-- ✅ Robust meta enrichment: DOM-parse race pages (avoids regex grabbing color codes like #3b9e3f) -->
   <script>
     (function () {
-      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
-
-      // --- STRICT extract helpers ---
-      const toNum = (v) => {
-        const n = parseFloat(String(v).replace(",", "."));
-        return Number.isFinite(n) ? n : null;
-      };
-
-      const pickBest0to100 = (candidates) => {
-        const nums = candidates.map(toNum).filter(n => n !== null && n >= 0 && n <= 100);
-        if (!nums.length) return null;
-        // if multiple confidence numbers exist, prefer the largest (race coverage)
-        return Math.max(...nums);
-      };
-
-      const pickInt1to40 = (candidates) => {
-        const nums = candidates
-          .map(v => parseInt(String(v), 10))
-          .filter(n => Number.isFinite(n) && n >= 1 && n <= 40);
-        if (!nums.length) return null;
-        // runners count should be realistic; prefer the largest match
-        return Math.max(...nums);
-      };
-
-      // ✅ STRICT meta parser (prevents "same number everywhere" issue)
-      const parseMeta = (htmlText) => {
-        const t = htmlText || "";
-
-        // ---- Runners ----
-        const runnerHits = [];
-        for (const re of [
-          /(?:Total\s*Runners|Runners)\s*[:\-]?\s*(\d{1,2})\b/gi,
-          /\bwith\s+(\d{1,2})\s+(?:runners|runner)\b/gi,
-          /\b(\d{1,2})\s+(?:runners|runner)\b/gi
-        ]) {
-          let m;
-          while ((m = re.exec(t)) !== null) runnerHits.push(m[1]);
-        }
-        const runners = pickInt1to40(runnerHits);
-
-        // ---- Confidence ----
-        const confHits = [];
-
-        // Match only if % is present
-        {
-          const re = /Data\s*Confidence(?:\s*\(Race\))?\s*[:\-]?\s*(\d+(?:\.\d+)?)\s*%/gi;
-          let m; while ((m = re.exec(t)) !== null) confHits.push(m[1]);
-        }
-
-        // Or match your coverage field if present in HTML
-        {
-          const re = /\b_data_coverage\b[^0-9]{0,40}(\d+(?:\.\d+)?)/gi;
-          let m; while ((m = re.exec(t)) !== null) confHits.push(m[1]);
-        }
-
-        const conf = pickBest0to100(confHits);
-
-        // ---- Extra place ----
-        const isEP =
-          /\bEP\s*[×x]\s*\d+\b/i.test(t) ||
-          /\bExtra\s*Place\b/i.test(t) ||
-          /\bextra[-\s]*places?\b/i.test(t);
-
-        return { runners, conf, isEP };
+      const isRaceLink = (href) => {
+        if (!href) return false;
+        // Enrich only per-race pages like "17-12_Newcastle.html"
+        return /^\d{2}-\d{2}_.+\.html$/i.test(href);
       };
 
       const badge = (text, cls) => {
@@ -144,6 +84,43 @@
         s.textContent = text;
         return s;
       };
+
+      function extractMetaFromDoc(doc) {
+        // Title signals (for EP)
+        const h1 = (doc.querySelector("h1")?.textContent || "").trim();
+        const title = (doc.title || "").trim();
+        const titleBlob = (h1 + " " + title).toLowerCase();
+
+        const isEP =
+          /ep\s*[×x]\s*\d+/i.test(titleBlob) ||
+          /extra\s*place/i.test(titleBlob) ||
+          /extra[-\s]*places?/i.test(titleBlob);
+
+        // Runners = number of rows in the main table body
+        // (Your per-race pages always render df.to_html(...) => table exists)
+        let runners = null;
+        try {
+          const trs = doc.querySelectorAll("table tbody tr");
+          if (trs && trs.length) runners = trs.length;
+        } catch (e) {}
+
+        // Confidence: find "Data Confidence (Race):" and grab the span text next to it
+        // This avoids pulling digits from style attributes (e.g., #3b9e3f)
+        let conf = null;
+        try {
+          const allDivs = Array.from(doc.querySelectorAll("div"));
+          const confDiv = allDivs.find(d => (d.textContent || "").includes("Data Confidence (Race):"));
+          if (confDiv) {
+            // usually: <div> <b>Data Confidence (Race):</b> <span>97.5%</span>
+            const sp = confDiv.querySelector("span");
+            const raw = (sp?.textContent || confDiv.textContent || "").replace("Data Confidence (Race):", "").trim();
+            const m = raw.match(/(\d+(\.\d+)?)/);
+            if (m) conf = m[1];
+          }
+        } catch (e) {}
+
+        return { runners, conf, isEP };
+      }
 
       async function enrichCard(a) {
         const href = a.getAttribute("href");
@@ -161,18 +138,20 @@
 
         try {
           const res = await fetch(href, { cache: "no-store" });
-          if (!res.ok) throw new Error("fetch failed");
+          if (!res.ok) throw new Error("fetch failed: " + res.status);
+
           const html = await res.text();
-          const meta = parseMeta(html);
+          const doc = new DOMParser().parseFromString(html, "text/html");
+          const meta = extractMetaFromDoc(doc);
 
           row.innerHTML = "";
 
-          row.appendChild(
-            badge(meta.runners ? `👥 ${meta.runners} runners` : "👥 runners ?")
-          );
+          if (meta.runners) row.appendChild(badge(`👥 ${meta.runners} runners`));
+          else row.appendChild(badge("👥 runners ?"));
 
-          if (meta.conf !== null) {
-            const cls = meta.conf >= 90 ? "badge-hi" : (meta.conf <= 70 ? "badge-lo" : "");
+          if (meta.conf) {
+            const c = parseFloat(meta.conf);
+            const cls = isFinite(c) ? (c >= 90 ? "badge-hi" : (c <= 70 ? "badge-lo" : "")) : "";
             row.appendChild(badge(`✅ ${meta.conf}%`, cls));
           } else {
             row.appendChild(badge("✅ conf ?"));
