@@ -44,12 +44,12 @@
   <div class="container">
     <h2>🏁 Southwell</h2>
     <div class="course-group">
-      <div class="card"><a href="18-00_Southwell.html">18:00 Southwell</a></div>
       <div class="card"><a href="18-30_Southwell.html">18:30 Southwell</a></div>
       <div class="card"><a href="19-00_Southwell.html">19:00 Southwell</a></div>
       <div class="card"><a href="19-30_Southwell.html">19:30 Southwell</a></div>
       <div class="card"><a href="20-00_Southwell.html">20:00 Southwell</a></div>
     </div>
+
 
     <h2>🏁 best_bets</h2>
     <div class="course-group">
@@ -64,10 +64,7 @@
 
   <script>
     (function () {
-      // -----------------------------
-      // Helpers
-      // -----------------------------
-      const isRaceLink = (href) => /^\\d{2}-\\d{2}_.+\\.html$/i.test(href || "");
+      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
 
       const badge = (text, cls) => {
         const s = document.createElement("span");
@@ -79,9 +76,8 @@
       const pad2 = (n) => String(n).padStart(2, "0");
 
       const extractTimeCourseFromAnchor = (a) => {
-        // "17:42 Newcastle"
-        const txt = String(a.textContent || "").trim();
-        const m = txt.match(/^(\\d{1,2})[:.](\\d{2})\\s+(.+)$/);
+        const txt = String(a.textContent || "").trim(); // "17:42 Newcastle"
+        const m = txt.match(/^(\d{1,2})[:.](\d{2})\s+(.+)$/);
         if (!m) return null;
         const hh = pad2(m[1]);
         const mm = pad2(m[2]);
@@ -94,15 +90,11 @@
         String(s || "")
           .toLowerCase()
           .replace(/[_-]+/g, " ")
-          .replace(/\\s+/g, " ")
+          .replace(/\s+/g, " ")
           .trim();
 
-      // -----------------------------
-      // Extra Places: load from extra_places.txt (JSON lines)
-      // Each line: {"race_datetime":"24/02/2026 17:42","course":"Newcastle","places":4}
-      // We match by (course + time) to flag races in the index.
-      // -----------------------------
-      let EP_MAP = new Map(); // key: "course|HH:MM" -> max places (dedupe)
+      // Extra Places file (JSON lines)
+      let EP_MAP = new Map(); // "course|HH:MM" -> max places
       let EP_LOADED = false;
 
       async function loadExtraPlacesOnce() {
@@ -125,26 +117,25 @@
         }
         if (!txt) return;
 
-        const lines = txt.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean);
+        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
         for (const line of lines) {
           try {
             const obj = JSON.parse(line);
-            const dt = String(obj.race_datetime || "").trim(); // "24/02/2026 17:42"
+            const dt = String(obj.race_datetime || "").trim();
             const course = normCourse(obj.course || "");
             const places = parseInt(obj.places, 10);
 
-            const tm = dt.match(/\\b(\\d{1,2}):(\\d{2})\\b/);
+            const tm = dt.match(/\b(\d{1,2}):(\d{2})\b/);
             if (!tm || !course) continue;
+
             const hh = pad2(tm[1]);
             const mm = pad2(tm[2]);
             const hhmm = `${hh}:${mm}`;
-
             const key = `${course}|${hhmm}`;
-            const prev = EP_MAP.get(key);
-            const next = Number.isFinite(places) ? places : prev;
 
-            if (prev == null || (Number.isFinite(next) && next > prev)) EP_MAP.set(key, next);
+            const prev = EP_MAP.get(key);
+            if (prev == null || (Number.isFinite(places) && places > prev)) EP_MAP.set(key, places);
           } catch (e) {}
         }
       }
@@ -156,19 +147,13 @@
         return EP_MAP.get(key) ?? null;
       }
 
-      // -----------------------------
-      // Parse runners/confidence from the race HTML (DOM parse)
-      // -----------------------------
       function extractMetaFromDoc(doc) {
-        // Runners = count table rows
         let runners = null;
         try {
           const trs = doc.querySelectorAll("table tbody tr");
           if (trs && trs.length) runners = trs.length;
         } catch (e) {}
 
-        // Confidence = span near "Data Confidence (Race):"
-        // Avoid matching hex colors etc.
         let conf = null;
         try {
           const allDivs = Array.from(doc.querySelectorAll("div"));
@@ -178,7 +163,7 @@
             const raw = (sp?.textContent || confDiv.textContent || "")
               .replace("Data Confidence (Race):", "")
               .trim();
-            const m = raw.match(/(\\d+(\\.\\d+)?)/);
+            const m = raw.match(/(\d+(\.\d+)?)/);
             if (m) conf = m[1];
           }
         } catch (e) {}
@@ -208,22 +193,17 @@
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, "text/html");
           const meta = extractMetaFromDoc(doc);
-
           const epPlaces = epPlacesForAnchor(a);
 
           row.innerHTML = "";
 
-          // runners (no left icon)
           row.appendChild(badge(meta.runners ? `${meta.runners} runners` : "runners ?"));
 
-          // Confidence icon logic:
-          // ✅ only if >=90; otherwise show ⛔ and muted/red styling
           if (meta.conf) {
             const c = parseFloat(meta.conf);
             if (isFinite(c) && c >= 90) {
               row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
             } else if (isFinite(c)) {
-              // choose grey for 70–89, red for <70
               const cls = (c < 70) ? "badge-lo" : "badge-mid";
               row.appendChild(badge(`⛔ ${meta.conf}%`, cls));
             } else {
