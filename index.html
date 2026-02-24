@@ -30,6 +30,8 @@
     .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
     .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
     .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
+    /* NEW: "meh" confidence styling for < 90% */
+    .badge-mid { background: rgba(160, 160, 160, 0.14); border-color: rgba(160, 160, 160, 0.22); color: #e1e1e1; }
 
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
@@ -226,26 +228,34 @@
 
           row.innerHTML = "";
 
-          // ✅ runners WITHOUT icon
+          // runners
           row.appendChild(
             badge(meta.runners ? `${meta.runners} runners` : "runners ?")
           );
 
+          // ✅ Confidence icon + colour gating at 90%
           if (meta.conf) {
             const c = parseFloat(meta.conf);
-            const cls = isFinite(c) ? (c >= 90 ? "badge-hi" : (c <= 70 ? "badge-lo" : "")) : "";
-            row.appendChild(badge(`✅ ${meta.conf}%`, cls));
+            if (isFinite(c) && c >= 90) {
+              row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
+            } else if (isFinite(c)) {
+              // Anything < 90% gets a negative icon + grey styling
+              row.appendChild(badge(`⚠ ${meta.conf}%`, "badge-mid"));
+            } else {
+              row.appendChild(badge("⚠ conf ?", "badge-mid"));
+            }
           } else {
-            row.appendChild(badge("✅ conf ?"));
+            row.appendChild(badge("⚠ conf ?", "badge-mid"));
           }
 
+          // Extra place
           if (epPlaces != null) {
             row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
           }
 
         } catch (e) {
           row.innerHTML = "";
-          row.appendChild(badge("⚠ meta unavailable"));
+          row.appendChild(badge("⚠ meta unavailable", "badge-mid"));
         }
       }
 
