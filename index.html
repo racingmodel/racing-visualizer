@@ -13,26 +13,7 @@
     .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: inline-block; }
-
-    /* meta row + badges */
-    .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
-    .badge {
-      font-size: 0.78rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #ddd;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-    .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
-    .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
-    .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
-    /* NEW: "meh" confidence styling for < 90% */
-    .badge-mid { background: rgba(160, 160, 160, 0.14); border-color: rgba(160, 160, 160, 0.22); color: #e1e1e1; }
-
+    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; }
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -41,228 +22,23 @@
   <header>
     <h1>🏇 Race Visualizer Index</h1>
   </header>
-
   <div class="container">
-    <h2>🏁 Newcastle</h2>
-    <div class="course-group">
-      <div class="card"><a href="17-12_Newcastle.html">17:12 Newcastle</a></div>
-      <div class="card"><a href="17-42_Newcastle.html">17:42 Newcastle</a></div>
-    </div>
-
     <h2>🏁 Southwell</h2>
     <div class="course-group">
-      <div class="card"><a href="17-00_Southwell.html">17:00 Southwell</a></div>
-      <div class="card"><a href="17-30_Southwell.html">17:30 Southwell</a></div>
       <div class="card"><a href="18-00_Southwell.html">18:00 Southwell</a></div>
       <div class="card"><a href="18-30_Southwell.html">18:30 Southwell</a></div>
       <div class="card"><a href="19-00_Southwell.html">19:00 Southwell</a></div>
       <div class="card"><a href="19-30_Southwell.html">19:30 Southwell</a></div>
       <div class="card"><a href="20-00_Southwell.html">20:00 Southwell</a></div>
     </div>
-
     <h2>🏁 best_bets</h2>
     <div class="course-group">
       <div class="card"><a href="ai_best_bets.html">ai best_bets</a></div>
       <div class="card"><a href="xg_best_bets.html">xg best_bets</a></div>
     </div>
   </div>
-
   <footer>
     &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
   </footer>
-
-  <script>
-    (function () {
-      // -----------------------------
-      // Helpers
-      // -----------------------------
-      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
-
-      const badge = (text, cls) => {
-        const s = document.createElement("span");
-        s.className = "badge" + (cls ? " " + cls : "");
-        s.textContent = text;
-        return s;
-      };
-
-      const pad2 = (n) => String(n).padStart(2, "0");
-
-      const extractTimeCourseFromAnchor = (a) => {
-        // "17:42 Newcastle"
-        const txt = String(a.textContent || "").trim();
-        const m = txt.match(/^(\d{1,2})[:.](\d{2})\s+(.+)$/);
-        if (!m) return null;
-        const hh = pad2(m[1]);
-        const mm = pad2(m[2]);
-        const course = String(m[3] || "").trim();
-        if (!course) return null;
-        return { hhmm: `${hh}:${mm}`, course };
-      };
-
-      const normCourse = (s) =>
-        String(s || "")
-          .toLowerCase()
-          .replace(/[_-]+/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-
-      // -----------------------------
-      // Extra Places: load from extra_places.txt (JSON lines)
-      // Each line: {"race_datetime":"24/02/2026 17:42","course":"Newcastle","places":4}
-      // We match by (course + time) to flag races in the index.
-      // -----------------------------
-      let EP_MAP = new Map(); // key: "course|HH:MM" -> max places (dedupe)
-      let EP_LOADED = false;
-
-      async function loadExtraPlacesOnce() {
-        if (EP_LOADED) return;
-        EP_LOADED = true;
-
-        // 1) Prefer local file (GitHub Pages serves repo root)
-        // 2) Fallback to raw.githubusercontent (in case you view index.html locally / path differs)
-        const urls = [
-          "extra_places.txt",
-          "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
-        ];
-
-        let txt = null;
-        for (const url of urls) {
-          try {
-            const res = await fetch(url, { cache: "no-store" });
-            if (!res.ok) continue;
-            txt = await res.text();
-            if (txt) break;
-          } catch (e) {}
-        }
-        if (!txt) return;
-
-        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-        for (const line of lines) {
-          try {
-            const obj = JSON.parse(line);
-            const dt = String(obj.race_datetime || "").trim(); // "24/02/2026 17:42"
-            const course = normCourse(obj.course || "");
-            const places = parseInt(obj.places, 10);
-
-            const tm = dt.match(/\b(\d{1,2}):(\d{2})\b/);
-            if (!tm || !course) continue;
-            const hh = pad2(tm[1]);
-            const mm = pad2(tm[2]);
-            const hhmm = `${hh}:${mm}`;
-
-            const key = `${course}|${hhmm}`;
-            const prev = EP_MAP.get(key);
-            const next = Number.isFinite(places) ? places : prev;
-
-            // Dedup + keep the max places if duplicates exist
-            if (prev == null || (Number.isFinite(next) && next > prev)) EP_MAP.set(key, next);
-          } catch (e) {
-            // ignore non-JSON lines
-          }
-        }
-      }
-
-      function epPlacesForAnchor(a) {
-        const tc = extractTimeCourseFromAnchor(a);
-        if (!tc) return null;
-        const key = `${normCourse(tc.course)}|${tc.hhmm}`;
-        return EP_MAP.get(key) ?? null;
-      }
-
-      // -----------------------------
-      // Parse runners/confidence from the race HTML (DOM parse)
-      // -----------------------------
-      function extractMetaFromDoc(doc) {
-        // Runners = table row count
-        let runners = null;
-        try {
-          const trs = doc.querySelectorAll("table tbody tr");
-          if (trs && trs.length) runners = trs.length;
-        } catch (e) {}
-
-        // Confidence = span next to "Data Confidence (Race):"
-        // (Avoids matching style hex like #3b9e3f)
-        let conf = null;
-        try {
-          const allDivs = Array.from(doc.querySelectorAll("div"));
-          const confDiv = allDivs.find(d => (d.textContent || "").includes("Data Confidence (Race):"));
-          if (confDiv) {
-            const sp = confDiv.querySelector("span");
-            const raw = (sp?.textContent || confDiv.textContent || "")
-              .replace("Data Confidence (Race):", "")
-              .trim();
-            const m = raw.match(/(\d+(\.\d+)?)/);
-            if (m) conf = m[1];
-          }
-        } catch (e) {}
-
-        return { runners, conf };
-      }
-
-      async function enrichCard(a) {
-        const href = a.getAttribute("href");
-        if (!isRaceLink(href)) return;
-
-        const card = a.closest(".card");
-        if (!card) return;
-        if (card.querySelector(".meta-row")) return;
-
-        const row = document.createElement("div");
-        row.className = "meta-row";
-        row.appendChild(badge("⏳ Loading…"));
-        card.appendChild(row);
-
-        try {
-          await loadExtraPlacesOnce();
-
-          const res = await fetch(href, { cache: "no-store" });
-          if (!res.ok) throw new Error("fetch failed: " + res.status);
-
-          const html = await res.text();
-          const doc = new DOMParser().parseFromString(html, "text/html");
-          const meta = extractMetaFromDoc(doc);
-
-          // Extra place via file
-          const epPlaces = epPlacesForAnchor(a);
-
-          row.innerHTML = "";
-
-          // runners
-          row.appendChild(
-            badge(meta.runners ? `${meta.runners} runners` : "runners ?")
-          );
-
-          // ✅ Confidence icon + colour gating at 90%
-          if (meta.conf) {
-            const c = parseFloat(meta.conf);
-            if (isFinite(c) && c >= 90) {
-              row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
-            } else if (isFinite(c)) {
-              // Anything < 90% gets a negative icon + grey styling
-              row.appendChild(badge(`⚠ ${meta.conf}%`, "badge-mid"));
-            } else {
-              row.appendChild(badge("⚠ conf ?", "badge-mid"));
-            }
-          } else {
-            row.appendChild(badge("⚠ conf ?", "badge-mid"));
-          }
-
-          // Extra place
-          if (epPlaces != null) {
-            row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
-          }
-
-        } catch (e) {
-          row.innerHTML = "";
-          row.appendChild(badge("⚠ meta unavailable", "badge-mid"));
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".card a").forEach(enrichCard);
-      });
-    })();
-  </script>
 </body>
 </html>
