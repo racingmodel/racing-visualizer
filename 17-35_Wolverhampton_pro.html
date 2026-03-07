@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Midnite: Built For 2026 Not 2006 Handicap — Pro View</title>
+<style>
+:root {
+  --bg:#0b0f17;
+  --panel:#121826;
+  --panel2:#182132;
+  --line:#243041;
+  --text:#eaf0f6;
+  --muted:#9fb0c3;
+  --gold:#e6c36a;
+  --green:#31c77b;
+  --red:#ff7171;
+  --blue:#53b7ff;
+  --violet:#ad8cff;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:
+    radial-gradient(circle at top right, rgba(230,195,106,.12), transparent 24%),
+    linear-gradient(180deg,#0b0f17,#101726 38%,#0b0f17);
+  color:var(--text);
+}
+.topbar {
+  position:sticky; top:0; z-index:30;
+  background:rgba(8,11,18,.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.wrap { max-width:1380px; margin:0 auto; padding:20px; }
+.nav {
+  max-width:1380px; margin:0 auto; padding:12px 20px;
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+.nav a {
+  text-decoration:none; color:var(--text);
+  background:var(--panel); border:1px solid var(--line);
+  padding:10px 14px; border-radius:999px; font-weight:700; font-size:.92rem;
+}
+.hero {
+  display:grid; grid-template-columns:1.4fr .9fr; gap:18px; align-items:stretch;
+  margin:20px 0 22px;
+}
+.hero-main, .hero-side, .summary-card, .runner-card, .table-panel {
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:0 12px 34px rgba(0,0,0,.28);
+}
+.hero-main { padding:22px; }
+.hero-side { padding:18px; display:grid; gap:14px; }
+.kicker { color:var(--gold); font-weight:800; letter-spacing:.08em; text-transform:uppercase; font-size:.78rem; }
+h1 { margin:8px 0 10px; font-size:2rem; line-height:1.15; }
+.hero-meta { color:var(--muted); display:flex; flex-wrap:wrap; gap:12px; font-size:.95rem; }
+.conf {
+  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+  padding:10px 14px; border-radius:999px;
+  background:rgba(49,199,123,.12); border:1px solid rgba(49,199,123,.22);
+  color:#b9f2d0; font-weight:800;
+}
+.summary-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;
+}
+.summary-card { padding:16px; }
+.summary-label { color:var(--muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.06em; }
+.summary-main { margin-top:8px; font-size:1.15rem; font-weight:800; }
+.summary-main.gold { color:var(--gold); }
+.summary-main.green { color:#9cf0c0; }
+.summary-main.blue { color:#bfe6ff; }
+.summary-main.red { color:#ffb3b3; }
+.summary-sub { margin-top:6px; color:var(--muted); font-size:.88rem; }
+.section-title { margin:0 0 12px; color:var(--gold); font-size:1.2rem; }
+.card-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;
+  margin-bottom:24px;
+}
+.runner-card { padding:16px; }
+.runner-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.runner-no { color:var(--muted); font-size:.82rem; font-weight:700; }
+.runner-card h3 { margin:4px 0 0; font-size:1.25rem; }
+.score-pill {
+  background:var(--gold); color:#111; font-weight:900; border-radius:999px; padding:7px 10px; white-space:nowrap;
+}
+.badges { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 10px; }
+.tag {
+  display:inline-block; padding:6px 10px; border-radius:999px; font-size:.76rem; font-weight:800;
+  border:1px solid transparent;
+}
+.tag.gold { background:rgba(230,195,106,.14); color:var(--gold); border-color:rgba(230,195,106,.22); }
+.tag.green { background:rgba(49,199,123,.14); color:#9cf0c0; border-color:rgba(49,199,123,.22); }
+.tag.red { background:rgba(255,113,113,.14); color:#ffb3b3; border-color:rgba(255,113,113,.22); }
+.tag.blue { background:rgba(83,183,255,.14); color:#bfe6ff; border-color:rgba(83,183,255,.22); }
+.tag.violet { background:rgba(173,140,255,.14); color:#d7c5ff; border-color:rgba(173,140,255,.22); }
+.price-grid {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:10px 0 12px;
+}
+.price-grid div {
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06);
+  border-radius:14px; padding:10px;
+}
+.price-grid span { display:block; color:var(--muted); font-size:.78rem; margin-bottom:4px; }
+.price-grid strong { font-size:1rem; }
+.runner-comment { color:#dfe8f0; line-height:1.45; margin:0; }
+.table-panel { padding:14px; overflow:hidden; }
+.table-scroll { overflow:auto; border-radius:16px; }
+table { width:100%; border-collapse:separate; border-spacing:0; min-width:1150px; }
+thead th {
+  position:sticky; top:0; z-index:5;
+  background:#111827; color:#f4f7fb; text-align:left;
+  padding:14px 12px; font-size:.9rem; border-bottom:1px solid var(--line);
+}
+tbody td {
+  padding:14px 12px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top;
+}
+tbody tr:nth-child(even) { background:rgba(255,255,255,.02); }
+tbody tr:hover { background:rgba(230,195,106,.05); }
+.horse-cell { min-width:240px; }
+.horse-name { font-weight:800; margin-bottom:8px; }
+.horse-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.bar-wrap {
+  position:relative; min-width:120px; height:26px; border-radius:999px;
+  background:rgba(255,255,255,.06); overflow:hidden; border:1px solid rgba(255,255,255,.08);
+}
+.bar {
+  position:absolute; left:0; top:0; bottom:0;
+  background:linear-gradient(90deg,#10b981,#34d399);
+}
+.bar-wrap span {
+  position:relative; z-index:1; display:flex; align-items:center; justify-content:center;
+  height:100%; font-size:.85rem; font-weight:800;
+}
+.muted { color:var(--muted); }
+@media (max-width: 980px) {
+  .hero { grid-template-columns:1fr; }
+  .summary-grid { grid-template-columns:1fr 1fr; }
+}
+@media (max-width: 640px) {
+  h1 { font-size:1.55rem; }
+  .summary-grid { grid-template-columns:1fr; }
+  .price-grid { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="nav">
+      <a href="index.html">Index</a>
+      <a href="today.html">Today</a>
+      <a href="17-35_Wolverhampton.html">Standard View</a>
+      <a href="17-35_Wolverhampton_ladders.html">Ladders</a>
+      <a href="tips.html">Tips</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-main">
+        <div class="kicker">Pro Race Card</div>
+        <h1>Midnite: Built For 2026 Not 2006 Handicap</h1>
+        <div class="hero-meta">
+          <span>Designer duplicate view</span>
+          <span>Race file: 17-35_Wolverhampton_pro.html</span>
+        </div>
+        <div class="conf">Data Confidence (Race): 100.0%</div>
+      </div>
+      <div class="hero-side">
+        <div class="muted">This is a duplicate premium layout generated from the same model output, with no change to the underlying modelling.</div>
+        <div class="muted">Use this page for friend-facing viewing and cleaner race-by-race browsing.</div>
+      </div>
+    </section>
+
+    <section class="summary-grid">
+      
+        <div class="summary-card">
+          <div class="summary-label">Top Rated</div>
+          <div class="summary-main gold">Mr Nugget</div>
+          <div class="summary-sub">Odds 5.00 · Model 3.99</div>
+        </div>
+        
+      
+            <div class="summary-card">
+              <div class="summary-label">Best Value</div>
+              <div class="summary-main muted">None flagged</div>
+            </div>
+            
+      
+            <div class="summary-card">
+              <div class="summary-label">Best Big Price</div>
+              <div class="summary-main muted">None flagged</div>
+            </div>
+            
+      
+            <div class="summary-card">
+              <div class="summary-label">Main Lay Angle</div>
+              <div class="summary-main muted">None flagged</div>
+            </div>
+            
+    </section>
+
+    <section>
+      <h2 class="section-title">Featured runners</h2>
+      <div class="card-grid">
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#6</div>
+              <h3>Mr Nugget</h3>
+            </div>
+            <div class="score-pill">21.0</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>5.00</strong></div>
+            <div><span>Model</span><strong>3.99</strong></div>
+            <div><span>Raw</span><strong>2.15</strong></div>
+            <div><span>Score</span><strong>353</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#2</div>
+              <h3>Towerlands</h3>
+            </div>
+            <div class="score-pill">17.3</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>3.00</strong></div>
+            <div><span>Model</span><strong>3.39</strong></div>
+            <div><span>Raw</span><strong>4.95</strong></div>
+            <div><span>Score</span><strong>307</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#1</div>
+              <h3>Londoner</h3>
+            </div>
+            <div class="score-pill">16.0</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>4.33</strong></div>
+            <div><span>Model</span><strong>4.88</strong></div>
+            <div><span>Raw</span><strong>8.05</strong></div>
+            <div><span>Score</span><strong>276</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#3</div>
+              <h3>Arcadian Nights</h3>
+            </div>
+            <div class="score-pill">15.0</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>4.50</strong></div>
+            <div><span>Model</span><strong>6.66</strong></div>
+            <div><span>Raw</span><strong>11.37</strong></div>
+            <div><span>Score</span><strong>250</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#4</div>
+              <h3>Cristo</h3>
+            </div>
+            <div class="score-pill">14.3</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>8.50</strong></div>
+            <div><span>Model</span><strong>15.09</strong></div>
+            <div><span>Raw</span><strong>14.86</strong></div>
+            <div><span>Score</span><strong>232</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+        <article class="runner-card">
+          <div class="runner-top">
+            <div>
+              <div class="runner-no">#5</div>
+              <h3>Way Of Life</h3>
+            </div>
+            <div class="score-pill">12.8</div>
+          </div>
+          <div class="badges"></div>
+          <div class="price-grid">
+            <div><span>Real</span><strong>12.00</strong></div>
+            <div><span>Model</span><strong>30.18</strong></div>
+            <div><span>Raw</span><strong>18.49</strong></div>
+            <div><span>Score</span><strong>195</strong></div>
+          </div>
+          <p class="runner-comment">One of the more relevant runners on the current model view.</p>
+        </article>
+        
+      </div>
+    </section>
+
+    <section class="table-panel">
+      <h2 class="section-title">Full field view</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Horse</th>
+              <th>Real</th>
+              <th>Model</th>
+              <th>Raw</th>
+              <th>Score</th>
+              <th>Going</th>
+              <th>Distance</th>
+              <th>Class</th>
+              <th>Form</th>
+              <th>Data %</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            
+        <tr>
+          <td>6</td>
+          <td class="horse-cell">
+            <div class="horse-name">Mr Nugget</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>5.00</td>
+          <td>3.99</td>
+          <td>2.15</td>
+          <td>353</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+        <tr>
+          <td>2</td>
+          <td class="horse-cell">
+            <div class="horse-name">Towerlands</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>3.00</td>
+          <td>3.39</td>
+          <td>4.95</td>
+          <td>307</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+        <tr>
+          <td>1</td>
+          <td class="horse-cell">
+            <div class="horse-name">Londoner</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>4.33</td>
+          <td>4.88</td>
+          <td>8.05</td>
+          <td>276</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+        <tr>
+          <td>3</td>
+          <td class="horse-cell">
+            <div class="horse-name">Arcadian Nights</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>4.50</td>
+          <td>6.66</td>
+          <td>11.37</td>
+          <td>250</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+        <tr>
+          <td>4</td>
+          <td class="horse-cell">
+            <div class="horse-name">Cristo</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>8.50</td>
+          <td>15.09</td>
+          <td>14.86</td>
+          <td>232</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+        <tr>
+          <td>5</td>
+          <td class="horse-cell">
+            <div class="horse-name">Way Of Life</div>
+            <div class="horse-tags"></div>
+          </td>
+          <td>12.00</td>
+          <td>30.18</td>
+          <td>18.49</td>
+          <td>195</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#d11c1c;font-weight:bold;&quot;&gt;✖&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;&lt;span style=&quot;color:#1ca31c;font-weight:bold;&quot;&gt;✔&lt;/span&gt;</td>
+          <td>
+        <div class="bar-wrap">
+          <div class="bar" style="width:100%"></div>
+          <span>100.0%</span>
+        </div>
+        </td>
+          <td>One of the more relevant runners on the current model view.</td>
+        </tr>
+        
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
