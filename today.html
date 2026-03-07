@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Today</title>
+<style>
+:root {
+  --bg:#0f1116;
+  --panel:#171b24;
+  --panel2:#1e2430;
+  --line:#2a3342;
+  --text:#eef2f7;
+  --muted:#aab4c3;
+  --gold:#e7c66a;
+  --green:#33c47d;
+  --red:#ff6f6f;
+  --blue:#4db3ff;
+  --violet:#aa8cff;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; font-family:Segoe UI,Arial,sans-serif; background:linear-gradient(180deg,#0b0d12,#131823 32%,#0f1116);
+  color:var(--text);
+}
+.wrap { max-width:1200px; margin:0 auto; padding:20px; }
+.topbar {
+  position:sticky; top:0; z-index:20; backdrop-filter:blur(10px);
+  background:rgba(10,12,18,.82); border-bottom:1px solid var(--line);
+}
+.nav {
+  max-width:1200px; margin:0 auto; padding:12px 20px; display:flex; gap:10px; flex-wrap:wrap;
+}
+.nav a {
+  text-decoration:none; color:var(--text); background:var(--panel); border:1px solid var(--line);
+  padding:10px 14px; border-radius:999px; font-weight:700; font-size:.92rem;
+}
+.hero {
+  padding:28px 0 18px;
+}
+.hero h1 {
+  margin:0 0 8px; font-size:2rem; color:var(--gold);
+}
+.hero p {
+  margin:0; color:var(--muted);
+}
+.grid {
+  display:grid; gap:16px;
+}
+.grid.stats { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); margin:18px 0 26px; }
+.stat {
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line); border-radius:18px; padding:18px;
+}
+.stat .k { color:var(--muted); font-size:.9rem; }
+.stat .v { font-size:1.8rem; font-weight:800; margin-top:8px; }
+.section { margin:24px 0 14px; }
+.section h2 { margin:0 0 12px; color:var(--gold); font-size:1.25rem; }
+.pick-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; }
+.pick-card {
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line); border-radius:20px; padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.22);
+}
+.pick-card.compact { padding:14px; }
+.pick-top {
+  display:flex; justify-content:space-between; gap:12px; align-items:flex-start;
+}
+.pick-card h3 { margin:4px 0 0; font-size:1.25rem; }
+.meta { color:var(--muted); font-size:.88rem; }
+.score-pill {
+  white-space:nowrap; font-size:.82rem; font-weight:800; color:#111;
+  background:var(--gold); border-radius:999px; padding:7px 10px;
+}
+.badges { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 10px; }
+.tag {
+  display:inline-block; border-radius:999px; padding:6px 10px; font-size:.78rem;
+  font-weight:800; border:1px solid transparent;
+}
+.tag.gold { background:rgba(231,198,106,.14); color:var(--gold); border-color:rgba(231,198,106,.24); }
+.tag.green { background:rgba(51,196,125,.14); color:#8ef0bd; border-color:rgba(51,196,125,.24); }
+.tag.red { background:rgba(255,111,111,.14); color:#ffb2b2; border-color:rgba(255,111,111,.24); }
+.tag.blue { background:rgba(77,179,255,.14); color:#b9e3ff; border-color:rgba(77,179,255,.24); }
+.tag.violet { background:rgba(170,140,255,.14); color:#d0bfff; border-color:rgba(170,140,255,.24); }
+.prices {
+  display:flex; gap:12px; flex-wrap:wrap; color:#d8e0ea; font-size:.92rem; margin:10px 0;
+}
+.comment {
+  margin:12px 0 0; color:#dfe6ef; line-height:1.45;
+}
+.actions {
+  margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;
+}
+.btn {
+  text-decoration:none; display:inline-block; background:var(--gold); color:#111; font-weight:800;
+  padding:10px 14px; border-radius:12px;
+}
+.meeting-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+.meeting-card {
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line); border-radius:20px; padding:16px;
+}
+.meeting-card h3 { margin:0 0 8px; color:var(--gold); }
+.meeting-card p { margin:0 0 8px; color:var(--muted); }
+.race-row {
+  display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-top:1px solid rgba(255,255,255,.06);
+}
+.race-row:first-of-type { border-top:none; }
+.small { color:var(--muted); font-size:.88rem; }
+.footer { color:#8b94a3; padding:30px 0 50px; text-align:center; }
+@media (max-width: 720px) {
+  .hero h1 { font-size:1.55rem; }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="nav">
+      <a href="index.html">Index</a>
+      <a href="today.html">Today</a>
+      <a href="tips.html">Tips</a>
+      <a href="racecards_pro.html">Racecards Pro</a>
+      <a href="value.html">Value</a>
+      <a href="ai_best_bets.html">AI Best Bets</a>
+    </div>
+  </div>
+  <div class="wrap">
+    
+    <section class="hero">
+      <h1>🏇 Today’s Model Angles</h1>
+      <p>Cleaner public-facing view of your daily output using the same model and JSON.</p>
+    </section>
+    
+    <div class="grid stats">
+      <div class="stat"><div class="k">Races with angles</div><div class="v">32</div></div>
+      <div class="stat"><div class="k">Best backs</div><div class="v">38</div></div>
+      <div class="stat"><div class="k">Each-way / big price</div><div class="v">21</div></div>
+      <div class="stat"><div class="k">Lays</div><div class="v">3</div></div>
+      <div class="stat"><div class="k">Forecast / tricast</div><div class="v">5</div></div>
+    </div>
+    
+    <section class="section">
+      <h2>🔥 Spotlight</h2>
+      <div class="pick-grid">
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 14:27 · Sandown</div>
+              <h3>Game Colours</h3>
+            </div>
+            <div class="score-pill">Score 49.0</div>
+          </div>
+          <div class="badges"><span class="tag green">Value</span><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 41.00</span> <span><b>Raw:</b> 6.14</span></div>
+          <p class="comment">Strong model-market mismatch: both composite and raw figures like this more than the market does.</p>
+          <div class="actions">
+            <a class="btn" href="14-27_Sandown.html">Open Full Card</a>
+          </div>
+        </article>
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 14:27 · Sandown</div>
+              <h3>Game Colours</h3>
+            </div>
+            <div class="score-pill">Score 49.0</div>
+          </div>
+          <div class="badges"><span class="tag green">Value</span><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 41.00</span> <span><b>Raw:</b> 6.14</span></div>
+          <p class="comment">Strong model-market mismatch: both composite and raw figures like this more than the market does.</p>
+          <div class="actions">
+            <a class="btn" href="14-27_Sandown.html">Open Full Card</a>
+          </div>
+        </article>
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 14:27 · Sandown</div>
+              <h3>Star Of Guiting</h3>
+            </div>
+            <div class="score-pill">Score 38.2</div>
+          </div>
+          <div class="badges"><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 19.00</span> <span><b>Raw:</b> 2.33</span></div>
+          <p class="comment">Raw model has this much stronger than the market rank suggests, giving it outsider appeal.</p>
+          <div class="actions">
+            <a class="btn" href="14-27_Sandown.html">Open Full Card</a>
+          </div>
+        </article>
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 14:27 · Sandown</div>
+              <h3>Star Of Guiting</h3>
+            </div>
+            <div class="score-pill">Score 38.2</div>
+          </div>
+          <div class="badges"><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 19.00</span> <span><b>Raw:</b> 2.33</span></div>
+          <p class="comment">Raw model has this much stronger than the market rank suggests, giving it outsider appeal.</p>
+          <div class="actions">
+            <a class="btn" href="14-27_Sandown.html">Open Full Card</a>
+          </div>
+        </article>
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 15:15 · Wolverhampton</div>
+              <h3>Heathcliff</h3>
+            </div>
+            <div class="score-pill">Score 37.2</div>
+          </div>
+          <div class="badges"><span class="tag green">Value</span><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 23.00</span> <span><b>Raw:</b> 3.09</span></div>
+          <p class="comment">Strong model-market mismatch: both composite and raw figures like this more than the market does.</p>
+          <div class="actions">
+            <a class="btn" href="15-15_Wolverhampton.html">Open Full Card</a>
+          </div>
+        </article>
+        
+        <article class="pick-card">
+          <div class="pick-top">
+            <div>
+              <div class="meta">07/03/2026 15:15 · Wolverhampton</div>
+              <h3>Heathcliff</h3>
+            </div>
+            <div class="score-pill">Score 37.2</div>
+          </div>
+          <div class="badges"><span class="tag green">Value</span><span class="tag blue">Raw Value</span><span class="tag violet">Overlay</span><span class="tag blue">Big Price</span></div>
+          <div class="prices"><span><b>Odds:</b> 23.00</span> <span><b>Raw:</b> 3.09</span></div>
+          <p class="comment">Strong model-market mismatch: both composite and raw figures like this more than the market does.</p>
+          <div class="actions">
+            <a class="btn" href="15-15_Wolverhampton.html">Open Full Card</a>
+          </div>
+        </article>
+        
+      </div>
+    </section>
+    <section class="section">
+      <h2>🏟️ Meetings</h2>
+      <div class="meeting-grid">
+        
+        <article class="meeting-card">
+          <h3>Ayr</h3>
+          <p>4 races · 3 backs · 0 big-price · 1 lays</p>
+          <div class="race-row"><span>El Jefe</span><a class="small" href="15-20_Ayr.html">open</a></div><div class="race-row"><span>Briery Butterfly</span><a class="small" href="16-30_Ayr.html">open</a></div><div class="race-row"><span>Popton Point</span><a class="small" href="17-05_Ayr.html">open</a></div>
+        </article>
+        
+        <article class="meeting-card">
+          <h3>Chelmsford City</h3>
+          <p>5 races · 4 backs · 0 big-price · 1 lays</p>
+          <div class="race-row"><span>Royal Jet</span><a class="small" href="20-30_Chelmsford_City.html">open</a></div><div class="race-row"><span>Sir Rodneyredblood</span><a class="small" href="20-00_Chelmsford_City.html">open</a></div><div class="race-row"><span>Mio Amico</span><a class="small" href="19-30_Chelmsford_City.html">open</a></div>
+        </article>
+        
+        <article class="meeting-card">
+          <h3>Gowran Park</h3>
+          <p>7 races · 4 backs · 2 big-price · 1 lays</p>
+          <div class="race-row"><span>Dorie Miller</span><a class="small" href="17-23_Gowran_Park.html">open</a></div><div class="race-row"><span>Old Saxony</span><a class="small" href="13-58_Gowran_Park.html">open</a></div><div class="race-row"><span>Marelly</span><a class="small" href="15-08_Gowran_Park.html">open</a></div>
+        </article>
+        
+        <article class="meeting-card">
+          <h3>Hereford</h3>
+          <p>4 races · 5 backs · 2 big-price · 0 lays</p>
+          <div class="race-row"><span>Air Apparent</span><a class="small" href="14-12_Hereford.html">open</a></div><div class="race-row"><span>Nancefordshore</span><a class="small" href="14-12_Hereford.html">open</a></div><div class="race-row"><span>Churchman</span><a class="small" href="15-25_Hereford.html">open</a></div>
+        </article>
+        
+        <article class="meeting-card">
+          <h3>Sandown</h3>
+          <p>5 races · 6 backs · 5 big-price · 0 lays</p>
+          <div class="race-row"><span>Game Colours</span><a class="small" href="14-27_Sandown.html">open</a></div><div class="race-row"><span>Star Of Guiting</span><a class="small" href="14-27_Sandown.html">open</a></div><div class="race-row"><span>Joan's Choice</span><a class="small" href="15-00_Sandown.html">open</a></div>
+        </article>
+        
+        <article class="meeting-card">
+          <h3>Wolverhampton</h3>
+          <p>7 races · 5 backs · 2 big-price · 0 lays</p>
+          <div class="race-row"><span>Heathcliff</span><a class="small" href="15-15_Wolverhampton.html">open</a></div><div class="race-row"><span>Addarella</span><a class="small" href="14-05_Wolverhampton.html">open</a></div><div class="race-row"><span>Two Tempting</span><a class="small" href="14-42_Wolverhampton.html">open</a></div>
+        </article>
+        
+      </div>
+    </section>
+    
+    <div class="footer">ScottyMelloty Racing Visualizer</div>
+  </div>
+</body>
+</html>
