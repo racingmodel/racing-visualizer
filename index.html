@@ -45,13 +45,13 @@
     <h2>🏁 Cheltenham</h2>
     <div class="day-label">Tuesday 10 March 2026</div>
     <div class="course-group">
-      <div class="card"><a href="2026-03-10_13-20_Cheltenham.html">13:20 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_14-00_Cheltenham.html">14:00 Cheltenham</a></div>
     </div>
 
     <h2>🏁 Cheltenham</h2>
     <div class="day-label">Wednesday 11 March 2026</div>
     <div class="course-group">
-      <div class="card"><a href="2026-03-11_13-20_Cheltenham.html">13:20 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-11_14-00_Cheltenham.html">14:00 Cheltenham</a></div>
     </div>
 
 
@@ -77,105 +77,99 @@
         return s;
       };
 
-    const pad2 = (n) => String(n).padStart(2, "0");
+      const pad2 = (n) => String(n).padStart(2, "0");
 
-    const normCourse = (s) =>
-    String(s || "")
-        .toLowerCase()
-        .replace(/[_-]+/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+      const normCourse = (s) =>
+        String(s || "")
+          .toLowerCase()
+          .replace(/[_-]+/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
 
-    const toIsoDate = (s) => {
-    const raw = String(s || "").trim();
-    if (!raw) return "";
+      const toIsoDate = (s) => {
+        const raw = String(s || "").trim();
+        if (!raw) return "";
 
-    // dd/mm/yyyy
-    let m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+        let m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
 
-    // yyyy-mm-dd
-    m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (m) return raw;
+        m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (m) return raw;
 
-    return "";
-    };
+        return "";
+      };
 
-    const extractRaceMetaFromHref = (a) => {
-    const href = String(a.getAttribute("href") || "").trim();
-    // e.g. 2026-03-10_13-20_Cheltenham.html
-    const m = href.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})_(.+)\.html$/i);
-    if (!m) return null;
+      const extractRaceMetaFromHref = (a) => {
+        const href = String(a.getAttribute("href") || "").trim();
+        const m = href.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})_(.+)\.html$/i);
+        if (!m) return null;
 
-    const isoDate = m[1];
-    const hhmm = `${m[2]}:${m[3]}`;
-    const course = String(m[4] || "").trim();
+        const isoDate = m[1];
+        const hhmm = `${m[2]}:${m[3]}`;
+        const course = String(m[4] || "").trim();
 
-    if (!course) return null;
-    return { isoDate, hhmm, course };
-    };
+        if (!course) return null;
+        return { isoDate, hhmm, course };
+      };
 
-    let EP_MAP = new Map();
-    let EP_LOADED = false;
+      let EP_MAP = new Map();
+      let EP_LOADED = false;
 
-    async function loadExtraPlacesOnce() {
-    if (EP_LOADED) return;
-    EP_LOADED = true;
+      async function loadExtraPlacesOnce() {
+        if (EP_LOADED) return;
+        EP_LOADED = true;
 
-    const urls = [
-        "extra_places.txt",
-        "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
-    ];
+        const urls = [
+          "extra_places.txt",
+          "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
+        ];
 
-    let txt = null;
-    for (const url of urls) {
-        try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) continue;
-        txt = await res.text();
-        if (txt) break;
-        } catch (e) {}
-    }
-    if (!txt) return;
-
-    const lines = txt.split(/
-?
-/).map(l => l.trim()).filter(Boolean);
-
-    for (const line of lines) {
-        try {
-        const obj = JSON.parse(line);
-        const dt = String(obj.race_datetime || "").trim();
-        const course = normCourse(obj.course || "");
-        const places = parseInt(obj.places, 10);
-
-        // expects "dd/mm/yyyy hh:mm"
-        const m = dt.match(/^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}):(\d{2})$/);
-        if (!m || !course) continue;
-
-        const isoDate = toIsoDate(m[1]);
-        const hh = pad2(m[2]);
-        const mm = pad2(m[3]);
-        const hhmm = `${hh}:${mm}`;
-
-        if (!isoDate) continue;
-
-        const key = `${course}|${isoDate}|${hhmm}`;
-        const prev = EP_MAP.get(key);
-        if (prev == null || (Number.isFinite(places) && places > prev)) {
-            EP_MAP.set(key, places);
+        let txt = null;
+        for (const url of urls) {
+          try {
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) continue;
+            txt = await res.text();
+            if (txt) break;
+          } catch (e) {}
         }
-        } catch (e) {}
-    }
-    }
+        if (!txt) return;
 
-    function epPlacesForAnchor(a) {
-    const meta = extractRaceMetaFromHref(a);
-    if (!meta) return null;
+        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-    const key = `${normCourse(meta.course)}|${meta.isoDate}|${meta.hhmm}`;
-    return EP_MAP.get(key) ?? null;
-    }
+        for (const line of lines) {
+          try {
+            const obj = JSON.parse(line);
+            const dt = String(obj.race_datetime || "").trim();
+            const course = normCourse(obj.course || "");
+            const places = parseInt(obj.places, 10);
+
+            const m = dt.match(/^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}):(\d{2})$/);
+            if (!m || !course) continue;
+
+            const isoDate = toIsoDate(m[1]);
+            const hh = pad2(m[2]);
+            const mm = pad2(m[3]);
+            const hhmm = `${hh}:${mm}`;
+
+            if (!isoDate) continue;
+
+            const key = `${course}|${isoDate}|${hhmm}`;
+            const prev = EP_MAP.get(key);
+            if (prev == null || (Number.isFinite(places) && places > prev)) {
+              EP_MAP.set(key, places);
+            }
+          } catch (e) {}
+        }
+      }
+
+      function epPlacesForAnchor(a) {
+        const meta = extractRaceMetaFromHref(a);
+        if (!meta) return null;
+
+        const key = `${normCourse(meta.course)}|${meta.isoDate}|${meta.hhmm}`;
+        return EP_MAP.get(key) ?? null;
+      }
 
       function extractMetaFromDoc(doc) {
         let runners = null;
