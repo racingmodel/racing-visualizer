@@ -9,13 +9,13 @@
     header { background: linear-gradient(135deg, #222 40%, #444); width: 100%; padding: 2rem 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); }
     header h1 { margin: 0; font-size: 2.5rem; color: #ffd700; letter-spacing: 1px; }
     .container { width: 100%; max-width: 1200px; padding: 2rem; }
-    .container h2 { width: 100%; text-align: left; margin: 2rem 0 1rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
+    .container h2 { width: 100%; text-align: left; margin: 2rem 0 0.4rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
+    .day-label { color: #cfcfcf; margin: 0 0 1rem; font-size: 1rem; }
     .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
     .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
     .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.1rem; display: inline-block; }
+    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.05rem; display: inline-block; }
 
-    /* meta row + badges */
     .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
     .badge {
       font-size: 0.78rem;
@@ -43,25 +43,15 @@
 
   <div class="container">
     <h2>🏁 Cheltenham</h2>
+    <div class="day-label">Tuesday 10 March 2026</div>
     <div class="course-group">
-      <div class="card"><a href="13-20_Cheltenham.html">13:20 Cheltenham</a></div>
-      <div class="card"><a href="14-00_Cheltenham.html">14:00 Cheltenham</a></div>
-      <div class="card"><a href="14-40_Cheltenham.html">14:40 Cheltenham</a></div>
-      <div class="card"><a href="15-20_Cheltenham.html">15:20 Cheltenham</a></div>
-      <div class="card"><a href="16-00_Cheltenham.html">16:00 Cheltenham</a></div>
-      <div class="card"><a href="16-40_Cheltenham.html">16:40 Cheltenham</a></div>
-      <div class="card"><a href="17-20_Cheltenham.html">17:20 Cheltenham</a></div>
-    </div>
-
-    <h2>🏁 Wolverhampton</h2>
-    <div class="course-group">
-      <div class="card"><a href="17-30_Wolverhampton.html">17:30 Wolverhampton</a></div>
-      <div class="card"><a href="18-00_Wolverhampton.html">18:00 Wolverhampton</a></div>
-      <div class="card"><a href="18-30_Wolverhampton.html">18:30 Wolverhampton</a></div>
-      <div class="card"><a href="19-00_Wolverhampton.html">19:00 Wolverhampton</a></div>
-      <div class="card"><a href="19-30_Wolverhampton.html">19:30 Wolverhampton</a></div>
-      <div class="card"><a href="20-00_Wolverhampton.html">20:00 Wolverhampton</a></div>
-      <div class="card"><a href="20-30_Wolverhampton.html">20:30 Wolverhampton</a></div>
+      <div class="card"><a href="2026-03-10_13-20_Cheltenham.html">13:20 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_14-00_Cheltenham.html">14:00 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_14-40_Cheltenham.html">14:40 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_15-20_Cheltenham.html">15:20 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_16-00_Cheltenham.html">16:00 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_16-40_Cheltenham.html">16:40 Cheltenham</a></div>
+      <div class="card"><a href="2026-03-10_17-20_Cheltenham.html">17:20 Cheltenham</a></div>
     </div>
 
 
@@ -78,7 +68,7 @@
 
   <script>
     (function () {
-      const isRaceLink = (href) => /^\d{2}-\d{2}_.+\.html$/i.test(href || "");
+      const isRaceLink = (href) => /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}_.+\.html$/i.test(href || "");
 
       const badge = (text, cls) => {
         const s = document.createElement("span");
@@ -90,7 +80,7 @@
       const pad2 = (n) => String(n).padStart(2, "0");
 
       const extractTimeCourseFromAnchor = (a) => {
-        const txt = String(a.textContent || "").trim(); // "17:42 Newcastle"
+        const txt = String(a.textContent || "").trim();
         const m = txt.match(/^(\d{1,2})[:.](\d{2})\s+(.+)$/);
         if (!m) return null;
         const hh = pad2(m[1]);
@@ -107,8 +97,7 @@
           .replace(/\s+/g, " ")
           .trim();
 
-      // Extra Places file (JSON lines)
-      let EP_MAP = new Map(); // "course|HH:MM" -> max places
+      let EP_MAP = new Map();
       let EP_LOADED = false;
 
       async function loadExtraPlacesOnce() {
