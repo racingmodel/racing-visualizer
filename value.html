@@ -11,6 +11,7 @@
     .nav-link { text-align: center; margin-bottom: 2rem; }
     .nav-link a { color: #00bfff; text-decoration: none; font-weight: bold; font-size: 1.1rem; }
     .nav-link a:hover { text-decoration: underline; }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -32,11 +33,7 @@
     tr.value-row      { background: #ffd700 !important; color: #222; font-weight: bold; }
     tr.blue-row       { background: #1f3b70 !important; color: #a8d1ff; font-weight: bold; border-left: 8px solid #00bfff; }
     tr.toprated-row   { background: #262629 !important; color: #ffe066; font-weight: bold; border-left: 8px solid #ffe066; }
-
-    /* rank overlay highlight */
     tr.overlay-row    { background: #0b3d2e !important; color: #c2ffd7; font-weight: bold; border-left: 8px solid #2ee59d; }
-
-    /* FC/TC highlight rows */
     tr.fc-row         { background: #23364d !important; color: #d5e9ff; font-weight: bold; border-left: 8px solid #00bfff; }
     tr.tc-row         { background: #2d213a !important; color: #f1d7ff; font-weight: bold; border-left: 8px solid #be7bff; }
 
@@ -44,7 +41,6 @@
     tr.multi-tag-row small.reason, tr.value-row small.reason { color: #000; }
     tr.aibest-row small.reason { color: #fff; }
 
-    /* Extra Places badge */
     .ep-badge {
       display: inline-block;
       margin-left: 6px;
@@ -58,7 +54,6 @@
       line-height: 1.2;
     }
 
-    /* Header flag badge (yellow card + blue ribbon + white plus) */
     .flag-badge {
       display: inline-block;
       vertical-align: -4px;
@@ -66,6 +61,22 @@
       margin-right: 8px;
     }
     .flag-badge svg { display: block; width: 100%; height: 100%; }
+
+    .date-divider td {
+      background: #12121c !important;
+      color: #ffd700 !important;
+      font-weight: 800;
+      text-align: left !important;
+      border-top: 2px solid #444;
+      border-bottom: 2px solid #444;
+      letter-spacing: 0.2px;
+    }
+    .date-sub {
+      color: #bbb;
+      font-weight: 600;
+      margin-left: 8px;
+      font-size: 0.92em;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +101,6 @@
   <h2>❌ Must Lay</h2>
   <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
-  <!-- FC/TC sections -->
   <h2>🔗 Forecasts (Top 2 clear)</h2>
   <table id="fc-table">
     <thead>
@@ -106,7 +116,6 @@
     </thead>
     <tbody></tbody>
   </table>
-  <!-- END FC/TC -->
 
   <h2>🤖 AI Suggested Bets</h2>
   <table id="aibets-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>AI Tag</th><th>Reason</th></tr></thead><tbody></tbody></table>
@@ -123,7 +132,6 @@
   <h2>💰 Model Value</h2>
   <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
-  <!-- Rank Overlays section -->
   <h2>📊 Rank Overlays (Model ≪ Market)</h2>
   <table id="overlay-table">
     <thead>
@@ -146,7 +154,6 @@
 
 <script>
 (async () => {
-  // --- Helpers
   const safeJSON = async (url) => {
     try {
       const r = await fetch(url, { cache: 'no-store' });
@@ -154,7 +161,7 @@
       return await r.json();
     } catch (e) {
       console.warn(`⚠️ Could not load ${url}:`, e.message || e);
-      return []; // graceful fallback
+      return [];
     }
   };
 
@@ -175,8 +182,13 @@
     return parts.length > 1 ? parts[1] : raceDT;
   };
 
+  const dateFromRaceDT = (raceDT) => {
+    if (!raceDT || typeof raceDT !== 'string') return '';
+    const parts = raceDT.split(' ');
+    return parts.length > 0 ? parts[0] : '';
+  };
+
   const parseRaceDT = (raceDT) => {
-    // expects "DD/MM/YYYY HH:MM"
     try {
       const [d, t='00:00'] = (raceDT || '').split(' ');
       const [day, month, year] = d.split('/').map(Number);
@@ -187,14 +199,26 @@
     }
   };
 
-  // normalize key so course matching is case-insensitive + trimmed
+  const prettyDateFromRaceDT = (raceDT) => {
+    try {
+      const [d] = (raceDT || '').split(' ');
+      const [day, month, year] = d.split('/').map(Number);
+      const dt = new Date(year, (month || 1) - 1, day || 1);
+      return dt.toLocaleDateString('en-GB', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch {
+      return dateFromRaceDT(raceDT);
+    }
+  };
+
   const normCourse = s => (s || "").toString().trim().toLowerCase();
   const normDT     = s => (s || "").toString().trim();
   const raceKey    = (dt, course) => `${normDT(dt)}_${normCourse(course)}`;
 
-  // --- Load Extra Places (JSON Lines) ---
-  // File: extra_places.txt (one JSON object per line)
-  // Example line: {"race_datetime":"27/10/2025 16:20","course":"Redcar","places":4}
   const loadExtraPlaces = async (url) => {
     const txt = await safeText(url);
     const lines = (txt || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
@@ -203,8 +227,7 @@
       try {
         const obj = JSON.parse(line);
         const dt = String(obj.race_datetime || "");
-        the_course = String(obj.course || ""); // <-- local variable name
-        const course = the_course; // keep original for clarity
+        const course = String(obj.course || "");
         const places = Number(obj.places || obj.ew_places || 0);
         if (dt && course && places > 0) {
           map.set(raceKey(dt, course), places);
@@ -221,23 +244,19 @@
   const getPlaces = (entry) => extraPlaces.get(raceKey(entry.race_datetime, entry.course));
   const isExtraPlaceRace = (entry) => extraPlaces.has(raceKey(entry.race_datetime, entry.course));
 
-  // --- Load data (robust)
   const valueData = await safeJSON('value_bets.json');
-  let aiData = await safeJSON('ai_bets.json'); // let so we can filter it
+  let aiData = await safeJSON('ai_bets.json');
 
-  // --- Quality filter: require BOTH >= 90
   const filterValid = (entry) => {
     const coverage   = Number(entry?.data_coverage ?? 100);
     const confidence = Number(entry?.race_data_confidence ?? 100);
     return (coverage >= 90 && confidence >= 90);
   };
 
-  // Map for quick lookup when enriching AI rows with bookie/raw odds
   const valueMap = new Map(
     valueData.map(e => [raceKey(e.race_datetime, e.course) + "_" + e.horse, e])
   );
 
-  // Merge (dedupe by race_datetime+course+horse), union tags, prefer latest reason
   const merged = new Map();
   [...valueData, ...aiData].forEach(e => {
     const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
@@ -248,29 +267,22 @@
     merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
   });
 
-  // Filter & sort by race time within the day
   const entries = Array.from(merged.values())
     .filter(filterValid)
-    .sort((a,b) => timeFromRaceDT(a.race_datetime).localeCompare(timeFromRaceDT(b.race_datetime)));
+    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
 
-    // --- Must Lay should be "lay only" (hide if any other core tag present)
   const isLayOnly = (tags) => {
-    const isOverlayTag = t => t.startsWith("overlay+"); // decorative tags you may want to ignore
-
-    const core = (tags || []).filter(t => !isOverlayTag(t));  // ignore overlay+... if present
-    const layTags = new Set(["raw-lay", "ai-lay"]);           // treat either as a lay signal
-
+    const isOverlayTag = t => t.startsWith("overlay+");
+    const core = (tags || []).filter(t => !isOverlayTag(t));
+    const layTags = new Set(["raw-lay", "ai-lay"]);
     const hasLay = core.some(t => layTags.has(t));
     if (!hasLay) return false;
-
-    // "Lay only" means: after removing the lay tag(s), nothing else remains.
     const nonLay = core.filter(t => !layTags.has(t));
     return nonLay.length === 0;
   };
-
 
   const iconsOnly = (tags) => tags.map(t =>
       t === 'top-rated-clear' ? '🥇' :
@@ -281,9 +293,16 @@
       t === 'raw-value'       ? '📉' :
       t === 'raw-lay'         ? '❌' :
       t === 'ai-back'         ? '🟢' :
-      t === 'ai-lay'          ? '❌'  :
-      t === 'rank-overlay'    ? '📊'  : ''
+      t === 'ai-lay'          ? '❌' :
+      t === 'rank-overlay'    ? '📊' : ''
   ).join(' ');
+
+  const raceCellHTML = (entry) => {
+    const ep = getPlaces(entry);
+    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
+                          : `${entry.course ?? ""}`;
+    return `<div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div>`;
+  };
 
   const twoLineRow = (entry, tagList, rowClass = "") => {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
@@ -291,20 +310,14 @@
     const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
 
-    // show EP×N badge next to course
-    const ep = getPlaces(entry);
-    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
-                          : `${entry.course ?? ""}`;
-
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div></td>
+      <td>${raceCellHTML(entry)}</td>
       <td><div>${entry.horse ?? ""}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
     </tr>`;
   };
 
-  // compact renderer for Rank Overlays table
   const overlayRow = (entry, tagList, rowClass = "") => {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
     const bookie = entry.bookie_odds ?? "-";
@@ -312,12 +325,9 @@
     const delta  = (entry.rank_delta ?? "");
     const rModel = (entry.rank_model ?? "");
     const rMarket= (entry.rank_market ?? "");
-    const ep = getPlaces(entry);
-    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
-                          : `${entry.course ?? ""}`;
 
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td><div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div></td>
+      <td>${raceCellHTML(entry)}</td>
       <td><div>${entry.horse ?? ""}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><strong>${delta}</strong></td>
@@ -327,64 +337,93 @@
 
   const renderAITag = (tag) => tag === 'ai-back' ? '🟢 Back' : tag === 'ai-lay' ? '❌ Lay' : '';
 
-  // Odds parsing (supports decimal like "12.0" and fractional like "12/1")
   const parseOdds = (v) => {
     if (v == null) return NaN;
     const s = String(v).trim();
     if (!s) return NaN;
-    if (s.includes('/')) { // fractional
+    if (s.includes('/')) {
       const [a, b] = s.split('/').map(Number);
       if (!isNaN(a) && !isNaN(b) && b !== 0) return a / b + 1;
       return NaN;
     }
-    const n = parseFloat(s.replace(/[^\d.]/g, '')); // strip junk, keep decimals
+    const n = parseFloat(s.replace(/[^\d.]/g, ''));
     return isNaN(n) ? NaN : n;
   };
-  
-  // Big-priced = market (bookmaker) odds >= 11.00
+
   const isBigPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds);
     return !isNaN(dec) && dec >= 11.0;
   };
 
+  const dateDividerRow = (dateLabel, cols) =>
+    `<tr class="date-divider"><td colspan="${cols}">📅 ${dateLabel}</td></tr>`;
 
-  
-  // --- Build buckets
-  let multi='', aihtml='', rawlays='', rawv='', tony='', sleepers='', value='', blue='', top='', overlay='';
+  const buildGroupedRows = (items, rowBuilder, cols) => {
+    if (!items || !items.length) return "";
+    let html = "";
+    let lastDate = null;
+
+    items.forEach(item => {
+      const currentDate = dateFromRaceDT(item.race_datetime);
+      if (currentDate !== lastDate) {
+        html += dateDividerRow(prettyDateFromRaceDT(item.race_datetime), cols);
+        lastDate = currentDate;
+      }
+      html += rowBuilder(item);
+    });
+
+    return html;
+  };
+
+  let multiItems = [];
+  let rawlayItems = [];
+  let rawvItems = [];
+  let tonyItems = [];
+  let sleeperItems = [];
+  let valueItems = [];
+  let blueItems = [];
+  let topItems = [];
 
   entries.forEach(entry => {
     const tags = tagSet(entry);
-
-    // treat overlay+N tags as decorative, but DO count rank-overlay
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
 
-    // "Big Priced E/W - Extra Places" = multi-tag rows, ONLY IF race is an extra-places race
-  // "Big Priced E/W - Extra Places" = multi-tag rows in extra-places races AND 8.00+ market odds
     if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
-      multi += twoLineRow(entry, tags, "multi-tag-row");
+      multiItems.push(entry);
     }
-
-
-    if (isLayOnly(tags))               rawlays  += twoLineRow(entry, tags, "rawlay-row");
-    if (tags.includes("raw-value"))     rawv     += twoLineRow(entry, tags, "rawvalue-row");
-    if (tags.includes("tony-watch"))    tony     += twoLineRow(entry, tags, "tonywatch-row");
-    if (tags.includes("sleeper"))       sleepers += twoLineRow(entry, tags, "sleeper-row");
-    if (tags.includes("value"))         value    += twoLineRow(entry, tags, "value-row");
-    if (tags.includes("blue"))          blue     += twoLineRow(entry, tags, "blue-row");
-    if (tags.includes("top-rated-clear")) top    += twoLineRow(entry, tags, "toprated-row");
+    if (isLayOnly(tags))                 rawlayItems.push(entry);
+    if (tags.includes("raw-value"))      rawvItems.push(entry);
+    if (tags.includes("tony-watch"))     tonyItems.push(entry);
+    if (tags.includes("sleeper"))        sleeperItems.push(entry);
+    if (tags.includes("value"))          valueItems.push(entry);
+    if (tags.includes("blue"))           blueItems.push(entry);
+    if (tags.includes("top-rated-clear")) topItems.push(entry);
   });
 
-  // --- Rank Overlays: biggest Δ first
+  const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
+  const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
+  const rawv = buildGroupedRows(rawvItems, e => twoLineRow(e, tagSet(e), "rawvalue-row"), 4);
+  const tony = buildGroupedRows(tonyItems, e => twoLineRow(e, tagSet(e), "tonywatch-row"), 4);
+  const sleepers = buildGroupedRows(sleeperItems, e => twoLineRow(e, tagSet(e), "sleeper-row"), 4);
+  const value = buildGroupedRows(valueItems, e => twoLineRow(e, tagSet(e), "value-row"), 4);
+  const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row"), 4);
+  const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row"), 4);
+
   const overlayEntries = entries
     .filter(e => tagSet(e).includes("rank-overlay"))
-    .sort((a,b) => Number(b.rank_delta || 0) - Number(a.rank_delta || 0));
+    .sort((a,b) => {
+      const dt = parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
+      if (dt !== 0) return dt;
+      return Number(b.rank_delta || 0) - Number(a.rank_delta || 0);
+    });
 
-  overlayEntries.forEach(e => {
-    overlay += overlayRow(e, tagSet(e), "overlay-row");
-  });
+  const overlay = buildGroupedRows(
+    overlayEntries,
+    e => overlayRow(e, tagSet(e), "overlay-row"),
+    5
+  );
 
-  // --- Forecasts / Tricasts from value_bets.json combos (use raw valueData, not merged)
   const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
   const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
 
@@ -398,73 +437,69 @@
     .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
     .sort(byRaceTime);
 
-  let fcHtml = '', tcHtml = '';
-  fcEntries.forEach(e => {
+  const fcHtml = buildGroupedRows(fcEntries, (e) => {
     const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
     const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    fcHtml += `<tr class="fc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+    return `<tr class="fc-row">
+      <td>${raceCellHTML(e)}</td>
       <td><b>${asComboLabel(e)}</b></td>
       <td><small class="reason">${e.reason ?? ""}</small></td>
     </tr>`;
-  });
+  }, 3);
 
-  tcEntries.forEach(e => {
+  const tcHtml = buildGroupedRows(tcEntries, (e) => {
     const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
     const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
-    tcHtml += `<tr class="tc-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+    return `<tr class="tc-row">
+      <td>${raceCellHTML(e)}</td>
       <td><b>${asComboLabel(e)}</b></td>
       <td><small class="reason">${e.reason ?? ""}</small></td>
     </tr>`;
+  }, 3);
+
+  aiData = aiData
+    .filter(filterValid)
+    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+  const aiFiltered = aiData.filter(e => {
+    const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
+    return !!aiTag;
   });
 
-  // --- AI list (independent render, enriched, and filtered)
-  aiData = aiData.filter(filterValid)
-                 .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
-
-  aiData.forEach(e => {
+  const aihtml = buildGroupedRows(aiFiltered, (e) => {
     const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
     const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
-    if (!aiTag) return;
-
     const valueEntry = valueMap.get(key);
     const bookie = (valueEntry?.bookie_odds ?? e.bookie_odds) ?? "-";
     const raw    = (valueEntry?.raw_odds    ?? e.raw_odds)    ?? "-";
     const reason = e.reason || "";
-    const ep = extraPlaces.get(raceKey(e.race_datetime, e.course));
-    const courseHtml = ep ? `${e.course ?? ""} <span class="ep-badge">EP×${ep}</span>` : `${e.course ?? ""}`;
 
-    aihtml += `<tr class="aibest-row">
-      <td><div>${timeFromRaceDT(e.race_datetime)}</div><div>${courseHtml}</div></td>
+    return `<tr class="aibest-row">
+      <td>${raceCellHTML(e)}</td>
       <td>${e.horse ?? ""}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td>${renderAITag(aiTag)}</td>
       <td><small class="reason">🧠 ${reason}</small></td>
     </tr>`;
-  });
+  }, 5);
 
-  // --- Write tables
   const setBody = (sel, html, cols=4) => {
     const el = document.querySelector(sel + ' tbody');
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
-  setBody('#multitag-table',  multi);
-  setBody('#rawlays-table',   rawlays);
-
-  // FC/TC render
+  setBody('#multitag-table',  multi, 4);
+  setBody('#rawlays-table',   rawlays, 4);
   setBody('#fc-table',        fcHtml, 3);
   setBody('#tc-table',        tcHtml, 3);
-
   setBody('#aibets-table',    aihtml, 5);
-  setBody('#rawvalue-table',  rawv);
-  setBody('#tonywatch-table', tony);
-  setBody('#sleepers-table',  sleepers);
-  setBody('#value-table',     value);
+  setBody('#rawvalue-table',  rawv, 4);
+  setBody('#tonywatch-table', tony, 4);
+  setBody('#sleepers-table',  sleepers, 4);
+  setBody('#value-table',     value, 4);
   setBody('#overlay-table',   overlay, 5);
-  setBody('#blue-table',      blue);
-  setBody('#toprated-table',  top);
+  setBody('#blue-table',      blue, 4);
+  setBody('#toprated-table',  top, 4);
 })();
 </script>
 </body>
