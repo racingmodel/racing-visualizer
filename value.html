@@ -267,9 +267,10 @@
     merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
   });
 
-  const entries = Array.from(merged.values())
-    .filter(filterValid)
+  const allEntries = Array.from(merged.values())
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+  const entries = allEntries.filter(filterValid);
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -392,14 +393,16 @@
     if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
       multiItems.push(entry);
     }
-    if (isLayOnly(tags))                 rawlayItems.push(entry);
-    if (tags.includes("raw-value"))      rawvItems.push(entry);
-    if (tags.includes("tony-watch"))     tonyItems.push(entry);
-    if (tags.includes("sleeper"))        sleeperItems.push(entry);
-    if (tags.includes("value"))          valueItems.push(entry);
-    if (tags.includes("blue"))           blueItems.push(entry);
+    if (isLayOnly(tags))                  rawlayItems.push(entry);
+    if (tags.includes("raw-value"))       rawvItems.push(entry);
+    if (tags.includes("sleeper"))         sleeperItems.push(entry);
+    if (tags.includes("value"))           valueItems.push(entry);
+    if (tags.includes("blue"))            blueItems.push(entry);
     if (tags.includes("top-rated-clear")) topItems.push(entry);
   });
+
+  // 👀 Tony Watch ignores confidence / coverage / odds gates
+  tonyItems = allEntries.filter(entry => tagSet(entry).includes("tony-watch"));
 
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
