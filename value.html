@@ -128,10 +128,11 @@
       border-color: rgba(255,255,255,0.10);
     }
 
-    details.section-card.section-ewep { box-shadow: 0 10px 28px rgba(55,190,94,0.16); }
-    details.section-card.section-lay   { box-shadow: 0 10px 28px rgba(255,76,76,0.16); }
-    details.section-card.section-ew    { box-shadow: 0 10px 28px rgba(181,124,255,0.16); }
-    details.section-card.section-win   { box-shadow: 0 10px 28px rgba(57,211,83,0.16); }
+    details.section-card.section-shortlist { box-shadow: 0 10px 30px rgba(255,215,0,0.18); }
+    details.section-card.section-ewep      { box-shadow: 0 10px 28px rgba(55,190,94,0.16); }
+    details.section-card.section-lay       { box-shadow: 0 10px 28px rgba(255,76,76,0.16); }
+    details.section-card.section-ew        { box-shadow: 0 10px 28px rgba(181,124,255,0.16); }
+    details.section-card.section-win       { box-shadow: 0 10px 28px rgba(57,211,83,0.16); }
 
     summary.section-title {
       list-style: none;
@@ -220,6 +221,7 @@
 
     tr:nth-child(even) { background: var(--row-alt); }
 
+    tr.shortlist-row  { background: linear-gradient(90deg, rgba(255,215,0,0.16), rgba(255,215,0,0.05)) !important; color: #fff7cf; font-weight: bold; border-left: 8px solid #ffd700; }
     tr.multi-tag-row  { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
     tr.aibest-row     { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
     tr.rawlay-row     { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
@@ -262,6 +264,23 @@
       line-height: 1.2;
       box-shadow: 0 0 10px rgba(46,229,157,0.18);
     }
+
+    .type-badge {
+      display: inline-block;
+      padding: 0.18rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      line-height: 1.2;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    .type-badge.type-ewep { background: rgba(55,190,94,0.20); color: #d8ffe2; border-color: rgba(55,190,94,0.35); }
+    .type-badge.type-ew   { background: rgba(181,124,255,0.20); color: #f0deff; border-color: rgba(181,124,255,0.35); }
+    .type-badge.type-win  { background: rgba(57,211,83,0.20); color: #dbffe2; border-color: rgba(57,211,83,0.35); }
+    .type-badge.type-lay  { background: rgba(255,76,76,0.20); color: #ffdede; border-color: rgba(255,76,76,0.35); }
 
     .flag-badge {
       display: inline-block;
@@ -316,19 +335,44 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">21 Apr 2026, 13:07</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">21 Apr 2026, 12:15</span></div>
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
     </div>
 
     <div class="meta-pill-row">
+      <div class="meta-pill">⭐ Bet Shortlist = main actionable runners</div>
       <div class="meta-pill">✅ Must Win = shorter than 8/1</div>
       <div class="meta-pill">🎯 Each Way (Not EP) = 8/1+</div>
       <div class="meta-pill">🏁 Extra Place races shown separately</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
       <div class="meta-pill">🗂 Tap headers to open/close sections</div>
     </div>
+
+    <details class="section-card section-shortlist" open>
+      <summary class="section-title">
+        <span class="section-title-left">⭐ Bet Shortlist</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">Combined shortlist from Big E/W - EP, Each Way, Must Win and Must Lay.</div>
+        <div class="table-wrap">
+          <table id="shortlist-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Odds</th>
+                <th>Tags</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
 
     <details class="section-card section-ewep" open>
       <summary class="section-title">
@@ -687,6 +731,14 @@
       t === 'rank-overlay'    ? '📊' : ''
   ).join(' ');
 
+  const typeBadgeHTML = (type) => {
+    if (type === 'Big E/W - EP') return `<span class="type-badge type-ewep">Big E/W - EP</span>`;
+    if (type === 'Each Way') return `<span class="type-badge type-ew">Each Way</span>`;
+    if (type === 'Must Win') return `<span class="type-badge type-win">Must Win</span>`;
+    if (type === 'Must Lay') return `<span class="type-badge type-lay">Must Lay</span>`;
+    return `<span class="type-badge">${type || ''}</span>`;
+  };
+
   const raceCellHTML = (entry) => {
     const ep = getPlaces(entry);
     const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
@@ -700,6 +752,19 @@
     const tags = iconsOnly(tagList);
 
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td>${raceCellHTML(entry)}</td>
+      <td><div>${entry.horse ?? ""}</div></td>
+      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><div>${tags}</div></td>
+    </tr>`;
+  };
+
+  const shortlistRow = (entry, rowClass = "") => {
+    const bookie = entry.bookie_odds ?? "-";
+    const raw = entry.raw_odds ?? "-";
+    const tags = iconsOnly(tagSet(entry));
+    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td>${typeBadgeHTML(entry.shortlist_type)}</td>
       <td>${raceCellHTML(entry)}</td>
       <td><div>${entry.horse ?? ""}</div></td>
       <td><div>${bookie}</div><div>${raw}</div></td>
@@ -786,7 +851,7 @@
     const coreTags = tags.filter(t => !isOverlayTag(t));
 
     if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
-      multiItems.push(entry);
+      multiItems.push({ ...entry, shortlist_type: 'Big E/W - EP' });
     }
 
     if (
@@ -795,7 +860,7 @@
       isBigPriced(entry) &&
       !isExtraPlaceRace(entry)
     ) {
-      ewnotepItems.push(entry);
+      ewnotepItems.push({ ...entry, shortlist_type: 'Each Way' });
     }
 
     if (
@@ -804,10 +869,10 @@
       isMustWinPriced(entry) &&
       !isExtraPlaceRace(entry)
     ) {
-      mustwinItems.push(entry);
+      mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
     }
 
-    if (isLayOnly(tags))                  rawlayItems.push(entry);
+    if (isLayOnly(tags)) rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
     if (tags.includes("raw-value"))       rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
     if (tags.includes("value"))           valueItems.push(entry);
@@ -817,6 +882,14 @@
 
   tonyItems = allEntries.filter(entry => tagSet(entry).includes("tony-watch"));
 
+  const shortlistItems = [
+    ...multiItems,
+    ...ewnotepItems,
+    ...mustwinItems,
+    ...rawlayItems
+  ].sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 5);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
   const ewnotep = buildGroupedRows(ewnotepItems, e => twoLineRow(e, tagSet(e), "ewnotep-row"), 4);
@@ -903,6 +976,7 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
+  setBody('#shortlist-table', shortlist, 5);
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
   setBody('#ewnotep-table',   ewnotep, 4);
