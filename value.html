@@ -27,6 +27,7 @@
     tr.multi-tag-row  { background: #37be5e !important; color: #1b2b1a !important; font-weight: bold; border-left: 8px solid #26c738; border-bottom: 4px solid #111; }
     tr.aibest-row     { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
     tr.rawlay-row     { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
+    tr.mustwin-row    { background: #1f5a2e !important; color: #e7ffe7; font-weight: bold; border-left: 8px solid #39d353; }
     tr.rawvalue-row   { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
     tr.tonywatch-row  { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
     tr.sleeper-row    { background: #3e235e !important; color: #e0aaff; font-weight: bold; }
@@ -112,6 +113,9 @@
 
   <h2>❌ Must Lay</h2>
   <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+
+  <h2>✅ Must Win</h2>
+  <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
 
   <h2>🔗 Forecasts (Top 2 clear)</h2>
   <table id="fc-table">
@@ -297,6 +301,13 @@
     return nonLay.length === 0;
   };
 
+  const hasAnyLayTag = (tags) => {
+    const isOverlayTag = t => t.startsWith("overlay+");
+    const core = (tags || []).filter(t => !isOverlayTag(t));
+    const layTags = new Set(["raw-lay", "ai-lay"]);
+    return core.some(t => layTags.has(t));
+  };
+
   const iconsOnly = (tags) => tags.map(t =>
       t === 'top-rated-clear' ? '🥇' :
       t === 'sleeper'         ? '🌑' :
@@ -389,6 +400,7 @@
 
   let multiItems = [];
   let rawlayItems = [];
+  let mustwinItems = [];
   let rawvItems = [];
   let tonyItems = [];
   let sleeperItems = [];
@@ -404,6 +416,16 @@
     if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
       multiItems.push(entry);
     }
+
+    if (
+      coreTags.length >= 2 &&
+      !hasAnyLayTag(tags) &&
+      isBigPriced(entry) &&
+      !isExtraPlaceRace(entry)
+    ) {
+      mustwinItems.push(entry);
+    }
+
     if (isLayOnly(tags))                  rawlayItems.push(entry);
     if (tags.includes("raw-value"))       rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
@@ -417,6 +439,7 @@
 
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
+  const mustwin = buildGroupedRows(mustwinItems, e => twoLineRow(e, tagSet(e), "mustwin-row"), 4);
   const rawv = buildGroupedRows(rawvItems, e => twoLineRow(e, tagSet(e), "rawvalue-row"), 4);
   const tony = buildGroupedRows(tonyItems, e => twoLineRow(e, tagSet(e), "tonywatch-row"), 4);
   const sleepers = buildGroupedRows(sleeperItems, e => twoLineRow(e, tagSet(e), "sleeper-row"), 4);
@@ -504,6 +527,7 @@
 
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
+  setBody('#mustwin-table',   mustwin, 4);
   setBody('#fc-table',        fcHtml, 3);
   setBody('#tc-table',        tcHtml, 3);
   setBody('#aibets-table',    aihtml, 5);
