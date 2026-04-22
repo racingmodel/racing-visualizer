@@ -116,6 +116,43 @@
       border: 1px solid rgba(255,255,255,0.08);
     }
 
+
+.summary-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+  gap: 0.8rem;
+  margin: 0 0 1.2rem 0;
+}
+
+.summary-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+}
+
+.summary-card .kicker {
+  color: #c9d2e3;
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.25rem;
+}
+
+.summary-card .big {
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.summary-card .sub {
+  color: #b8c7df;
+  font-size: 0.78rem;
+  margin-top: 0.28rem;
+}
+
     details.section-card {
       background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       border: 1px solid rgba(255,255,255,0.06);
@@ -379,6 +416,105 @@
       flex: 0 0 auto;
     }
 
+
+.horse-main {
+  font-weight: 800;
+  margin-bottom: 0.18rem;
+  white-space: normal;
+}
+
+.horse-sub {
+  display: block;
+  font-size: 0.77rem;
+  color: #d4e0f3;
+  line-height: 1.28;
+  white-space: normal;
+  margin-top: 0.15rem;
+}
+
+.agreement-wrap {
+  min-width: 118px;
+}
+
+.agreement-score {
+  display: inline-block;
+  padding: 0.26rem 0.54rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #07131d;
+  background: linear-gradient(180deg, #8fe3ff, #34b4ea);
+  border: 1px solid rgba(143,227,255,0.65);
+  box-shadow: 0 0 14px rgba(52,180,234,0.18);
+}
+
+.agreement-score.strong {
+  color: #08130c;
+  background: linear-gradient(180deg, #84f2a2, #2fca58);
+  border-color: rgba(132,242,162,0.72);
+  box-shadow: 0 0 18px rgba(47,202,88,0.22);
+}
+
+.agreement-score.weak {
+  color: #1f1200;
+  background: linear-gradient(180deg, #ffd88d, #f0ab33);
+  border-color: rgba(255,216,141,0.72);
+  box-shadow: 0 0 16px rgba(240,171,51,0.20);
+}
+
+.engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  justify-content: center;
+  margin-top: 0.38rem;
+}
+
+.engine-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.7rem;
+  padding: 0.18rem 0.38rem;
+  border-radius: 999px;
+  font-size: 0.69rem;
+  font-weight: 800;
+  background: rgba(255,255,255,0.07);
+  color: #dbe6ff;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.engine-chip.on {
+  background: linear-gradient(180deg, rgba(57,211,83,0.42), rgba(57,211,83,0.18));
+  border-color: rgba(57,211,83,0.50);
+  color: #effff2;
+}
+
+.engine-chip.off {
+  background: linear-gradient(180deg, rgba(255,76,76,0.42), rgba(255,76,76,0.18));
+  border-color: rgba(255,76,76,0.44);
+  color: #fff0f0;
+}
+
+.metric-stack {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 126px;
+}
+
+.metric-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.74rem;
+  color: #dfe9f9;
+}
+
+.metric-line strong.pos { color: #8ff0aa; }
+.metric-line strong.neg { color: #ff9f9f; }
+.metric-line strong.neu { color: #dfe9f9; }
+
     .flag-badge svg {
       display: block;
       width: 100%;
@@ -426,7 +562,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Apr 2026, 18:43</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Apr 2026, 17:31</span></div>
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
@@ -439,6 +575,8 @@
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
     </div>
+
+    <div id="summary-dashboard" class="summary-dashboard"></div>
 
     <details class="section-card section-shortlist" open>
       <summary class="section-title">
@@ -453,8 +591,10 @@
               <tr>
                 <th>Type</th>
                 <th>Race</th>
-                <th>Horse</th>
+                <th>Horse / Reason</th>
                 <th>Odds</th>
+                <th>Agreement</th>
+                <th>Edges</th>
                 <th>Tags</th>
               </tr>
             </thead>
@@ -821,6 +961,72 @@
     'rank-overlay': '📊'
   };
 
+
+const numOrNull = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
+const signed = (n, digits = 1) => {
+  const v = numOrNull(n);
+  if (v == null) return '–';
+  return `${v > 0 ? '+' : ''}${v.toFixed(digits)}`;
+};
+
+const metricClass = (n) => {
+  const v = numOrNull(n);
+  if (v == null) return 'neu';
+  if (v > 0) return 'pos';
+  if (v < 0) return 'neg';
+  return 'neu';
+};
+
+const agreementCount = (entry) => {
+  const direct = Number(entry?.agreement_count);
+  if (Number.isFinite(direct)) return direct;
+  let count = 0;
+  if (parseOdds(entry?.model_odds) < parseOdds(entry?.bookie_odds)) count += 1;
+  if (parseOdds(entry?.raw_odds) < parseOdds(entry?.bookie_odds)) count += 1;
+  return count;
+};
+
+const agreementScoreHTML = (entry) => {
+  const count = agreementCount(entry);
+  const cls = count >= 3 ? 'strong' : count <= 1 ? 'weak' : '';
+  return `<span class="agreement-score ${cls}">${count}/4 aligned</span>`;
+};
+
+const engineChip = (label, on) => `<span class="engine-chip ${on ? 'on' : 'off'}">${label}</span>`;
+
+const agreementHTML = (entry) => {
+  const count = agreementCount(entry);
+  const modelOn = entry?.agree_model === true || (entry?.agree_model !== false && parseOdds(entry?.model_odds) < parseOdds(entry?.bookie_odds));
+  const rawOn   = entry?.agree_raw === true   || (entry?.agree_raw !== false   && parseOdds(entry?.raw_odds) < parseOdds(entry?.bookie_odds));
+  const xgOn    = entry?.agree_xg === true;
+  const llmOn   = entry?.agree_llm === true || (numOrNull(entry?.llm_score) != null && Number(entry.llm_score) >= 70);
+  return `<div class="agreement-wrap">${agreementScoreHTML(entry)}<div class="engine-row">${engineChip('M', modelOn)}${engineChip('R', rawOn)}${engineChip('X', xgOn)}${engineChip('L', llmOn)}</div></div>`;
+};
+
+const metricsHTML = (entry) => {
+  const modelEdge = entry?.model_edge_pts;
+  const rawEdge   = entry?.raw_edge_pts;
+  const xgEdge    = entry?.xg_edge_pts;
+  const kelly     = entry?.kelly_pct;
+  return `<div class="metric-stack">
+    <div class="metric-line"><span>M</span><strong class="${metricClass(modelEdge)}">${signed(modelEdge)}pp</strong></div>
+    <div class="metric-line"><span>R</span><strong class="${metricClass(rawEdge)}">${signed(rawEdge)}pp</strong></div>
+    <div class="metric-line"><span>X</span><strong class="${metricClass(xgEdge)}">${signed(xgEdge)}pp</strong></div>
+    <div class="metric-line"><span>K</span><strong class="${metricClass(kelly)}">${signed(kelly, 1)}%</strong></div>
+  </div>`;
+};
+
+const horseCellHTML = (entry) => {
+  const reasonBits = [];
+  if (entry?.reason) reasonBits.push(`🧠 ${entry.reason}`);
+  else if (entry?.agreement_note) reasonBits.push(entry.agreement_note);
+  return `<div class="horse-main">${entry.horse ?? ''}</div>${reasonBits.length ? `<small class="horse-sub">${reasonBits.join(' • ')}</small>` : ''}`;
+};
+
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
 
   const shortlistTagsHTML = (tags) => {
@@ -862,12 +1068,16 @@
   const shortlistRow = (entry, rowClass = "") => {
     const bookie = entry.bookie_odds ?? "-";
     const raw = entry.raw_odds ?? "-";
+    const model = entry.model_odds ?? "-";
+    const xgOdds = entry.xg_odds ?? "-";
     const tags = tagSet(entry);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${typeBadgeHTML(entry.shortlist_type)}</td>
       <td>${raceCellHTML(entry)}</td>
-      <td><div>${entry.horse ?? ""}</div></td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td>${horseCellHTML(entry)}</td>
+      <td><div>B ${bookie}</div><div>M ${model}</div><div>R ${raw}</div><div>X ${xgOdds || '-'}</div></td>
+      <td>${agreementHTML(entry)}</td>
+      <td>${metricsHTML(entry)}</td>
       <td>${shortlistTagsHTML(tags)}</td>
     </tr>`;
   };
@@ -987,9 +1197,13 @@
     ...ewnotepItems,
     ...mustwinItems,
     ...rawlayItems
-  ].sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  ].sort((a,b) => {
+    const agr = agreementCount(b) - agreementCount(a);
+    if (agr !== 0) return agr;
+    return parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
+  });
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 5);
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
   const ewnotep = buildGroupedRows(ewnotepItems, e => twoLineRow(e, tagSet(e), "ewnotep-row"), 4);
@@ -1076,7 +1290,26 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
-  setBody('#shortlist-table', shortlist, 5);
+
+const renderSummaryDashboard = () => {
+  const host = document.querySelector('#summary-dashboard');
+  if (!host) return;
+  const strongConsensus = shortlistItems.filter(e => agreementCount(e) >= 3).length;
+  const layCount = rawlayItems.length;
+  const epCount = multiItems.length;
+  const winCount = mustwinItems.length;
+  host.innerHTML = [
+    { kicker: 'Shortlist', big: shortlistItems.length, sub: 'main actionable runners' },
+    { kicker: 'Strong consensus', big: strongConsensus, sub: '3/4 or better aligned' },
+    { kicker: 'Must lays', big: layCount, sub: 'lay-only angles' },
+    { kicker: 'EP / each-way', big: epCount + ewnotepItems.length, sub: `${epCount} EP • ${ewnotepItems.length} standard EW` },
+    { kicker: 'Must wins', big: winCount, sub: 'shorter-priced win angles' }
+  ].map(card => `<div class="summary-card"><div class="kicker">${card.kicker}</div><div class="big">${card.big}</div><div class="sub">${card.sub}</div></div>`).join('');
+};
+
+renderSummaryDashboard();
+
+  setBody('#shortlist-table', shortlist, 7);
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
   setBody('#ewnotep-table',   ewnotep, 4);
