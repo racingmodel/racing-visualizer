@@ -5,136 +5,1095 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Race Visualizer</title>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1e1e2f; color: #f5f5f5; display: flex; flex-direction: column; align-items: center; }
-    header { background: linear-gradient(135deg, #222 40%, #444); width: 100%; padding: 2rem 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); }
-    header h1 { margin: 0; font-size: 2.5rem; color: #ffd700; letter-spacing: 1px; }
-    .container { width: 100%; max-width: 1200px; padding: 2rem; }
-    .container h2 { width: 100%; text-align: left; margin: 2rem 0 0.4rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
-    .day-label { color: #cfcfcf; margin: 0 0 1rem; font-size: 1rem; }
-    .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
-    .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
-    .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.05rem; display: inline-block; }
+    :root {
+      --bg: #0f1118;
+      --bg-2: #161a24;
+      --panel: rgba(31, 37, 52, 0.86);
+      --panel-2: rgba(40, 47, 66, 0.92);
+      --panel-3: rgba(22, 27, 39, 0.92);
+      --line: rgba(255,255,255,0.08);
+      --line-2: rgba(255,255,255,0.12);
+      --gold: #ffd700;
+      --gold-soft: #ffef98;
+      --text: #f7f8fc;
+      --muted: #bfc7da;
+      --muted-2: #8f9ab3;
+      --shadow: 0 14px 40px rgba(0,0,0,0.34);
+      --shadow-soft: 0 8px 24px rgba(0,0,0,0.22);
+      --green: #39d353;
+      --green-soft: #cbffd3;
+      --amber: #ffb84d;
+      --amber-soft: #ffe0b0;
+      --red: #ff6b6b;
+      --red-soft: #ffd4d4;
+      --blue: #37c7ff;
+      --blue-soft: #d6f6ff;
+      --purple: #bc8cff;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
 
-    .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(55,199,255,0.12), transparent 22%),
+        radial-gradient(circle at top left, rgba(255,215,0,0.10), transparent 20%),
+        linear-gradient(180deg, #0c0f16 0%, #121722 45%, #0f1118 100%);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 18px 36px;
+    }
+
+    header.hero {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)),
+        linear-gradient(180deg, rgba(15,17,24,0.66), rgba(15,17,24,0.18));
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
+    }
+
+    .hero-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 26px 18px 18px;
+    }
+
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .hero-title-wrap {
+      min-width: 280px;
+      flex: 1 1 520px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #dbe8ff;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 0.42rem 0.7rem;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    header.hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.04;
+      letter-spacing: 0.01em;
+      color: var(--gold);
+      text-shadow: 0 4px 24px rgba(255,215,0,0.16);
+    }
+
+    .hero-subtitle {
+      margin: 12px 0 0;
+      max-width: 780px;
+      color: #d8e2f8;
+      font-size: 1rem;
+      line-height: 1.55;
+      opacity: 0.94;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+      align-items: center;
+      flex: 0 1 420px;
+    }
+
+    .hero-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0.82rem 1rem;
+      border-radius: 999px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      color: #f9fbff;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
+    }
+
+    .hero-btn:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,215,0,0.28);
+      filter: brightness(1.04);
+    }
+
+    .hero-btn.primary {
+      background: linear-gradient(180deg, rgba(255,215,0,0.24), rgba(255,215,0,0.10));
+      color: #fff8d0;
+      border-color: rgba(255,215,0,0.34);
+      box-shadow: 0 10px 28px rgba(255,215,0,0.12), var(--shadow-soft);
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .hero-stat {
+      background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+      min-height: 90px;
+    }
+
+    .hero-stat-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .hero-stat-value {
+      color: #fff;
+      font-size: clamp(1.2rem, 2.4vw, 1.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .hero-stat-sub {
+      margin-top: 6px;
+      color: var(--muted-2);
+      font-size: 0.8rem;
+    }
+
+    .sticky-tools {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      margin-top: 14px;
+      padding: 10px 0 12px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .sticky-tools-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(17,21,31,0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .search-wrap {
+      flex: 1 1 260px;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      min-height: 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      font-size: 0.95rem;
+      padding: 0.8rem 0.95rem;
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .search-wrap input::placeholder {
+      color: #9aa7c2;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      flex: 1 1 420px;
+    }
+
+    .filter-chip {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.045);
+      color: #eef3ff;
+      border-radius: 999px;
+      padding: 0.72rem 0.92rem;
+      min-height: 42px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+    }
+
+    .filter-chip:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,215,0,0.22);
+    }
+
+    .filter-chip.active {
+      background: linear-gradient(180deg, rgba(255,215,0,0.20), rgba(255,215,0,0.08));
+      color: #fff7cf;
+      border-color: rgba(255,215,0,0.32);
+      box-shadow: 0 8px 18px rgba(255,215,0,0.10);
+    }
+
+    .section-panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      margin-top: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.22rem;
+      color: var(--gold);
+      letter-spacing: 0.01em;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    .next-off-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mini-card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow-soft);
+      min-height: 126px;
+      overflow: hidden;
+    }
+
+    .mini-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, rgba(255,215,0,0.95), rgba(55,199,255,0.72));
+      opacity: 0.95;
+    }
+
+    .mini-card-time {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .mini-card-course {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--gold-soft);
+      margin-bottom: 8px;
+    }
+
+    .mini-card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .courses {
+      margin-top: 18px;
+    }
+
+    .course-section {
+      margin-top: 16px;
+      scroll-margin-top: 110px;
+    }
+
+    .course-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .course-title-wrap h2 {
+      margin: 0;
+      font-size: clamp(1.22rem, 2vw, 1.6rem);
+      color: var(--gold);
+      letter-spacing: 0.01em;
+    }
+
+    .day-label {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: 0.92rem;
+    }
+
+    .course-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .summary-pill,
     .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+      line-height: 1;
+      border-radius: 999px;
       font-size: 0.78rem;
-      padding: 0.2rem 0.5rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      padding: 0.48rem 0.62rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.06);
+      color: #e7edf9;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .summary-pill {
+      min-height: 34px;
+    }
+
+    .course-group {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      min-height: 208px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        linear-gradient(180deg, rgba(26,31,44,0.95), rgba(20,24,35,0.95));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.18s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+      isolation: isolate;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: linear-gradient(180deg, rgba(160,170,195,0.55), rgba(160,170,195,0.18));
+      z-index: 0;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.34), 0 0 0 1px rgba(255,255,255,0.04);
+      border-color: rgba(255,215,0,0.18);
+    }
+
+    .card.is-hi::before {
+      background: linear-gradient(180deg, rgba(57,211,83,0.98), rgba(57,211,83,0.28));
+    }
+
+    .card.is-mid::before {
+      background: linear-gradient(180deg, rgba(255,184,77,0.98), rgba(255,184,77,0.26));
+    }
+
+    .card.is-lo::before {
+      background: linear-gradient(180deg, rgba(255,107,107,0.98), rgba(255,107,107,0.26));
+    }
+
+    .card.has-ep {
+      border-color: rgba(55,199,255,0.22);
+      box-shadow:
+        0 12px 32px rgba(0,0,0,0.28),
+        0 0 0 1px rgba(55,199,255,0.08),
+        0 0 28px rgba(55,199,255,0.08);
+    }
+
+    .card.has-ep .race-card-link::after {
+      content: "⭐ Extra Places";
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #0c1a21;
+      background: linear-gradient(180deg, #73dfff, #24bff4);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 999px;
+      padding: 0.34rem 0.58rem;
+      box-shadow: 0 6px 18px rgba(55,199,255,0.22);
+    }
+
+    .card.hidden {
+      display: none !important;
+    }
+
+    .race-card-link {
+      position: relative;
+      z-index: 1;
+      display: block;
+      height: 100%;
+      padding: 18px 18px 16px;
+      color: inherit;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .time-block {
+      min-width: 0;
+    }
+
+    .race-time {
+      font-size: clamp(1.55rem, 3vw, 2rem);
+      font-weight: 950;
+      line-height: 1;
+      color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .race-course {
+      margin-top: 7px;
+      color: var(--gold-soft);
+      font-size: 0.98rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .tap-hint {
+      color: var(--muted-2);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-top: 3px;
+    }
+
+    .conf-kpi {
+      flex: 0 0 auto;
+      min-width: 82px;
+      text-align: right;
+    }
+
+    .conf-label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+    }
+
+    .conf-value {
+      font-size: 1.22rem;
+      font-weight: 950;
+      line-height: 1;
+      color: #fff;
+    }
+
+    .conf-tier {
+      margin-top: 4px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .confidence-wrap {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .confidence-bar {
+      position: relative;
+      height: 9px;
       border-radius: 999px;
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #ddd;
-      line-height: 1.2;
-      white-space: nowrap;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.28);
     }
-    .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
-    .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
-    .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
-    .badge-mid { background: rgba(180, 180, 180, 0.14); border-color: rgba(180, 180, 180, 0.25); color: #e6e6e6; }
 
-    footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
-    @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
+    .confidence-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff6b6b, #ffb84d 50%, #39d353 100%);
+      box-shadow: 0 0 12px rgba(255,255,255,0.10);
+      transition: width 0.35s ease;
+    }
+
+    .confidence-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.79rem;
+      font-weight: 700;
+    }
+
+    .meta-row {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .badge-ep {
+      background: rgba(55,199,255,0.16);
+      border-color: rgba(55,199,255,0.28);
+      color: var(--blue-soft);
+    }
+
+    .badge-hi {
+      background: rgba(57,211,83,0.14);
+      border-color: rgba(57,211,83,0.24);
+      color: var(--green-soft);
+    }
+
+    .badge-mid {
+      background: rgba(255,184,77,0.15);
+      border-color: rgba(255,184,77,0.24);
+      color: var(--amber-soft);
+    }
+
+    .badge-lo {
+      background: rgba(255,107,107,0.14);
+      border-color: rgba(255,107,107,0.24);
+      color: var(--red-soft);
+    }
+
+    .badge-muted {
+      background: rgba(255,255,255,0.055);
+      border-color: rgba(255,255,255,0.09);
+      color: #d9e1f3;
+    }
+
+    .skeleton-badge {
+      min-width: 82px;
+      color: transparent;
+      background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.11), rgba(255,255,255,0.05));
+      background-size: 200% 100%;
+      animation: shimmer 1.25s linear infinite;
+      border-color: transparent;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .featured-card {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+        linear-gradient(180deg, rgba(26,31,44,0.95), rgba(20,24,35,0.95));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .featured-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255,215,0,0.18);
+    }
+
+    .featured-icon {
+      font-size: 1.45rem;
+      margin-bottom: 10px;
+    }
+
+    .featured-title {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--gold-soft);
+      margin-bottom: 6px;
+    }
+
+    .featured-copy {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .empty-state {
+      display: none;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.03);
+      color: var(--muted);
+      text-align: center;
+      font-weight: 700;
+    }
+
+    footer {
+      max-width: 1380px;
+      margin: 26px auto 0;
+      padding: 0 18px 26px;
+      color: #8a96b0;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1120px) {
+      .hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .course-group {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .next-off-grid,
+      .featured-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page-shell {
+        padding: 0 12px 28px;
+      }
+
+      .hero-inner {
+        padding: 22px 12px 14px;
+      }
+
+      .hero-top {
+        align-items: flex-start;
+      }
+
+      .hero-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .hero-btn {
+        flex: 1 1 100%;
+      }
+
+      .sticky-tools {
+        top: 0;
+        padding-top: 8px;
+      }
+
+      .sticky-tools-inner {
+        border-radius: 16px;
+        padding: 10px;
+      }
+
+      .search-wrap,
+      .filter-row {
+        flex-basis: 100%;
+      }
+
+      .filter-row {
+        justify-content: flex-start;
+      }
+
+      .hero-stats,
+      .next-off-grid,
+      .course-group,
+      .featured-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: 196px;
+      }
+
+      .course-header {
+        align-items: flex-start;
+      }
+
+      .course-summary {
+        justify-content: flex-start;
+      }
+
+      .race-card-link {
+        padding: 16px 16px 14px;
+      }
+
+      .race-time {
+        font-size: 1.7rem;
+      }
+
+      .conf-kpi {
+        min-width: 74px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      header.hero h1 {
+        font-size: 1.85rem;
+      }
+
+      .hero-subtitle {
+        font-size: 0.92rem;
+      }
+
+      .hero-stat {
+        min-height: 82px;
+        padding: 13px 14px;
+      }
+
+      .summary-pill,
+      .badge {
+        font-size: 0.74rem;
+      }
+
+      .filter-chip {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.82rem;
+      }
+
+      .card.has-ep .race-card-link::after {
+        top: 10px;
+        right: 10px;
+        font-size: 0.66rem;
+        padding: 0.3rem 0.5rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏇 Race Visualizer Index</h1>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <div class="hero-title-wrap">
+          <div class="eyebrow">🏇 Racing Model Hub</div>
+          <h1>Race Visualizer</h1>
+          <div class="hero-subtitle">
+            Fast mobile-first race dashboard for today’s cards. Scan the next races off, compare data confidence, spot extra-place opportunities, and jump straight into each race view.
+          </div>
+        </div>
+
+        <div class="hero-actions">
+          <a class="hero-btn primary" href="value.html">🔥 Today’s Bet & Lay</a>
+          <a class="hero-btn" href="AtoZ.html">🔎 A–Z Horses</a>
+          <a class="hero-btn" href="#featured-views">⚡ Featured Views</a>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-label">Today’s Courses</div>
+          <div class="hero-stat-value" id="stat-courses">—</div>
+          <div class="hero-stat-sub">Active meetings on this page</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Races Listed</div>
+          <div class="hero-stat-value" id="stat-races">—</div>
+          <div class="hero-stat-sub">Total race tiles available</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Extra Place Races</div>
+          <div class="hero-stat-value" id="stat-ep">—</div>
+          <div class="hero-stat-sub">Highlighted with premium blue glow</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-label">Average Confidence</div>
+          <div class="hero-stat-value" id="stat-avg-conf">—</div>
+          <div class="hero-stat-sub">Across races with confidence found</div>
+        </div>
+      </div>
+    </div>
   </header>
 
-  <div class="container">
-    <h2>🏁 Chepstow</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_16-20_Chepstow.html">16:20 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_16-55_Chepstow.html">16:55 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_17-30_Chepstow.html">17:30 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_18-05_Chepstow.html">18:05 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_18-37_Chepstow.html">18:37 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_19-07_Chepstow.html">19:07 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_19-37_Chepstow.html">19:37 Chepstow</a></div>
-      <div class="card"><a href="2026-04-24_20-07_Chepstow.html">20:07 Chepstow</a></div>
+  <div class="page-shell">
+    <div class="sticky-tools">
+      <div class="sticky-tools-inner">
+        <div class="search-wrap">
+          <input id="race-search" type="text" placeholder="Search course or time e.g. Doncaster or 17:10" />
+        </div>
+
+        <div class="filter-row">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="high">High Confidence</button>
+          <button class="filter-chip" data-filter="ep">Extra Places</button>
+          <button class="filter-chip" data-filter="bigfield">Big Fields</button>
+          <button class="filter-chip" data-filter="next">Next Off</button>
+        </div>
+      </div>
     </div>
 
-    <h2>🏁 Cork</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_17-05_Cork.html">17:05 Cork</a></div>
-      <div class="card"><a href="2026-04-24_17-40_Cork.html">17:40 Cork</a></div>
-      <div class="card"><a href="2026-04-24_18-15_Cork.html">18:15 Cork</a></div>
-      <div class="card"><a href="2026-04-24_18-45_Cork.html">18:45 Cork</a></div>
-      <div class="card"><a href="2026-04-24_19-15_Cork.html">19:15 Cork</a></div>
-      <div class="card"><a href="2026-04-24_19-45_Cork.html">19:45 Cork</a></div>
-      <div class="card"><a href="2026-04-24_20-15_Cork.html">20:15 Cork</a></div>
+    <section class="section-panel">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">⏱ Next Off</h2>
+          <div class="section-subtitle">The next races due off soonest, pulled straight from the race links on this page.</div>
+        </div>
+      </div>
+      <div class="next-off-grid" id="next-off-grid">
+        <div class="mini-card">
+          <div class="mini-card-time">Loading…</div>
+          <div class="mini-card-course">Building next-off strip</div>
+          <div class="mini-card-meta">
+            <span class="badge skeleton-badge">Loading</span>
+            <span class="badge skeleton-badge">Loading</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="courses" id="courses-root">
+      <section class="course-section" data-course-section="Chepstow">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Chepstow</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_16-20_Chepstow.html">16:20 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_16-55_Chepstow.html">16:55 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_17-30_Chepstow.html">17:30 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_18-05_Chepstow.html">18:05 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_18-37_Chepstow.html">18:37 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_19-07_Chepstow.html">19:07 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_19-37_Chepstow.html">19:37 Chepstow</a></div>
+          <div class="card"><a href="2026-04-24_20-07_Chepstow.html">20:07 Chepstow</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Cork">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Cork</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_17-05_Cork.html">17:05 Cork</a></div>
+          <div class="card"><a href="2026-04-24_17-40_Cork.html">17:40 Cork</a></div>
+          <div class="card"><a href="2026-04-24_18-15_Cork.html">18:15 Cork</a></div>
+          <div class="card"><a href="2026-04-24_18-45_Cork.html">18:45 Cork</a></div>
+          <div class="card"><a href="2026-04-24_19-15_Cork.html">19:15 Cork</a></div>
+          <div class="card"><a href="2026-04-24_19-45_Cork.html">19:45 Cork</a></div>
+          <div class="card"><a href="2026-04-24_20-15_Cork.html">20:15 Cork</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Doncaster">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Doncaster</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_13-40_Doncaster.html">13:40 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_14-15_Doncaster.html">14:15 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_14-50_Doncaster.html">14:50 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_15-25_Doncaster.html">15:25 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_16-00_Doncaster.html">16:00 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_16-35_Doncaster.html">16:35 Doncaster</a></div>
+          <div class="card"><a href="2026-04-24_17-10_Doncaster.html">17:10 Doncaster</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Fontwell">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Fontwell</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_17-15_Fontwell.html">17:15 Fontwell</a></div>
+          <div class="card"><a href="2026-04-24_17-45_Fontwell.html">17:45 Fontwell</a></div>
+          <div class="card"><a href="2026-04-24_18-20_Fontwell.html">18:20 Fontwell</a></div>
+          <div class="card"><a href="2026-04-24_18-50_Fontwell.html">18:50 Fontwell</a></div>
+          <div class="card"><a href="2026-04-24_19-20_Fontwell.html">19:20 Fontwell</a></div>
+          <div class="card"><a href="2026-04-24_19-50_Fontwell.html">19:50 Fontwell</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Kilbeggan">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Kilbeggan</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_16-15_Kilbeggan.html">16:15 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_16-50_Kilbeggan.html">16:50 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_17-23_Kilbeggan.html">17:23 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_17-56_Kilbeggan.html">17:56 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_18-28_Kilbeggan.html">18:28 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_18-59_Kilbeggan.html">18:59 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_19-29_Kilbeggan.html">19:29 Kilbeggan</a></div>
+          <div class="card"><a href="2026-04-24_19-59_Kilbeggan.html">19:59 Kilbeggan</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Perth">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Perth</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_13-30_Perth.html">13:30 Perth</a></div>
+          <div class="card"><a href="2026-04-24_14-05_Perth.html">14:05 Perth</a></div>
+          <div class="card"><a href="2026-04-24_14-40_Perth.html">14:40 Perth</a></div>
+          <div class="card"><a href="2026-04-24_15-12_Perth.html">15:12 Perth</a></div>
+          <div class="card"><a href="2026-04-24_15-47_Perth.html">15:47 Perth</a></div>
+          <div class="card"><a href="2026-04-24_16-25_Perth.html">16:25 Perth</a></div>
+          <div class="card"><a href="2026-04-24_17-00_Perth.html">17:00 Perth</a></div>
+          <div class="card"><a href="2026-04-24_17-35_Perth.html">17:35 Perth</a></div>
+        </div>
+      </section>
+
+      <section class="course-section" data-course-section="Sandown">
+        <div class="course-header">
+          <div class="course-title-wrap">
+            <h2>🏁 Sandown</h2>
+            <div class="day-label">Friday 24 April 2026</div>
+          </div>
+          <div class="course-summary"></div>
+        </div>
+        <div class="course-group">
+          <div class="card"><a href="2026-04-24_13-20_Sandown.html">13:20 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_13-50_Sandown.html">13:50 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_14-25_Sandown.html">14:25 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_15-00_Sandown.html">15:00 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_15-35_Sandown.html">15:35 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_16-10_Sandown.html">16:10 Sandown</a></div>
+          <div class="card"><a href="2026-04-24_16-45_Sandown.html">16:45 Sandown</a></div>
+        </div>
+      </section>
     </div>
 
-    <h2>🏁 Doncaster</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_13-40_Doncaster.html">13:40 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_14-15_Doncaster.html">14:15 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_14-50_Doncaster.html">14:50 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_15-25_Doncaster.html">15:25 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_16-00_Doncaster.html">16:00 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_16-35_Doncaster.html">16:35 Doncaster</a></div>
-      <div class="card"><a href="2026-04-24_17-10_Doncaster.html">17:10 Doncaster</a></div>
+    <div class="empty-state" id="empty-state">
+      No races match that search or filter.
     </div>
 
-    <h2>🏁 Fontwell</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_17-15_Fontwell.html">17:15 Fontwell</a></div>
-      <div class="card"><a href="2026-04-24_17-45_Fontwell.html">17:45 Fontwell</a></div>
-      <div class="card"><a href="2026-04-24_18-20_Fontwell.html">18:20 Fontwell</a></div>
-      <div class="card"><a href="2026-04-24_18-50_Fontwell.html">18:50 Fontwell</a></div>
-      <div class="card"><a href="2026-04-24_19-20_Fontwell.html">19:20 Fontwell</a></div>
-      <div class="card"><a href="2026-04-24_19-50_Fontwell.html">19:50 Fontwell</a></div>
-    </div>
+    <section class="section-panel" id="featured-views">
+      <div class="section-head">
+        <div>
+          <h2 class="section-title">⚡ Featured Views</h2>
+          <div class="section-subtitle">Quick access to the most useful model pages beyond the race list.</div>
+        </div>
+      </div>
 
-    <h2>🏁 Kilbeggan</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_16-15_Kilbeggan.html">16:15 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_16-50_Kilbeggan.html">16:50 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_17-23_Kilbeggan.html">17:23 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_17-56_Kilbeggan.html">17:56 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_18-28_Kilbeggan.html">18:28 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_18-59_Kilbeggan.html">18:59 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_19-29_Kilbeggan.html">19:29 Kilbeggan</a></div>
-      <div class="card"><a href="2026-04-24_19-59_Kilbeggan.html">19:59 Kilbeggan</a></div>
-    </div>
+      <div class="featured-grid">
+        <a class="featured-card" href="ai_best_bets.html">
+          <div class="featured-icon">🤖</div>
+          <div class="featured-title">AI Best Bets</div>
+          <div class="featured-copy">Focused AI-led view of the model’s strongest highlighted betting angles.</div>
+        </a>
 
-    <h2>🏁 Perth</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_13-30_Perth.html">13:30 Perth</a></div>
-      <div class="card"><a href="2026-04-24_14-05_Perth.html">14:05 Perth</a></div>
-      <div class="card"><a href="2026-04-24_14-40_Perth.html">14:40 Perth</a></div>
-      <div class="card"><a href="2026-04-24_15-12_Perth.html">15:12 Perth</a></div>
-      <div class="card"><a href="2026-04-24_15-47_Perth.html">15:47 Perth</a></div>
-      <div class="card"><a href="2026-04-24_16-25_Perth.html">16:25 Perth</a></div>
-      <div class="card"><a href="2026-04-24_17-00_Perth.html">17:00 Perth</a></div>
-      <div class="card"><a href="2026-04-24_17-35_Perth.html">17:35 Perth</a></div>
-    </div>
+        <a class="featured-card" href="xg_best_bets.html">
+          <div class="featured-icon">📈</div>
+          <div class="featured-title">xG Best Bets</div>
+          <div class="featured-copy">Alternative shortlist driven by the model’s xG-style view and value logic.</div>
+        </a>
 
-    <h2>🏁 Sandown</h2>
-    <div class="day-label">Friday 24 April 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-04-24_13-20_Sandown.html">13:20 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_13-50_Sandown.html">13:50 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_14-25_Sandown.html">14:25 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_15-00_Sandown.html">15:00 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_15-35_Sandown.html">15:35 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_16-10_Sandown.html">16:10 Sandown</a></div>
-      <div class="card"><a href="2026-04-24_16-45_Sandown.html">16:45 Sandown</a></div>
-    </div>
-
-
-    <h2>🏁 best_bets</h2>
-    <div class="course-group">
-      <div class="card"><a href="ai_best_bets.html">ai best_bets</a></div>
-      <div class="card"><a href="xg_best_bets.html">xg best_bets</a></div>
-      <div class="card"><a href="AtoZ.html">A to Z horses</a></div>
-    </div>
+        <a class="featured-card" href="AtoZ.html">
+          <div class="featured-icon">🔎</div>
+          <div class="featured-title">A–Z Horses</div>
+          <div class="featured-copy">Search-friendly alphabetical view of all modelled runners across the card.</div>
+        </a>
+      </div>
+    </section>
   </div>
 
   <footer>
@@ -143,7 +1102,7 @@
 
   <script>
     (function () {
-      const isRaceLink = (href) => /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}_.+\.html$/i.test(href || "");
+      const isRaceLink = (href) => /^\\d{4}-\\d{2}-\\d{2}_\\d{2}-\\d{2}_.+\\.html$/i.test(href || "");
 
       const badge = (text, cls) => {
         const s = document.createElement("span");
@@ -158,17 +1117,17 @@
         String(s || "")
           .toLowerCase()
           .replace(/[_-]+/g, " ")
-          .replace(/\s+/g, " ")
+          .replace(/\\s+/g, " ")
           .trim();
 
       const toIsoDate = (s) => {
         const raw = String(s || "").trim();
         if (!raw) return "";
 
-        let m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        let m = raw.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
         if (m) return `${m[3]}-${m[2]}-${m[1]}`;
 
-        m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        m = raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
         if (m) return raw;
 
         return "";
@@ -176,7 +1135,7 @@
 
       const extractRaceMetaFromHref = (a) => {
         const href = String(a.getAttribute("href") || "").trim();
-        const m = href.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})_(.+)\.html$/i);
+        const m = href.match(/^(\\d{4}-\\d{2}-\\d{2})_(\\d{2})-(\\d{2})_(.+)\\.html$/i);
         if (!m) return null;
 
         const isoDate = m[1];
@@ -185,6 +1144,31 @@
 
         if (!course) return null;
         return { isoDate, hhmm, course };
+      };
+
+      const parseHrefDate = (href) => {
+        const m = String(href || "").match(/^(\\d{4})-(\\d{2})-(\\d{2})_(\\d{2})-(\\d{2})_/);
+        if (!m) return null;
+        return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]));
+      };
+
+      const formatTimeToOff = (dt) => {
+        if (!(dt instanceof Date) || isNaN(dt.getTime())) return "Later today";
+        const now = new Date();
+        const diffMins = Math.round((dt.getTime() - now.getTime()) / 60000);
+        if (diffMins <= 0) return "Off soon";
+        if (diffMins < 60) return `${diffMins} min`;
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        return mins ? `${hrs}h ${mins}m` : `${hrs}h`;
+      };
+
+      const confidenceTier = (c) => {
+        const n = parseFloat(c);
+        if (!isFinite(n)) return { cls: "badge-muted", card: "", label: "Unknown" };
+        if (n >= 90) return { cls: "badge-hi", card: "is-hi", label: "Strong" };
+        if (n >= 86) return { cls: "badge-mid", card: "is-mid", label: "Solid" };
+        return { cls: "badge-lo", card: "is-lo", label: "Caution" };
       };
 
       let EP_MAP = new Map();
@@ -210,7 +1194,7 @@
         }
         if (!txt) return;
 
-        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        const lines = txt.split(/\\r?\\n/).map(l => l.trim()).filter(Boolean);
 
         for (const line of lines) {
           try {
@@ -219,7 +1203,7 @@
             const course = normCourse(obj.course || "");
             const places = parseInt(obj.places, 10);
 
-            const m = dt.match(/^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}):(\d{2})$/);
+            const m = dt.match(/^(\\d{2}\\/\\d{2}\\/\\d{4})\\s+(\\d{1,2}):(\\d{2})$/);
             if (!m || !course) continue;
 
             const isoDate = toIsoDate(m[1]);
@@ -262,12 +1246,64 @@
             const raw = (sp?.textContent || confDiv.textContent || "")
               .replace("Data Confidence (Race):", "")
               .trim();
-            const m = raw.match(/(\d+(\.\d+)?)/);
+            const m = raw.match(/(\\d+(\\.\\d+)?)/);
             if (m) conf = m[1];
           }
         } catch (e) {}
 
         return { runners, conf };
+      }
+
+      function decorateCardStructure(a) {
+        const href = a.getAttribute("href");
+        if (!isRaceLink(href)) return;
+
+        const card = a.closest(".card");
+        if (!card || card.dataset.decorated === "1") return;
+
+        const meta = extractRaceMetaFromHref(a);
+        if (!meta) return;
+
+        const originalHref = href;
+        const raceTime = meta.hhmm;
+        const course = meta.course;
+
+        card.dataset.course = course.toLowerCase();
+        card.dataset.time = raceTime;
+        card.dataset.href = originalHref;
+
+        a.className = "race-card-link";
+        a.innerHTML = `
+          <div class="card-top">
+            <div class="time-block">
+              <div class="race-time">${raceTime}</div>
+              <div class="race-course">${course}</div>
+              <div class="tap-hint">Tap to open race view</div>
+            </div>
+            <div class="conf-kpi">
+              <div class="conf-label">Confidence</div>
+              <div class="conf-value">—</div>
+              <div class="conf-tier">Loading</div>
+            </div>
+          </div>
+
+          <div class="confidence-wrap">
+            <div class="confidence-bar">
+              <div class="confidence-fill"></div>
+            </div>
+            <div class="confidence-meta">
+              <span>Model data confidence</span>
+              <span class="confidence-meta-value">Checking…</span>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <span class="badge skeleton-badge">Loading</span>
+            <span class="badge skeleton-badge">Loading</span>
+            <span class="badge skeleton-badge">Loading</span>
+          </div>
+        `;
+        card.dataset.decorated = "1";
       }
 
       async function enrichCard(a) {
@@ -276,12 +1312,14 @@
 
         const card = a.closest(".card");
         if (!card) return;
-        if (card.querySelector(".meta-row")) return;
 
-        const row = document.createElement("div");
-        row.className = "meta-row";
-        row.appendChild(badge("⏳ Loading…"));
-        card.appendChild(row);
+        decorateCardStructure(a);
+
+        const row = card.querySelector(".meta-row");
+        const confValueEl = card.querySelector(".conf-value");
+        const confTierEl = card.querySelector(".conf-tier");
+        const confFillEl = card.querySelector(".confidence-fill");
+        const confMetaValueEl = card.querySelector(".confidence-meta-value");
 
         try {
           await loadExtraPlacesOnce();
@@ -296,34 +1334,218 @@
 
           row.innerHTML = "";
 
-          row.appendChild(badge(meta.runners ? `${meta.runners} runners` : "runners ?"));
+          const runners = Number(meta.runners || 0);
+          const conf = meta.conf ? parseFloat(meta.conf) : NaN;
+          const tier = confidenceTier(conf);
 
-          if (meta.conf) {
-            const c = parseFloat(meta.conf);
-            if (isFinite(c) && c >= 90) {
-              row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
-            } else if (isFinite(c)) {
-              const cls = (c < 70) ? "badge-lo" : "badge-mid";
-              row.appendChild(badge(`⛔ ${meta.conf}%`, cls));
-            } else {
-              row.appendChild(badge("⛔ conf ?", "badge-mid"));
-            }
+          if (runners) {
+            row.appendChild(badge(`👥 ${runners} runners`, "badge-muted"));
+            card.dataset.runners = String(runners);
           } else {
-            row.appendChild(badge("⛔ conf ?", "badge-mid"));
+            row.appendChild(badge("👥 runners ?", "badge-muted"));
+            card.dataset.runners = "0";
+          }
+
+          if (isFinite(conf)) {
+            row.appendChild(badge(`📊 ${meta.conf}%`, tier.cls));
+            confValueEl.textContent = `${meta.conf}%`;
+            confTierEl.textContent = tier.label;
+            confMetaValueEl.textContent = tier.label;
+            confFillEl.style.width = `${Math.max(0, Math.min(conf, 100))}%`;
+            card.classList.remove("is-hi", "is-mid", "is-lo");
+            if (tier.card) card.classList.add(tier.card);
+            card.dataset.conf = String(conf);
+          } else {
+            row.appendChild(badge("📊 conf ?", "badge-muted"));
+            confValueEl.textContent = "—";
+            confTierEl.textContent = "Unknown";
+            confMetaValueEl.textContent = "Unknown";
+            confFillEl.style.width = "0%";
+            card.dataset.conf = "";
           }
 
           if (epPlaces != null) {
             row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
+            card.dataset.ep = "1";
+            card.dataset.epPlaces = String(epPlaces);
+            card.classList.add("has-ep");
+          } else {
+            card.dataset.ep = "0";
+            card.dataset.epPlaces = "0";
+            card.classList.remove("has-ep");
           }
 
         } catch (e) {
           row.innerHTML = "";
-          row.appendChild(badge("⚠ meta unavailable"));
+          row.appendChild(badge("⚠ meta unavailable", "badge-lo"));
+          confValueEl.textContent = "—";
+          confTierEl.textContent = "Unavailable";
+          confMetaValueEl.textContent = "Unavailable";
+          confFillEl.style.width = "0%";
+          card.dataset.conf = "";
+          card.dataset.runners = "0";
+          card.dataset.ep = "0";
         }
+
+        refreshCourseSummaries();
+        refreshTopStats();
+        buildNextOff();
+        applyFilters();
+      }
+
+      function refreshCourseSummaries() {
+        document.querySelectorAll(".course-section").forEach(section => {
+          const cards = Array.from(section.querySelectorAll(".card"));
+          const visibleCards = cards.filter(card => !card.classList.contains("hidden"));
+          const summary = section.querySelector(".course-summary");
+          if (!summary) return;
+
+          const confs = visibleCards
+            .map(card => parseFloat(card.dataset.conf))
+            .filter(v => Number.isFinite(v));
+
+          const runners = visibleCards
+            .map(card => parseInt(card.dataset.runners || "0", 10))
+            .filter(v => Number.isFinite(v));
+
+          const epCount = visibleCards.filter(card => card.dataset.ep === "1").length;
+          const avgConf = confs.length ? (confs.reduce((a, b) => a + b, 0) / confs.length).toFixed(1) : "—";
+          const totalRunners = runners.length ? runners.reduce((a, b) => a + b, 0) : "—";
+
+          summary.innerHTML = "";
+          summary.appendChild(badge(`🏇 ${visibleCards.length} races`, "badge-muted"));
+          summary.appendChild(badge(`📊 avg ${avgConf === "—" ? "—" : avgConf + "%"}`, "badge-mid"));
+          if (epCount > 0) summary.appendChild(badge(`⭐ ${epCount} EP`, "badge-ep"));
+          summary.appendChild(badge(`👥 ${totalRunners} runners`, "badge-muted"));
+
+          section.style.display = visibleCards.length ? "" : "none";
+        });
+
+        const empty = document.getElementById("empty-state");
+        const visibleRaceCards = Array.from(document.querySelectorAll(".card[data-course]")).filter(card => !card.classList.contains("hidden"));
+        empty.style.display = visibleRaceCards.length ? "none" : "block";
+      }
+
+      function refreshTopStats() {
+        const courseSections = Array.from(document.querySelectorAll(".course-section")).filter(section => section.style.display !== "none");
+        const raceCards = Array.from(document.querySelectorAll(".card[data-course]"));
+        const epCards = raceCards.filter(card => card.dataset.ep === "1");
+        const confs = raceCards
+          .map(card => parseFloat(card.dataset.conf))
+          .filter(v => Number.isFinite(v));
+
+        document.getElementById("stat-courses").textContent = courseSections.length;
+        document.getElementById("stat-races").textContent = raceCards.length;
+        document.getElementById("stat-ep").textContent = epCards.length;
+        document.getElementById("stat-avg-conf").textContent = confs.length
+          ? `${(confs.reduce((a, b) => a + b, 0) / confs.length).toFixed(1)}%`
+          : "—";
+      }
+
+      function buildNextOff() {
+        const grid = document.getElementById("next-off-grid");
+        if (!grid) return;
+
+        const cards = Array.from(document.querySelectorAll(".card[data-course]"))
+          .map(card => {
+            const a = card.querySelector("a.race-card-link");
+            const href = a?.getAttribute("href") || "";
+            const when = parseHrefDate(href);
+            return { card, a, href, when };
+          })
+          .filter(x => x.a && x.when instanceof Date && !isNaN(x.when.getTime()))
+          .sort((a, b) => a.when - b.when)
+          .slice(0, 3);
+
+        if (!cards.length) return;
+
+        grid.innerHTML = "";
+        cards.forEach(({ card, a, when }) => {
+          const course = card.dataset.course ? card.dataset.course.replace(/\\b\\w/g, c => c.toUpperCase()) : "";
+          const conf = card.dataset.conf ? `${parseFloat(card.dataset.conf).toFixed(1)}%` : "conf ?";
+          const runners = card.dataset.runners ? `${card.dataset.runners} runners` : "runners ?";
+          const ep = card.dataset.ep === "1" ? `EP×${card.dataset.epPlaces || ""}` : null;
+
+          const mini = document.createElement("a");
+          mini.className = "mini-card";
+          mini.href = a.getAttribute("href");
+
+          mini.innerHTML = `
+            <div class="mini-card-time">${card.dataset.time || ""}</div>
+            <div class="mini-card-course">${course}</div>
+            <div class="mini-card-meta">
+              <span class="badge badge-muted">⏰ ${formatTimeToOff(when)}</span>
+              <span class="badge badge-mid">📊 ${conf}</span>
+              <span class="badge badge-muted">👥 ${runners}</span>
+              ${ep ? `<span class="badge badge-ep">⭐ ${ep}</span>` : ""}
+            </div>
+          `;
+
+          grid.appendChild(mini);
+        });
+      }
+
+      function applyFilters() {
+        const query = (document.getElementById("race-search")?.value || "").trim().toLowerCase();
+        const activeChip = document.querySelector(".filter-chip.active");
+        const mode = activeChip?.dataset.filter || "all";
+
+        const cards = Array.from(document.querySelectorAll(".card[data-course]"));
+
+        cards.forEach(card => {
+          const course = String(card.dataset.course || "");
+          const time = String(card.dataset.time || "");
+          const conf = parseFloat(card.dataset.conf || "");
+          const runners = parseInt(card.dataset.runners || "0", 10);
+          const hasEP = card.dataset.ep === "1";
+
+          let matchesSearch = true;
+          if (query) {
+            matchesSearch = course.includes(query) || time.includes(query);
+          }
+
+          let matchesFilter = true;
+          if (mode === "high") matchesFilter = Number.isFinite(conf) && conf >= 90;
+          if (mode === "ep") matchesFilter = hasEP;
+          if (mode === "bigfield") matchesFilter = Number.isFinite(runners) && runners >= 12;
+          if (mode === "next") {
+            const href = card.dataset.href || "";
+            const dt = parseHrefDate(href);
+            const now = new Date();
+            const mins = dt ? ((dt.getTime() - now.getTime()) / 60000) : Infinity;
+            matchesFilter = mins >= -15 && mins <= 180;
+          }
+
+          card.classList.toggle("hidden", !(matchesSearch && matchesFilter));
+        });
+
+        refreshCourseSummaries();
+      }
+
+      function bindSearchAndFilters() {
+        const search = document.getElementById("race-search");
+        if (search) {
+          search.addEventListener("input", applyFilters);
+        }
+
+        document.querySelectorAll(".filter-chip").forEach(btn => {
+          btn.addEventListener("click", () => {
+            document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            applyFilters();
+          });
+        });
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".card a").forEach(enrichCard);
+        const raceLinks = Array.from(document.querySelectorAll(".card a")).filter(a => isRaceLink(a.getAttribute("href") || ""));
+        raceLinks.forEach(decorateCardStructure);
+
+        refreshTopStats();
+        buildNextOff();
+        bindSearchAndFilters();
+
+        raceLinks.forEach(enrichCard);
       });
     })();
   </script>
