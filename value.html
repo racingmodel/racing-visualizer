@@ -396,6 +396,32 @@
       white-space: normal;
     }
 
+
+    tr.wasvalue-row {
+      background: #3a3445 !important;
+      color: #d8d1e8;
+      font-weight: bold;
+      border-left: 8px solid #9ca3af;
+      opacity: 0.94;
+    }
+
+    .was-note {
+      display: block;
+      margin-top: 0.25rem;
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      white-space: normal;
+      line-height: 1.25;
+    }
+
+    .was-tag-list {
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.28rem;
+      white-space: normal;
+    }
+
     @media (max-width: 900px) {
       body { padding: 0.85rem; }
       .section-body { padding: 0.75rem 0.7rem 0.2rem 0.7rem; }
@@ -426,7 +452,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 17:23</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 17:49</span></div>
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
@@ -438,6 +464,7 @@
       <div class="meta-pill">🎯 Each Way (Not EP) = 8/1+</div>
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
+      <div class="meta-pill">🕘 Was Value = previously live, now dropped</div>
     </div>
 
     <details class="section-card section-shortlist" open>
@@ -456,6 +483,32 @@
                 <th>Horse</th>
                 <th>Odds</th>
                 <th>Tags</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+
+    <details class="section-card">
+      <summary class="section-title">
+        <span class="section-title-left">🕘 Was Value Earlier Today</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">
+          Runners that were flagged earlier, but no longer meet the latest model/odds criteria on the most recent run.
+        </div>
+        <div class="table-wrap">
+          <table id="wasvalue-table">
+            <thead>
+              <tr>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Latest Odds</th>
+                <th>Was Tagged As</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -780,13 +833,36 @@
     const existingTags = Array.isArray(existing.tags) ? existing.tags : [];
     const newTags = Array.isArray(e.tags) ? e.tags : [];
     const tags = Array.from(new Set([...existingTags, ...newTags]));
-    merged.set(key, { ...existing, ...e, tags, reason: e.reason || existing.reason || "" });
+
+    // If AI/value tags are present after merging, treat the merged row as live.
+    // If no current tags remain, keep the was_value lifecycle fields from value_bets.json.
+    const mergedLive = tags.length > 0 ? true : (e.currently_live ?? existing.currently_live);
+    const mergedStatus = tags.length > 0 ? "live" : (e.status || existing.status || "was_value");
+
+    merged.set(key, {
+      ...existing,
+      ...e,
+      tags,
+      currently_live: mergedLive,
+      status: mergedStatus,
+      reason: e.reason || existing.reason || ""
+    });
   });
 
   const allEntries = Array.from(merged.values())
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const entries = allEntries.filter(filterValid);
+
+  const isLiveEntry = (entry) => {
+    return entry?.currently_live !== false && entry?.status !== "was_value";
+  };
+
+  const liveEntries = entries.filter(isLiveEntry);
+
+  const wasValueEntries = entries
+    .filter(e => e?.was_value_earlier || e?.status === "was_value" || e?.currently_live === false)
+    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -822,6 +898,19 @@
   };
 
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
+
+  const wasTagsFor = (entry) => {
+    if (Array.isArray(entry.was_tags) && entry.was_tags.length) return entry.was_tags.map(t => String(t).toLowerCase());
+    if (Array.isArray(entry.previous_tags) && entry.previous_tags.length) return entry.previous_tags.map(t => String(t).toLowerCase());
+    if (Array.isArray(entry.history_tags) && entry.history_tags.length) return entry.history_tags.map(t => String(t).toLowerCase());
+    return [];
+  };
+
+  const wasTagsHTML = (entry) => {
+    const tags = [...new Set(wasTagsFor(entry).filter(Boolean))];
+    if (!tags.length) return "-";
+    return `<span class="was-tag-list">${tags.map(t => `<span class="tag-chip tag-${t}">${iconMap[t] || t}</span>`).join('')}</span>`;
+  };
 
   const shortlistTagsHTML = (tags) => {
     const uniq = [...new Set((tags || []).filter(Boolean))];
@@ -869,6 +958,30 @@
       <td><div>${entry.horse ?? ""}</div></td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td>${shortlistTagsHTML(tags)}</td>
+    </tr>`;
+  };
+
+  const wasValueRow = (entry) => {
+    const bookie = entry.bookie_odds ?? "-";
+    const raw = entry.raw_odds ?? "-";
+    const checked = entry.last_checked || "-";
+    const lastLive = entry.last_live_seen || entry.dropped_at || "-";
+
+    return `<tr class="wasvalue-row">
+      <td>${raceCellHTML(entry)}</td>
+      <td>
+        <div>${entry.horse ?? ""}</div>
+        <span class="was-note">No longer live on latest run</span>
+      </td>
+      <td>
+        <div>${bookie}</div>
+        <div>${raw}</div>
+        <span class="was-note">Checked: ${checked}</span>
+      </td>
+      <td>
+        ${wasTagsHTML(entry)}
+        <span class="was-note">Last live: ${lastLive}</span>
+      </td>
     </tr>`;
   };
 
@@ -945,7 +1058,7 @@
   let blueItems = [];
   let topItems = [];
 
-  entries.forEach(entry => {
+  liveEntries.forEach(entry => {
     const tags = tagSet(entry);
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
@@ -980,7 +1093,7 @@
     if (tags.includes("top-rated-clear")) topItems.push(entry);
   });
 
-  tonyItems = allEntries.filter(entry => tagSet(entry).includes("tony-watch"));
+  tonyItems = liveEntries.filter(entry => tagSet(entry).includes("tony-watch"));
 
   const shortlistItems = [
     ...multiItems,
@@ -1000,8 +1113,9 @@
   const value = buildGroupedRows(valueItems, e => twoLineRow(e, tagSet(e), "value-row"), 4);
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row"), 4);
   const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row"), 4);
+  const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 4);
 
-  const overlayEntries = entries
+  const overlayEntries = liveEntries
     .filter(e => tagSet(e).includes("rank-overlay"))
     .sort((a,b) => {
       const dt = parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
@@ -1020,11 +1134,13 @@
 
   const fcEntries = valueData
     .filter(filterValid)
+    .filter(isLiveEntry)
     .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
     .sort(byRaceTime);
 
   const tcEntries = valueData
     .filter(filterValid)
+    .filter(isLiveEntry)
     .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
     .sort(byRaceTime);
 
@@ -1077,6 +1193,7 @@
   };
 
   setBody('#shortlist-table', shortlist, 5);
+  setBody('#wasvalue-table', wasValueHtml, 4);
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
   setBody('#ewnotep-table',   ewnotep, 4);
