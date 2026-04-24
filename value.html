@@ -452,7 +452,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 18:15</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 17:49</span></div>
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
@@ -464,7 +464,7 @@
       <div class="meta-pill">🎯 Each Way (Not EP) = 8/1+</div>
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
-      <div class="meta-pill">🕘 Was Value = previously live, now dropped</div>
+      <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
     </div>
 
     <details class="section-card section-shortlist" open>
@@ -499,7 +499,7 @@
       </summary>
       <div class="section-body">
         <div class="section-note">
-          Runners that were flagged earlier, but no longer meet the latest model/odds criteria on the most recent run.
+          Runners that were flagged earlier and are either no longer live, or have dropped out of the Todays Bet & Lay Shortlist because the race has started.
         </div>
         <div class="table-wrap">
           <table id="wasvalue-table">
@@ -854,54 +854,50 @@
 
   const entries = allEntries.filter(filterValid);
 
-const RACE_EXPIRY_GRACE_MINS = 0; // change to 2 or 5 for a small buffer after race time
+  const RACE_EXPIRY_GRACE_MINS = 0; // change to 2 or 5 for a small buffer after race time
 
-const raceHasStarted = (entry) => {
-  const dt = parseRaceDT(entry?.race_datetime);
-  if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return false;
+  const tagSet = (entry) =>
+    Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
 
-  const expiryTime = new Date(dt.getTime() + (RACE_EXPIRY_GRACE_MINS * 60 * 1000));
-  return expiryTime <= new Date();
-};
+  const raceHasStarted = (entry) => {
+    const dt = parseRaceDT(entry?.race_datetime);
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return false;
 
-const isLiveEntry = (entry) => {
-  return (
-    entry?.currently_live !== false &&
-    entry?.status !== "was_value" &&
-    !raceHasStarted(entry)
-  );
-};
+    const expiryTime = new Date(dt.getTime() + (RACE_EXPIRY_GRACE_MINS * 60 * 1000));
+    return expiryTime <= new Date();
+  };
 
-const liveEntries = entries.filter(isLiveEntry);
+  const isLiveEntry = (entry) => {
+    return (
+      entry?.currently_live !== false &&
+      entry?.status !== "was_value"
+    );
+  };
 
-const isSameRunWasValueArtifact = (e) => {
-  // Guard against rows created and dropped inside the same run by an old writer.
-  // Genuine historical drops have first_seen and dropped_at from different runs/times.
-  const firstSeen = String(e?.first_seen || "");
-  const droppedAt = String(e?.dropped_at || "");
-  const histLen = Array.isArray(e?.history) ? e.history.length : 0;
+  const liveEntries = entries.filter(isLiveEntry);
 
-  return (
-    e?.status === "was_value" &&
-    firstSeen &&
-    droppedAt &&
-    firstSeen === droppedAt &&
-    histLen <= 1
-  );
-};
+  // Only the Today's Bet & Lay Shortlist uses this.
+  // The normal sections stay as a full daily record of live model tags.
+  const actionableLiveEntries = liveEntries.filter(e => !raceHasStarted(e));
 
-const wasValueEntries = entries
-  .filter(e =>
-    e?.was_value_earlier ||
-    e?.status === "was_value" ||
-    e?.currently_live === false ||
-    raceHasStarted(e)
-  )
-  .filter(e => !isSameRunWasValueArtifact(e))
-  .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  const isSameRunWasValueArtifact = (e) => {
+    // Guard against rows created and dropped inside the same run by an old writer.
+    // Genuine historical drops have first_seen and dropped_at from different runs/times.
+    const firstSeen = String(e?.first_seen || "");
+    const droppedAt = String(e?.dropped_at || "");
+    const histLen = Array.isArray(e?.history) ? e.history.length : 0;
 
-const tagSet = (entry) =>
-  Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
+    return (
+      e?.status === "was_value" &&
+      firstSeen &&
+      droppedAt &&
+      firstSeen === droppedAt &&
+      histLen <= 1
+    );
+  };
+
+  // Assigned after the shortlist helper functions are defined.
+  let wasValueEntries = [];
 
   const isLayOnly = (tags) => {
     const isOverlayTag = t => t.startsWith("overlay+");
@@ -939,6 +935,7 @@ const tagSet = (entry) =>
     if (Array.isArray(entry.was_tags) && entry.was_tags.length) return entry.was_tags.map(t => String(t).toLowerCase());
     if (Array.isArray(entry.previous_tags) && entry.previous_tags.length) return entry.previous_tags.map(t => String(t).toLowerCase());
     if (Array.isArray(entry.history_tags) && entry.history_tags.length) return entry.history_tags.map(t => String(t).toLowerCase());
+    if (Array.isArray(entry.tags) && entry.tags.length) return entry.tags.map(t => String(t).toLowerCase());
     return [];
   };
 
@@ -1007,7 +1004,7 @@ const tagSet = (entry) =>
       <td>${raceCellHTML(entry)}</td>
       <td>
         <div>${entry.horse ?? ""}</div>
-        <span class="was-note">${raceHasStarted(entry) ? "Race started — no longer live" : "No longer live on latest run"}</span>
+        <span class="was-note">${raceHasStarted(entry) ? "Race started — removed from shortlist" : "No longer live on latest run"}</span>
       </td>
       <td>
         <div>${bookie}</div>
@@ -1063,6 +1060,50 @@ const tagSet = (entry) =>
     return !isNaN(dec) && dec < 7.0;
   };
 
+  const getShortlistType = (entry) => {
+    const tags = tagSet(entry);
+    const isOverlayTag = t => t.startsWith("overlay+");
+    const coreTags = tags.filter(t => !isOverlayTag(t));
+
+    if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
+      return "Big E/W - EP";
+    }
+
+    if (
+      coreTags.length >= 3 &&
+      !hasAnyLayTag(tags) &&
+      isBigPriced(entry) &&
+      !isExtraPlaceRace(entry)
+    ) {
+      return "Each Way";
+    }
+
+    if (
+      coreTags.length >= 2 &&
+      !hasAnyLayTag(tags) &&
+      isMustWinPriced(entry) &&
+      !isExtraPlaceRace(entry)
+    ) {
+      return "Must Win";
+    }
+
+    if (isLayOnly(tags)) {
+      return "Must Lay";
+    }
+
+    return "";
+  };
+
+  wasValueEntries = entries
+    .filter(e =>
+      e?.was_value_earlier ||
+      e?.status === "was_value" ||
+      e?.currently_live === false ||
+      (raceHasStarted(e) && !!getShortlistType(e))
+    )
+    .filter(e => !isSameRunWasValueArtifact(e))
+    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
   const dateDividerRow = (dateLabel, cols) =>
     `<tr class="date-divider"><td colspan="${cols}">📅 ${dateLabel}</td></tr>`;
 
@@ -1096,32 +1137,13 @@ const tagSet = (entry) =>
 
   liveEntries.forEach(entry => {
     const tags = tagSet(entry);
-    const isOverlayTag = t => t.startsWith("overlay+");
-    const coreTags = tags.filter(t => !isOverlayTag(t));
+    const shortlistType = getShortlistType(entry);
 
-    if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigPriced(entry)) {
-      multiItems.push({ ...entry, shortlist_type: 'Big E/W - EP' });
-    }
+    if (shortlistType === 'Big E/W - EP') multiItems.push({ ...entry, shortlist_type: 'Big E/W - EP' });
+    if (shortlistType === 'Each Way')     ewnotepItems.push({ ...entry, shortlist_type: 'Each Way' });
+    if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
+    if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
 
-    if (
-      coreTags.length >= 3 &&
-      !hasAnyLayTag(tags) &&
-      isBigPriced(entry) &&
-      !isExtraPlaceRace(entry)
-    ) {
-      ewnotepItems.push({ ...entry, shortlist_type: 'Each Way' });
-    }
-
-    if (
-      coreTags.length >= 2 &&
-      !hasAnyLayTag(tags) &&
-      isMustWinPriced(entry) &&
-      !isExtraPlaceRace(entry)
-    ) {
-      mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
-    }
-
-    if (isLayOnly(tags)) rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
     if (tags.includes("raw-value"))       rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
     if (tags.includes("value"))           valueItems.push(entry);
@@ -1136,7 +1158,9 @@ const tagSet = (entry) =>
     ...ewnotepItems,
     ...mustwinItems,
     ...rawlayItems
-  ].sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  ]
+    .filter(e => !raceHasStarted(e))
+    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 5);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
