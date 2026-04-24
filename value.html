@@ -499,7 +499,7 @@
       </summary>
       <div class="section-body">
         <div class="section-note">
-          Runners that were flagged earlier and are either no longer live, or have dropped out of the Todays Bet & Lay Shortlist because the race has started.
+          Runners that previously qualified for Todays Bet & Lay Shortlist and have since dropped out, or had their race start.
         </div>
         <div class="table-wrap">
           <table id="wasvalue-table">
@@ -1004,7 +1004,7 @@
       <td>${raceCellHTML(entry)}</td>
       <td>
         <div>${entry.horse ?? ""}</div>
-        <span class="was-note">${raceHasStarted(entry) ? "Race started — removed from shortlist" : "No longer live on latest run"}</span>
+        <span class="was-note">${raceHasStarted(entry) ? "Race started — removed from shortlist" : "No longer in shortlist/latest run"}</span>
       </td>
       <td>
         <div>${bookie}</div>
@@ -1094,12 +1094,112 @@
     return "";
   };
 
+  const parseRunTS = (runTs) => {
+    if (!runTs) return null;
+    const txt = String(runTs).trim();
+    const m = txt.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (!m) return null;
+
+    const [, y, mo, d, h, mi, se = "0"] = m;
+    const dt = new Date(
+      Number(y),
+      Number(mo) - 1,
+      Number(d),
+      Number(h),
+      Number(mi),
+      Number(se)
+    );
+
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  };
+
+  const snapshotEntry = (entry, snap = {}) => ({
+    ...entry,
+    tags: Array.isArray(snap.tags) ? snap.tags : [],
+    bookie_odds: snap.bookie_odds ?? entry?.bookie_odds,
+    model_odds: snap.model_odds ?? entry?.model_odds,
+    raw_odds: snap.raw_odds ?? entry?.raw_odds,
+  });
+
+  const shortlistTypeFromSnapshot = (entry, snap = {}) => {
+    return getShortlistType(snapshotEntry(entry, snap));
+  };
+
+  const shortlistSnapshotsBeforeRaceStart = (entry) => {
+    const raceDT = parseRaceDT(entry?.race_datetime);
+    if (!(raceDT instanceof Date) || Number.isNaN(raceDT.getTime())) return [];
+
+    const snapshots = [];
+
+    if (Array.isArray(entry?.history)) {
+      entry.history.forEach(h => {
+        if (!Array.isArray(h?.tags) || !h.tags.length) return;
+        const seenAt = parseRunTS(h.run_ts);
+        snapshots.push({
+          ...h,
+          tags: h.tags,
+          seen_at: seenAt
+        });
+      });
+    }
+
+    // Fallbacks for older JSON rows without a useful history array.
+    if (Array.isArray(entry?.was_tags) && entry.was_tags.length) {
+      snapshots.push({
+        tags: entry.was_tags,
+        bookie_odds: entry?.bookie_odds,
+        model_odds: entry?.model_odds,
+        raw_odds: entry?.raw_odds,
+        seen_at: parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.dropped_at) || parseRunTS(entry?.first_seen)
+      });
+    }
+
+    if (Array.isArray(entry?.previous_tags) && entry.previous_tags.length) {
+      snapshots.push({
+        tags: entry.previous_tags,
+        bookie_odds: entry?.bookie_odds,
+        model_odds: entry?.model_odds,
+        raw_odds: entry?.raw_odds,
+        seen_at: parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.first_seen)
+      });
+    }
+
+    if (Array.isArray(entry?.tags) && entry.tags.length) {
+      snapshots.push({
+        tags: entry.tags,
+        bookie_odds: entry?.bookie_odds,
+        model_odds: entry?.model_odds,
+        raw_odds: entry?.raw_odds,
+        seen_at: parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.last_checked) || parseRunTS(entry?.first_seen)
+      });
+    }
+
+    return snapshots
+      .filter(s => {
+        const seenAt = s.seen_at;
+        return (
+          seenAt instanceof Date &&
+          !Number.isNaN(seenAt.getTime()) &&
+          seenAt <= raceDT &&
+          !!shortlistTypeFromSnapshot(entry, s)
+        );
+      })
+      .sort((a, b) => a.seen_at - b.seen_at);
+  };
+
+  const wasInShortlistBeforeRaceStart = (entry) => {
+    return shortlistSnapshotsBeforeRaceStart(entry).length > 0;
+  };
+
   wasValueEntries = entries
     .filter(e =>
-      e?.was_value_earlier ||
-      e?.status === "was_value" ||
-      e?.currently_live === false ||
-      (raceHasStarted(e) && !!getShortlistType(e))
+      wasInShortlistBeforeRaceStart(e) &&
+      (
+        e?.was_value_earlier ||
+        e?.status === "was_value" ||
+        e?.currently_live === false ||
+        raceHasStarted(e)
+      )
     )
     .filter(e => !isSameRunWasValueArtifact(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
