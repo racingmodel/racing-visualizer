@@ -452,7 +452,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 17:49</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 18:15</span></div>
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
@@ -860,8 +860,24 @@
 
   const liveEntries = entries.filter(isLiveEntry);
 
+  const isSameRunWasValueArtifact = (e) => {
+    // Guard against rows created and dropped inside the same run by an old writer.
+    // Genuine historical drops have first_seen and dropped_at from different runs/times.
+    const firstSeen = String(e?.first_seen || "");
+    const droppedAt = String(e?.dropped_at || "");
+    const histLen = Array.isArray(e?.history) ? e.history.length : 0;
+    return (
+      e?.status === "was_value" &&
+      firstSeen &&
+      droppedAt &&
+      firstSeen === droppedAt &&
+      histLen <= 1
+    );
+  };
+
   const wasValueEntries = entries
-    .filter(e => e?.was_value_earlier || e?.status === "was_value" || e?.currently_live === false)
+    .filter(e => (e?.was_value_earlier || e?.status === "was_value" || e?.currently_live === false))
+    .filter(e => !isSameRunWasValueArtifact(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const tagSet = (entry) =>
