@@ -854,34 +854,54 @@
 
   const entries = allEntries.filter(filterValid);
 
-  const isLiveEntry = (entry) => {
-    return entry?.currently_live !== false && entry?.status !== "was_value";
-  };
+const RACE_EXPIRY_GRACE_MINS = 0; // change to 2 or 5 for a small buffer after race time
 
-  const liveEntries = entries.filter(isLiveEntry);
+const raceHasStarted = (entry) => {
+  const dt = parseRaceDT(entry?.race_datetime);
+  if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return false;
 
-  const isSameRunWasValueArtifact = (e) => {
-    // Guard against rows created and dropped inside the same run by an old writer.
-    // Genuine historical drops have first_seen and dropped_at from different runs/times.
-    const firstSeen = String(e?.first_seen || "");
-    const droppedAt = String(e?.dropped_at || "");
-    const histLen = Array.isArray(e?.history) ? e.history.length : 0;
-    return (
-      e?.status === "was_value" &&
-      firstSeen &&
-      droppedAt &&
-      firstSeen === droppedAt &&
-      histLen <= 1
-    );
-  };
+  const expiryTime = new Date(dt.getTime() + (RACE_EXPIRY_GRACE_MINS * 60 * 1000));
+  return expiryTime <= new Date();
+};
 
-  const wasValueEntries = entries
-    .filter(e => (e?.was_value_earlier || e?.status === "was_value" || e?.currently_live === false))
-    .filter(e => !isSameRunWasValueArtifact(e))
-    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+const isLiveEntry = (entry) => {
+  return (
+    entry?.currently_live !== false &&
+    entry?.status !== "was_value" &&
+    !raceHasStarted(entry)
+  );
+};
 
-  const tagSet = (entry) =>
-    Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
+const liveEntries = entries.filter(isLiveEntry);
+
+const isSameRunWasValueArtifact = (e) => {
+  // Guard against rows created and dropped inside the same run by an old writer.
+  // Genuine historical drops have first_seen and dropped_at from different runs/times.
+  const firstSeen = String(e?.first_seen || "");
+  const droppedAt = String(e?.dropped_at || "");
+  const histLen = Array.isArray(e?.history) ? e.history.length : 0;
+
+  return (
+    e?.status === "was_value" &&
+    firstSeen &&
+    droppedAt &&
+    firstSeen === droppedAt &&
+    histLen <= 1
+  );
+};
+
+const wasValueEntries = entries
+  .filter(e =>
+    e?.was_value_earlier ||
+    e?.status === "was_value" ||
+    e?.currently_live === false ||
+    raceHasStarted(e)
+  )
+  .filter(e => !isSameRunWasValueArtifact(e))
+  .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+const tagSet = (entry) =>
+  Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
 
   const isLayOnly = (tags) => {
     const isOverlayTag = t => t.startsWith("overlay+");
@@ -987,7 +1007,7 @@
       <td>${raceCellHTML(entry)}</td>
       <td>
         <div>${entry.horse ?? ""}</div>
-        <span class="was-note">No longer live on latest run</span>
+        <span class="was-note">${raceHasStarted(entry) ? "Race started — no longer live" : "No longer live on latest run"}</span>
       </td>
       <td>
         <div>${bookie}</div>
