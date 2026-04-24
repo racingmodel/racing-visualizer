@@ -99,6 +99,74 @@
       filter: brightness(1.06);
     }
 
+    .alert-btn {
+      display: inline-block;
+      color: #111;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 0.98rem;
+      background: linear-gradient(90deg, #ffd700, #ffef8a);
+      border: 1px solid rgba(255,215,0,0.75);
+      padding: 0.72rem 1rem;
+      border-radius: 999px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.28), 0 0 18px rgba(255,215,0,0.20);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .alert-btn:hover {
+      filter: brightness(1.06);
+    }
+
+    .alert-btn.alerts-on {
+      background: linear-gradient(90deg, #39d353, #9cffb0);
+      border-color: rgba(57,211,83,0.75);
+      color: #041a0b;
+    }
+
+    .shortlist-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 999999;
+      width: min(94vw, 520px);
+      background: linear-gradient(90deg, #ffd700, #ffef8a);
+      color: #111;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.48);
+      padding: 0.9rem 1rem;
+      text-align: center;
+      font-weight: 900;
+      display: none;
+    }
+
+    .shortlist-toast .toast-msg {
+      line-height: 1.25;
+      margin-bottom: 0.65rem;
+    }
+
+    .shortlist-toast button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.52rem 0.85rem;
+      font-weight: 900;
+      cursor: pointer;
+      margin: 0 0.25rem;
+      font-family: inherit;
+    }
+
+    .shortlist-toast .toast-refresh {
+      background: #111;
+      color: #ffd700;
+    }
+
+    .shortlist-toast .toast-close {
+      background: rgba(0,0,0,0.12);
+      color: #111;
+    }
+
     .meta-pill-row {
       display: flex;
       flex-wrap: wrap;
@@ -396,7 +464,6 @@
       white-space: normal;
     }
 
-
     tr.wasvalue-row {
       background: #3a3445 !important;
       color: #d8d1e8;
@@ -434,6 +501,7 @@
       .subtitle { font-size: 0.88rem; }
       .top-bar { gap: 0.65rem; }
       .latest-update { width: 100%; font-size: 0.94rem; padding: 0.68rem 0.8rem; }
+      .alert-btn { width: 100%; text-align: center; font-size: 0.95rem; }
       .nav-link { width: 100%; text-align: center; }
       .nav-link a { width: 100%; text-align: center; font-size: 0.95rem; }
       summary.section-title { font-size: 1rem; padding: 0.85rem; }
@@ -443,6 +511,7 @@
       .meta-pill-row { justify-content: flex-start; }
       .shortlist-tags { min-width: 132px; gap: 0.3rem; }
       .tag-chip { min-width: 1.95rem; padding: 0.20rem 0.42rem; font-size: 0.86rem; }
+      .shortlist-toast { bottom: 12px; padding: 0.82rem 0.85rem; }
     }
   </style>
 </head>
@@ -452,7 +521,12 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 22:04</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Apr 2026, 19:49</span></div>
+
+      <button id="enableAlertsBtn" class="alert-btn" type="button">
+        🔔 Enable shortlist alerts
+      </button>
+
       <div class="nav-link">
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
@@ -465,6 +539,7 @@
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
       <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
+      <div class="meta-pill">🔔 Alerts = notify when shortlist changes while page is open</div>
     </div>
 
     <details class="section-card section-shortlist" open>
@@ -490,7 +565,6 @@
         </div>
       </div>
     </details>
-
 
     <details class="section-card">
       <summary class="section-title">
@@ -586,12 +660,7 @@
       </summary>
       <div class="section-body">
         <div class="table-wrap">
-          <table id="fc-table">
-            <thead>
-              <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <table id="fc-table"><thead><tr><th>Race</th><th>Combo</th><th>Why</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </details>
@@ -603,12 +672,7 @@
       </summary>
       <div class="section-body">
         <div class="table-wrap">
-          <table id="tc-table">
-            <thead>
-              <tr><th>Race</th><th>Combo</th><th>Why</th></tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+          <table id="tc-table"><thead><tr><th>Race</th><th>Combo</th><th>Why</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </details>
@@ -626,98 +690,38 @@
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">📉 Raw Value</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="rawvalue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">📉 Raw Value</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="rawvalue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">👀 Tony Watch</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">👀 Tony Watch</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">🌑 Sleepers</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">🌑 Sleepers</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">💰 Model Value</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">💰 Model Value</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">📊 Rank Overlays (Model ≪ Market)</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="overlay-table">
-            <thead>
-              <tr>
-                <th>Race</th>
-                <th>Horse</th>
-                <th>Odds</th>
-                <th>Δ (Market − Model)</th>
-                <th>Ranks (Mdl / Mkt)</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">📊 Rank Overlays (Model ≪ Market)</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="overlay-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Δ (Market − Model)</th><th>Ranks (Mdl / Mkt)</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">🔵 Big E/W Odds</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="blue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">🔵 Big E/W Odds</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="blue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
     <details class="section-card">
-      <summary class="section-title">
-        <span class="section-title-left">🥇 Top Rated Clear</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="table-wrap">
-          <table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
-        </div>
-      </div>
+      <summary class="section-title"><span class="section-title-left">🥇 Top Rated Clear</span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table></div></div>
     </details>
   </div>
 
@@ -834,8 +838,6 @@
     const newTags = Array.isArray(e.tags) ? e.tags : [];
     const tags = Array.from(new Set([...existingTags, ...newTags]));
 
-    // If AI/value tags are present after merging, treat the merged row as live.
-    // If no current tags remain, keep the was_value lifecycle fields from value_bets.json.
     const mergedLive = tags.length > 0 ? true : (e.currently_live ?? existing.currently_live);
     const mergedStatus = tags.length > 0 ? "live" : (e.status || existing.status || "was_value");
 
@@ -854,7 +856,7 @@
 
   const entries = allEntries.filter(filterValid);
 
-  const RACE_EXPIRY_GRACE_MINS = 0; // change to 2 or 5 for a small buffer after race time
+  const RACE_EXPIRY_GRACE_MINS = 0;
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -875,14 +877,9 @@
   };
 
   const liveEntries = entries.filter(isLiveEntry);
-
-  // Only the Today's Bet & Lay Shortlist uses this.
-  // The normal sections stay as a full daily record of live model tags.
   const actionableLiveEntries = liveEntries.filter(e => !raceHasStarted(e));
 
   const isSameRunWasValueArtifact = (e) => {
-    // Guard against rows created and dropped inside the same run by an old writer.
-    // Genuine historical drops have first_seen and dropped_at from different runs/times.
     const firstSeen = String(e?.first_seen || "");
     const droppedAt = String(e?.dropped_at || "");
     const histLen = Array.isArray(e?.history) ? e.history.length : 0;
@@ -896,7 +893,6 @@
     );
   };
 
-  // Assigned after the shortlist helper functions are defined.
   let wasValueEntries = [];
 
   const isLayOnly = (tags) => {
@@ -1101,15 +1097,7 @@
     if (!m) return null;
 
     const [, y, mo, d, h, mi, se = "0"] = m;
-    const dt = new Date(
-      Number(y),
-      Number(mo) - 1,
-      Number(d),
-      Number(h),
-      Number(mi),
-      Number(se)
-    );
-
+    const dt = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(se));
     return Number.isNaN(dt.getTime()) ? null : dt;
   };
 
@@ -1121,9 +1109,7 @@
     raw_odds: snap.raw_odds ?? entry?.raw_odds,
   });
 
-  const shortlistTypeFromSnapshot = (entry, snap = {}) => {
-    return getShortlistType(snapshotEntry(entry, snap));
-  };
+  const shortlistTypeFromSnapshot = (entry, snap = {}) => getShortlistType(snapshotEntry(entry, snap));
 
   const shortlistSnapshotsBeforeRaceStart = (entry) => {
     const raceDT = parseRaceDT(entry?.race_datetime);
@@ -1135,15 +1121,10 @@
       entry.history.forEach(h => {
         if (!Array.isArray(h?.tags) || !h.tags.length) return;
         const seenAt = parseRunTS(h.run_ts);
-        snapshots.push({
-          ...h,
-          tags: h.tags,
-          seen_at: seenAt
-        });
+        snapshots.push({ ...h, tags: h.tags, seen_at: seenAt });
       });
     }
 
-    // Fallbacks for older JSON rows without a useful history array.
     if (Array.isArray(entry?.was_tags) && entry.was_tags.length) {
       snapshots.push({
         tags: entry.was_tags,
@@ -1187,9 +1168,7 @@
       .sort((a, b) => a.seen_at - b.seen_at);
   };
 
-  const wasInShortlistBeforeRaceStart = (entry) => {
-    return shortlistSnapshotsBeforeRaceStart(entry).length > 0;
-  };
+  const wasInShortlistBeforeRaceStart = (entry) => shortlistSnapshotsBeforeRaceStart(entry).length > 0;
 
   wasValueEntries = entries
     .filter(e =>
@@ -1283,51 +1262,19 @@
       return Number(b.rank_delta || 0) - Number(a.rank_delta || 0);
     });
 
-  const overlay = buildGroupedRows(
-    overlayEntries,
-    e => overlayRow(e, tagSet(e), "overlay-row"),
-    5
-  );
+  const overlay = buildGroupedRows(overlayEntries, e => overlayRow(e, tagSet(e), "overlay-row"), 5);
 
   const byRaceTime = (a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime);
   const asComboLabel = (e) => Array.isArray(e.combo) && e.combo.length ? e.combo.join(" » ") : (e.horse || "");
 
-  const fcEntries = valueData
-    .filter(filterValid)
-    .filter(isLiveEntry)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('forecast'))
-    .sort(byRaceTime);
+  const fcEntries = valueData.filter(filterValid).filter(isLiveEntry).filter(e => Array.isArray(e.tags) && e.tags.includes('forecast')).sort(byRaceTime);
+  const tcEntries = valueData.filter(filterValid).filter(isLiveEntry).filter(e => Array.isArray(e.tags) && e.tags.includes('tricast')).sort(byRaceTime);
 
-  const tcEntries = valueData
-    .filter(filterValid)
-    .filter(isLiveEntry)
-    .filter(e => Array.isArray(e.tags) && e.tags.includes('tricast'))
-    .sort(byRaceTime);
+  const fcHtml = buildGroupedRows(fcEntries, (e) => `<tr class="fc-row"><td>${raceCellHTML(e)}</td><td><b>${asComboLabel(e)}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
+  const tcHtml = buildGroupedRows(tcEntries, (e) => `<tr class="tc-row"><td>${raceCellHTML(e)}</td><td><b>${asComboLabel(e)}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
 
-  const fcHtml = buildGroupedRows(fcEntries, (e) => {
-    return `<tr class="fc-row">
-      <td>${raceCellHTML(e)}</td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
-  }, 3);
-
-  const tcHtml = buildGroupedRows(tcEntries, (e) => {
-    return `<tr class="tc-row">
-      <td>${raceCellHTML(e)}</td>
-      <td><b>${asComboLabel(e)}</b></td>
-      <td><small class="reason">${e.reason ?? ""}</small></td>
-    </tr>`;
-  }, 3);
-
-  aiData = aiData
-    .filter(filterValid)
-    .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
-
-  const aiFiltered = aiData.filter(e => {
-    const aiTag = (e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay');
-    return !!aiTag;
-  });
+  aiData = aiData.filter(filterValid).sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+  const aiFiltered = aiData.filter(e => !!((e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay')));
 
   const aihtml = buildGroupedRows(aiFiltered, (e) => {
     const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
@@ -1370,5 +1317,362 @@
   setBody('#toprated-table',  top, 4);
 })();
 </script>
+
+<script>
+(function () {
+  const CHECK_EVERY_MS = 60000;
+  const SIGNATURE_KEY = "racing_shortlist_signature_v2";
+  const ALERTS_ON_KEY = "racing_shortlist_alerts_enabled_v2";
+  const BASELINE_SET_KEY = "racing_shortlist_baseline_set_v2";
+
+  const normCourse = s => (s || "").toString().trim().toLowerCase();
+  const normDT = s => (s || "").toString().trim();
+  const raceKey = (dt, course) => `${normDT(dt)}_${normCourse(course)}`;
+
+  const safeJSON = async (url) => {
+    try {
+      const r = await fetch(url + "?cacheBust=" + Date.now(), { cache: "no-store" });
+      if (!r.ok) throw new Error(r.statusText);
+      return await r.json();
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const safeText = async (url) => {
+    try {
+      const r = await fetch(url + "?cacheBust=" + Date.now(), { cache: "no-store" });
+      if (!r.ok) throw new Error(r.statusText);
+      return await r.text();
+    } catch (e) {
+      return "";
+    }
+  };
+
+  const parseRaceDT = (raceDT) => {
+    try {
+      const [d, t = "00:00"] = String(raceDT || "").split(" ");
+      const [day, month, year] = d.split("/").map(Number);
+      const [hh = 0, mm = 0] = t.split(":").map(Number);
+      return new Date(year, (month || 1) - 1, day || 1, hh, mm);
+    } catch {
+      return new Date(0);
+    }
+  };
+
+  const parseOdds = (v) => {
+    if (v == null) return NaN;
+    const s = String(v).trim();
+    if (!s) return NaN;
+
+    if (s.includes("/")) {
+      const [a, b] = s.split("/").map(Number);
+      if (!isNaN(a) && !isNaN(b) && b !== 0) return a / b + 1;
+      return NaN;
+    }
+
+    const n = parseFloat(s.replace(/[^\d.]/g, ""));
+    return isNaN(n) ? NaN : n;
+  };
+
+  const filterValid = (entry) => {
+    const coverage = Number(entry?.data_coverage ?? 100);
+    const confidence = Number(entry?.race_data_confidence ?? 100);
+    return coverage >= 86 && confidence >= 86;
+  };
+
+  const tagSet = (entry) =>
+    Array.isArray(entry?.tags)
+      ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))]
+      : [];
+
+  const raceHasStarted = (entry) => {
+    const dt = parseRaceDT(entry?.race_datetime);
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return false;
+    return dt <= new Date();
+  };
+
+  const isLiveEntry = (entry) => {
+    return (
+      entry?.currently_live !== false &&
+      entry?.status !== "was_value"
+    );
+  };
+
+  const isBigPriced = (entry) => {
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    return !isNaN(dec) && dec >= 10.0;
+  };
+
+  const isMustWinPriced = (entry) => {
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    return !isNaN(dec) && dec < 7.0;
+  };
+
+  const hasAnyLayTag = (tags) => {
+    const core = (tags || []).filter(t => !String(t).startsWith("overlay+"));
+    return core.some(t => t === "raw-lay" || t === "ai-lay");
+  };
+
+  const isLayOnly = (tags) => {
+    const core = (tags || []).filter(t => !String(t).startsWith("overlay+"));
+    const layTags = new Set(["raw-lay", "ai-lay"]);
+    const hasLay = core.some(t => layTags.has(t));
+    if (!hasLay) return false;
+    return core.filter(t => !layTags.has(t)).length === 0;
+  };
+
+  const loadExtraPlaces = async () => {
+    const txt = await safeText("extra_places.txt");
+    const lines = (txt || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    const map = new Map();
+
+    for (const line of lines) {
+      try {
+        const obj = JSON.parse(line);
+        const dt = String(obj.race_datetime || "");
+        const course = String(obj.course || "");
+        const places = Number(obj.places || obj.ew_places || 0);
+
+        if (dt && course && places > 0) {
+          map.set(raceKey(dt, course), places);
+        }
+      } catch (e) {}
+    }
+
+    return map;
+  };
+
+  const mergeEntries = (valueData, aiData) => {
+    const merged = new Map();
+
+    [...valueData, ...aiData].forEach(e => {
+      const key = raceKey(e.race_datetime, e.course) + "_" + String(e.horse || "").trim().toLowerCase();
+      const existing = merged.get(key) || {};
+
+      const existingTags = Array.isArray(existing.tags) ? existing.tags : [];
+      const newTags = Array.isArray(e.tags) ? e.tags : [];
+      const tags = Array.from(new Set([...existingTags, ...newTags]));
+
+      const mergedLive = tags.length > 0 ? true : (e.currently_live ?? existing.currently_live);
+      const mergedStatus = tags.length > 0 ? "live" : (e.status || existing.status || "was_value");
+
+      merged.set(key, {
+        ...existing,
+        ...e,
+        tags,
+        currently_live: mergedLive,
+        status: mergedStatus,
+        reason: e.reason || existing.reason || ""
+      });
+    });
+
+    return Array.from(merged.values());
+  };
+
+  const getShortlistType = (entry, extraPlaces) => {
+    const tags = tagSet(entry);
+    const coreTags = tags.filter(t => !String(t).startsWith("overlay+"));
+    const isExtraPlaceRace = extraPlaces.has(raceKey(entry.race_datetime, entry.course));
+
+    if (coreTags.length > 1 && isExtraPlaceRace && isBigPriced(entry)) {
+      return "Big E/W - EP";
+    }
+
+    if (
+      coreTags.length >= 3 &&
+      !hasAnyLayTag(tags) &&
+      isBigPriced(entry) &&
+      !isExtraPlaceRace
+    ) {
+      return "Each Way";
+    }
+
+    if (
+      coreTags.length >= 2 &&
+      !hasAnyLayTag(tags) &&
+      isMustWinPriced(entry) &&
+      !isExtraPlaceRace
+    ) {
+      return "Must Win";
+    }
+
+    if (isLayOnly(tags)) {
+      return "Must Lay";
+    }
+
+    return "";
+  };
+
+  const buildShortlistSignature = async () => {
+    const [valueData, aiData, extraPlaces] = await Promise.all([
+      safeJSON("value_bets.json"),
+      safeJSON("ai_bets.json"),
+      loadExtraPlaces()
+    ]);
+
+    const entries = mergeEntries(
+      Array.isArray(valueData) ? valueData : [],
+      Array.isArray(aiData) ? aiData : []
+    )
+      .filter(filterValid)
+      .filter(isLiveEntry)
+      .filter(e => !raceHasStarted(e))
+      .map(e => {
+        const type = getShortlistType(e, extraPlaces);
+        if (!type) return null;
+
+        return {
+          type,
+          race_datetime: String(e.race_datetime || ""),
+          course: String(e.course || ""),
+          horse: String(e.horse || ""),
+          bookie_odds: String(e.bookie_odds ?? e.real_odds ?? ""),
+          raw_odds: String(e.raw_odds ?? ""),
+          tags: tagSet(e).sort().join("|")
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) =>
+        `${a.race_datetime}|${a.course}|${a.horse}|${a.type}`.localeCompare(
+          `${b.race_datetime}|${b.course}|${b.horse}|${b.type}`
+        )
+      );
+
+    return JSON.stringify(entries);
+  };
+
+  const alertsEnabled = () => localStorage.getItem(ALERTS_ON_KEY) === "1";
+
+  const updateButtonState = () => {
+    const btn = document.getElementById("enableAlertsBtn");
+    if (!btn) return;
+
+    if (alertsEnabled()) {
+      btn.classList.add("alerts-on");
+      btn.textContent = "🔔 Shortlist alerts ON";
+    } else {
+      btn.classList.remove("alerts-on");
+      btn.textContent = "🔔 Enable shortlist alerts";
+    }
+  };
+
+  const ensureToast = () => {
+    let toast = document.getElementById("shortlistChangeToast");
+
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "shortlistChangeToast";
+      toast.className = "shortlist-toast";
+      toast.innerHTML = `
+        <div class="toast-msg"></div>
+        <button type="button" class="toast-refresh">Refresh page</button>
+        <button type="button" class="toast-close">Close</button>
+      `;
+      document.body.appendChild(toast);
+
+      toast.querySelector(".toast-refresh").addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      toast.querySelector(".toast-close").addEventListener("click", () => {
+        toast.style.display = "none";
+      });
+    }
+
+    return toast;
+  };
+
+  const showToast = (message) => {
+    const toast = ensureToast();
+    const msg = toast.querySelector(".toast-msg");
+
+    if (msg) msg.textContent = message;
+    toast.style.display = "block";
+
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 12000);
+  };
+
+  const notifyUser = (message) => {
+    showToast(message);
+
+    try {
+      if (navigator.vibrate) {
+        navigator.vibrate([250, 120, 250]);
+      }
+    } catch (e) {}
+
+    try {
+      if ("Notification" in window && Notification.permission === "granted") {
+        const n = new Notification("🏇 Racing Model Update", {
+          body: message,
+          tag: "racing-model-shortlist-update",
+          requireInteraction: false
+        });
+
+        n.onclick = () => {
+          window.focus();
+          n.close();
+        };
+      }
+    } catch (e) {}
+  };
+
+  const checkForShortlistChange = async () => {
+    try {
+      const newSignature = await buildShortlistSignature();
+      const oldSignature = localStorage.getItem(SIGNATURE_KEY);
+      const baselineSet = localStorage.getItem(BASELINE_SET_KEY) === "1";
+
+      if (!baselineSet || !oldSignature) {
+        localStorage.setItem(SIGNATURE_KEY, newSignature);
+        localStorage.setItem(BASELINE_SET_KEY, "1");
+        return;
+      }
+
+      if (newSignature !== oldSignature) {
+        localStorage.setItem(SIGNATURE_KEY, newSignature);
+
+        if (alertsEnabled()) {
+          notifyUser("Today’s Bet & Lay Shortlist has changed. Refresh/check the page for the latest selections.");
+        }
+      }
+    } catch (e) {}
+  };
+
+  const enableAlerts = async () => {
+    localStorage.setItem(ALERTS_ON_KEY, "1");
+    updateButtonState();
+
+    if ("Notification" in window && Notification.permission === "default") {
+      try {
+        await Notification.requestPermission();
+      } catch (e) {}
+    }
+
+    const sig = await buildShortlistSignature();
+    localStorage.setItem(SIGNATURE_KEY, sig);
+    localStorage.setItem(BASELINE_SET_KEY, "1");
+
+    showToast("Shortlist alerts are now ON for this device while this page is open.");
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("enableAlertsBtn");
+
+    updateButtonState();
+
+    if (btn) {
+      btn.addEventListener("click", enableAlerts);
+    }
+
+    checkForShortlistChange();
+    setInterval(checkForShortlistChange, CHECK_EVERY_MS);
+  });
+})();
+</script>
+
 </body>
 </html>
