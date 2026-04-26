@@ -327,17 +327,48 @@
 
     tr.aibest-row small.reason { color: #fff; }
 
-    .ep-badge {
-      display: inline-block;
+    .ep-badge-row {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.28rem;
       margin-left: 6px;
-      padding: 0.08rem 0.45rem;
+      vertical-align: middle;
+      justify-content: center;
+    }
+
+    .ep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.10rem 0.48rem;
       border-radius: 999px;
-      background: #111;
-      border: 1px solid #2ee59d;
-      color: #2ee59d;
-      font-weight: 800;
+      font-weight: 900;
       font-size: 0.76rem;
       line-height: 1.2;
+      letter-spacing: 0.15px;
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 0 10px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
+
+    .ep-badge.ep-sbg {
+      background: linear-gradient(180deg, #0b71c8, #064f96);
+      color: #ffffff;
+      border-color: #ef233c;
+      box-shadow: 0 0 0 1px rgba(239,35,60,0.40), 0 0 14px rgba(11,113,200,0.35);
+    }
+
+    .ep-badge.ep-b365 {
+      background: linear-gradient(180deg, #087b3d, #045c2c);
+      color: #ffdf00;
+      border-color: #ffdf00;
+      box-shadow: 0 0 0 1px rgba(255,223,0,0.36), 0 0 14px rgba(8,123,61,0.35);
+    }
+
+    .ep-badge.ep-ep {
+      background: #111;
+      border-color: #2ee59d;
+      color: #2ee59d;
       box-shadow: 0 0 10px rgba(46,229,157,0.18);
     }
 
@@ -521,7 +552,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Apr 2026, 18:19</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Apr 2026, 19:18</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -534,6 +565,7 @@
 
     <div class="meta-pill-row">
       <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
+      <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
       <div class="meta-pill">✅ Must Win = shorter than 8/1</div>
       <div class="meta-pill">🎯 Each Way (Not EP) = 12/1+</div>
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
@@ -792,30 +824,69 @@
   const normDT     = s => (s || "").toString().trim();
   const raceKey    = (dt, course) => `${normDT(dt)}_${normCourse(course)}`;
 
+  const normaliseBookmaker = (v) => {
+    const raw = String(v || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (["SBG", "SKYBET", "SKYBETTING", "SKY"].includes(raw)) return "SBG";
+    if (["B365", "BET365", "365"].includes(raw)) return "B365";
+    return raw || "EP";
+  };
+
+  const bookmakerOrder = (b) => ({ SBG: 1, B365: 2, EP: 99 }[b] || 50);
+
+  const addExtraPlaceBadge = (map, key, bookmaker, places) => {
+    if (!map.has(key)) map.set(key, []);
+    const arr = map.get(key);
+    const existing = arr.find(x => x.bookmaker === bookmaker);
+    if (existing) {
+      existing.places = Math.max(Number(existing.places || 0), places);
+    } else {
+      arr.push({ bookmaker, places });
+    }
+    arr.sort((a, b) => bookmakerOrder(a.bookmaker) - bookmakerOrder(b.bookmaker));
+  };
+
   const loadExtraPlaces = async (url) => {
     const txt = await safeText(url);
     const lines = (txt || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     const map = new Map();
+
     for (const line of lines) {
       try {
         const obj = JSON.parse(line);
-        const dt = String(obj.race_datetime || "");
-        const course = String(obj.course || "");
-        const places = Number(obj.places || obj.ew_places || 0);
+        const dt = String(obj.race_datetime || obj.datetime || obj.race_dt || obj.date_time || "");
+        const course = String(obj.course || obj.racecourse || obj.track || "");
+        const places = Number(obj.places || obj.ew_places || obj.extra_places || 0);
+        const bookmaker = normaliseBookmaker(obj.bookmaker || obj.bookie || obj.operator || obj.firm || obj.brand || "");
+
         if (dt && course && places > 0) {
-          map.set(raceKey(dt, course), places);
+          addExtraPlaceBadge(map, raceKey(dt, course), bookmaker, places);
         }
       } catch (e) {
         console.warn("⚠️ Bad JSON line in extra_places.txt:", line);
       }
     }
+
     return map;
   };
 
   const extraPlaces = await loadExtraPlaces('extra_places.txt');
 
-  const getPlaces = (entry) => extraPlaces.get(raceKey(entry.race_datetime, entry.course));
-  const isExtraPlaceRace = (entry) => extraPlaces.has(raceKey(entry.race_datetime, entry.course));
+  const getPlaceBadges = (entry) => extraPlaces.get(raceKey(entry.race_datetime, entry.course)) || [];
+  const getPlaces = (entry) => {
+    const badges = getPlaceBadges(entry);
+    return badges.length ? Math.max(...badges.map(b => Number(b.places || 0))) : undefined;
+  };
+  const isExtraPlaceRace = (entry) => getPlaceBadges(entry).length > 0;
+
+  const extraPlaceBadgesHTML = (entry) => {
+    const badges = getPlaceBadges(entry);
+    if (!badges.length) return "";
+
+    return badges.map(b => {
+      const cls = `ep-${String(b.bookmaker || "EP").toLowerCase().replace(/[^a-z0-9]+/g, "") || "ep"}`;
+      return `<span class="ep-badge ${cls}">${b.bookmaker} x${b.places}</span>`;
+    }).join("");
+  };
 
   const valueData = await safeJSON('value_bets.json');
   let aiData = await safeJSON('ai_bets.json');
@@ -958,9 +1029,10 @@
   };
 
   const raceCellHTML = (entry) => {
-    const ep = getPlaces(entry);
-    const courseHtml = ep ? `${entry.course ?? ""} <span class="ep-badge">EP×${ep}</span>`
-                          : `${entry.course ?? ""}`;
+    const badges = extraPlaceBadgesHTML(entry);
+    const courseHtml = badges
+      ? `${entry.course ?? ""} <span class="ep-badge-row">${badges}</span>`
+      : `${entry.course ?? ""}`;
     return `<div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div>`;
   };
 
@@ -1336,6 +1408,27 @@
   const normDT = s => (s || "").toString().trim();
   const raceKey = (dt, course) => `${normDT(dt)}_${normCourse(course)}`;
 
+  const normaliseBookmaker = (v) => {
+    const raw = String(v || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (["SBG", "SKYBET", "SKYBETTING", "SKY"].includes(raw)) return "SBG";
+    if (["B365", "BET365", "365"].includes(raw)) return "B365";
+    return raw || "EP";
+  };
+
+  const bookmakerOrder = (b) => ({ SBG: 1, B365: 2, EP: 99 }[b] || 50);
+
+  const addExtraPlaceBadge = (map, key, bookmaker, places) => {
+    if (!map.has(key)) map.set(key, []);
+    const arr = map.get(key);
+    const existing = arr.find(x => x.bookmaker === bookmaker);
+    if (existing) {
+      existing.places = Math.max(Number(existing.places || 0), places);
+    } else {
+      arr.push({ bookmaker, places });
+    }
+    arr.sort((a, b) => bookmakerOrder(a.bookmaker) - bookmakerOrder(b.bookmaker));
+  };
+
   const safeJSON = async (url) => {
     try {
       const r = await fetch(url + "?cacheBust=" + Date.now(), { cache: "no-store" });
@@ -1444,12 +1537,13 @@
     for (const line of lines) {
       try {
         const obj = JSON.parse(line);
-        const dt = String(obj.race_datetime || "");
-        const course = String(obj.course || "");
-        const places = Number(obj.places || obj.ew_places || 0);
+        const dt = String(obj.race_datetime || obj.datetime || obj.race_dt || obj.date_time || "");
+        const course = String(obj.course || obj.racecourse || obj.track || "");
+        const places = Number(obj.places || obj.ew_places || obj.extra_places || 0);
+        const bookmaker = normaliseBookmaker(obj.bookmaker || obj.bookie || obj.operator || obj.firm || obj.brand || "");
 
         if (dt && course && places > 0) {
-          map.set(raceKey(dt, course), places);
+          addExtraPlaceBadge(map, raceKey(dt, course), bookmaker, places);
         }
       } catch (e) {}
     }
@@ -1543,7 +1637,10 @@
           horse: String(e.horse || ""),
           bookie_odds: String(e.bookie_odds ?? e.real_odds ?? ""),
           raw_odds: String(e.raw_odds ?? ""),
-          tags: tagSet(e).sort().join("|")
+          tags: tagSet(e).sort().join("|"),
+          ep_badges: (extraPlaces.get(raceKey(e.race_datetime, e.course)) || [])
+            .map(b => `${b.bookmaker}x${b.places}`)
+            .join("|")
         };
       })
       .filter(Boolean)
