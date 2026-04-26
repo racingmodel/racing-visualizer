@@ -425,6 +425,134 @@
       min-width: 150px;
     }
 
+
+    /* Premium layout for Todays Bet & Lay Shortlist only */
+    table.shortlist-premium-table {
+      min-width: 1040px;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(44,44,62,0.96), rgba(30,30,47,0.96));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    table.shortlist-premium-table th {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.55px;
+      padding: 0.72rem 0.62rem;
+      background: linear-gradient(180deg, #46465f, #343449);
+      border-bottom: 1px solid rgba(255,215,0,0.22);
+    }
+
+    table.shortlist-premium-table td {
+      vertical-align: middle;
+      padding: 0.82rem 0.62rem;
+      border-bottom: 1px solid rgba(255,255,255,0.055);
+    }
+
+    table.shortlist-premium-table tr.shortlist-row {
+      background:
+        linear-gradient(90deg, rgba(255,215,0,0.22), rgba(255,215,0,0.07) 36%, rgba(255,255,255,0.03)) !important;
+      border-left: 8px solid #ffd700;
+    }
+
+    table.shortlist-premium-table tr.shortlist-row:hover {
+      filter: brightness(1.08);
+    }
+
+    .shortlist-race-cell {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12rem;
+      min-width: 96px;
+      line-height: 1.15;
+    }
+
+    .shortlist-race-time {
+      font-size: 1.03rem;
+      font-weight: 950;
+      color: #ffffff;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+    }
+
+    .shortlist-race-course {
+      font-size: 0.86rem;
+      font-weight: 900;
+      color: #ffef8a;
+    }
+
+    .shortlist-ep-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 118px;
+    }
+
+    .shortlist-ep-cell .ep-badge-row {
+      margin-left: 0;
+      gap: 0.32rem;
+    }
+
+    .no-ep-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 24px;
+      color: #8f98ad;
+      border: 1px dashed rgba(201,210,227,0.24);
+      border-radius: 999px;
+      font-weight: 900;
+      opacity: 0.85;
+    }
+
+    .shortlist-horse-name {
+      font-size: 0.98rem;
+      font-weight: 950;
+      color: #fff7cf;
+      white-space: normal;
+      min-width: 132px;
+      max-width: 230px;
+      margin: 0 auto;
+      line-height: 1.22;
+    }
+
+    .price-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.4rem;
+      padding: 0.28rem 0.54rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 950;
+      letter-spacing: 0.1px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.16);
+    }
+
+    .price-pill.price-real {
+      color: #fff8cc;
+      border-color: rgba(255,215,0,0.38);
+      background: rgba(255,215,0,0.10);
+    }
+
+    .price-pill.price-raw {
+      color: #c2e7ff;
+      border-color: rgba(127,210,255,0.40);
+      background: rgba(36,148,217,0.13);
+    }
+
+    .price-pill.price-model {
+      color: #c2ffd7;
+      border-color: rgba(46,229,157,0.38);
+      background: rgba(46,229,157,0.11);
+    }
+
     .tag-chip {
       display: inline-flex;
       align-items: center;
@@ -538,6 +666,7 @@
       summary.section-title { font-size: 1rem; padding: 0.85rem; }
       .section-note { font-size: 0.79rem; }
       table { min-width: 520px; }
+      table.shortlist-premium-table { min-width: 880px; }
       th, td { padding: 0.55rem 0.55rem; font-size: 0.88rem; }
       .meta-pill-row { justify-content: flex-start; }
       .shortlist-tags { min-width: 132px; gap: 0.3rem; }
@@ -552,7 +681,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Apr 2026, 20:25</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Apr 2026, 18:19</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -582,13 +711,16 @@
       <div class="section-body">
         <div class="section-note">Combined shortlist from Big E/W - EP, Each Way, Must Win and Must Lay.</div>
         <div class="table-wrap">
-          <table id="shortlist-table">
+          <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
               <tr>
                 <th>Type</th>
                 <th>Race</th>
+                <th>EP Places</th>
                 <th>Horse</th>
                 <th>Odds</th>
+                <th>Raw Odds</th>
+                <th>Model 100%</th>
                 <th>Tags</th>
               </tr>
             </thead>
@@ -1036,6 +1168,25 @@
     return `<div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div>`;
   };
 
+
+  const shortlistRaceCellHTML = (entry) => {
+    return `<div class="shortlist-race-cell">
+      <div class="shortlist-race-time">${timeFromRaceDT(entry.race_datetime)}</div>
+      <div class="shortlist-race-course">${entry.course ?? ""}</div>
+    </div>`;
+  };
+
+  const epPlacesCellHTML = (entry) => {
+    const badges = extraPlaceBadgesHTML(entry);
+    if (!badges) return `<span class="no-ep-badge">—</span>`;
+    return `<div class="shortlist-ep-cell"><span class="ep-badge-row">${badges}</span></div>`;
+  };
+
+  const pricePillHTML = (value, cls) => {
+    const clean = (value === undefined || value === null || String(value).trim() === "") ? "-" : String(value);
+    return `<span class="price-pill ${cls}">${clean}</span>`;
+  };
+
   const twoLineRow = (entry, tagList, rowClass = "") => {
     const bookie = entry.bookie_odds ?? "-";
     const raw = entry.raw_odds ?? "-";
@@ -1050,14 +1201,18 @@
   };
 
   const shortlistRow = (entry, rowClass = "") => {
-    const bookie = entry.bookie_odds ?? "-";
+    const bookie = entry.bookie_odds ?? entry.real_odds ?? "-";
     const raw = entry.raw_odds ?? "-";
+    const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
     const tags = tagSet(entry);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${typeBadgeHTML(entry.shortlist_type)}</td>
-      <td>${raceCellHTML(entry)}</td>
-      <td><div>${entry.horse ?? ""}</div></td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td>${shortlistRaceCellHTML(entry)}</td>
+      <td>${epPlacesCellHTML(entry)}</td>
+      <td><div class="shortlist-horse-name">${entry.horse ?? ""}</div></td>
+      <td>${pricePillHTML(bookie, "price-real")}</td>
+      <td>${pricePillHTML(raw, "price-raw")}</td>
+      <td>${pricePillHTML(model, "price-model")}</td>
       <td>${shortlistTagsHTML(tags)}</td>
     </tr>`;
   };
@@ -1320,7 +1475,7 @@
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 5);
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 8);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
   const ewnotep = buildGroupedRows(ewnotepItems, e => twoLineRow(e, tagSet(e), "ewnotep-row"), 4);
@@ -1378,7 +1533,7 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
-  setBody('#shortlist-table', shortlist, 5);
+  setBody('#shortlist-table', shortlist, 8);
   setBody('#wasvalue-table', wasValueHtml, 4);
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
