@@ -693,6 +693,73 @@
       line-height: 1.25;
     }
 
+
+    .result-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 5.8rem;
+      padding: 0.28rem 0.62rem;
+      border-radius: 999px;
+      font-size: 0.80rem;
+      font-weight: 950;
+      letter-spacing: 0.2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
+      white-space: nowrap;
+    }
+
+    .result-badge.result-won {
+      background: linear-gradient(180deg, #39d353, #1f8f3d);
+      color: #031407;
+      border-color: rgba(57,211,83,0.68);
+    }
+
+    .result-badge.result-placed {
+      background: linear-gradient(180deg, #7dd3fc, #0284c7);
+      color: #031522;
+      border-color: rgba(125,211,252,0.70);
+    }
+
+    .result-badge.result-lost {
+      background: linear-gradient(180deg, #ff6b6b, #b91c1c);
+      color: #fff;
+      border-color: rgba(255,107,107,0.70);
+    }
+
+    .result-badge.result-non-runner {
+      background: linear-gradient(180deg, #e5e7eb, #9ca3af);
+      color: #111827;
+      border-color: rgba(229,231,235,0.70);
+    }
+
+    .result-badge.result-pending {
+      background: linear-gradient(180deg, #fde68a, #d97706);
+      color: #241500;
+      border-color: rgba(253,230,138,0.70);
+    }
+
+    .result-badge.result-unknown {
+      background: linear-gradient(180deg, #94a3b8, #475569);
+      color: #fff;
+      border-color: rgba(148,163,184,0.70);
+    }
+
+    .bf-sp-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.4rem;
+      padding: 0.28rem 0.54rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 950;
+      color: #e0f2fe;
+      border: 1px solid rgba(125,211,252,0.42);
+      background: rgba(14,116,144,0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 14px rgba(0,0,0,0.16);
+    }
+
     .was-tag-list {
       display: inline-flex;
       flex-wrap: wrap;
@@ -734,7 +801,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Apr 2026, 10:02</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Apr 2026, 10:37</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -801,6 +868,8 @@
                 <th>Race</th>
                 <th>Horse</th>
                 <th>Latest Odds</th>
+                <th>Result</th>
+                <th>BF SP</th>
                 <th>Was Tagged As</th>
               </tr>
             </thead>
@@ -1285,11 +1354,49 @@
     </tr>`;
   };
 
+
+  const resultClass = (result) => {
+    const clean = String(result || "Pending").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    if (clean === "won") return "result-won";
+    if (clean === "placed") return "result-placed";
+    if (clean === "lost") return "result-lost";
+    if (clean === "non-runner") return "result-non-runner";
+    if (clean === "pending") return "result-pending";
+    return "result-unknown";
+  };
+
+  const resultLabel = (entry) => {
+    const raw = entry?.bf_result || "";
+    const marketStatus = String(entry?.bf_market_status || "").toUpperCase();
+    const runnerStatus = String(entry?.bf_runner_status || "").toUpperCase();
+
+    if (raw) return String(raw);
+    if (runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT") return "Non Runner";
+    if (marketStatus && marketStatus !== "CLOSED") return "Pending";
+    if (runnerStatus === "WINNER") return "Won";
+    if (runnerStatus === "PLACED") return "Placed";
+    if (runnerStatus === "LOSER") return "Lost";
+    return "Pending";
+  };
+
+  const resultBadgeHTML = (entry) => {
+    const label = resultLabel(entry);
+    return `<span class="result-badge ${resultClass(label)}">${label}</span>`;
+  };
+
+  const bfSPHTML = (entry) => {
+    const sp = entry?.bf_actual_sp ?? "";
+    const clean = (sp === undefined || sp === null || String(sp).trim() === "") ? "-" : String(sp);
+    return `<span class="bf-sp-pill">${clean}</span>`;
+  };
+
+
   const wasValueRow = (entry) => {
     const bookie = entry.bookie_odds ?? "-";
     const raw = entry.raw_odds ?? "-";
     const checked = entry.last_checked || "-";
     const lastLive = entry.last_live_seen || entry.dropped_at || "-";
+    const resultUpdated = entry.bf_result_updated || "";
 
     return `<tr class="wasvalue-row">
       <td>${raceCellHTML(entry)}</td>
@@ -1302,6 +1409,11 @@
         <div>${raw}</div>
         <span class="was-note">Checked: ${checked}</span>
       </td>
+      <td>
+        ${resultBadgeHTML(entry)}
+        ${resultUpdated ? `<span class="was-note">BF checked: ${resultUpdated}</span>` : ""}
+      </td>
+      <td>${bfSPHTML(entry)}</td>
       <td>
         ${wasTagsHTML(entry)}
         <span class="was-note">Last live: ${lastLive}</span>
@@ -1554,7 +1666,7 @@
   const value = buildGroupedRows(valueItems, e => twoLineRow(e, tagSet(e), "value-row"), 4);
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row"), 4);
   const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row"), 4);
-  const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 4);
+  const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 6);
 
   const overlayEntries = liveEntries
     .filter(e => tagSet(e).includes("rank-overlay"))
@@ -1602,7 +1714,7 @@
   };
 
   setBody('#shortlist-table', shortlist, 9);
-  setBody('#wasvalue-table', wasValueHtml, 4);
+  setBody('#wasvalue-table', wasValueHtml, 6);
   setBody('#multitag-table',  multi, 4);
   setBody('#rawlays-table',   rawlays, 4);
   setBody('#ewnotep-table',   ewnotep, 4);
