@@ -800,7 +800,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 May 2026, 14:05</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 May 2026, 14:40</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1458,6 +1458,13 @@
     return isNaN(n) ? NaN : n;
   };
 
+  const backOddsConfirmed = (entry) => {
+    const book  = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw   = parseOdds(entry?.raw_odds);
+    return !isNaN(book) && !isNaN(model) && !isNaN(raw) && model < book && raw < book;
+  };
+
   // Big E/W - Extra Places: allow 8/1+ decimal 9.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds);
@@ -1467,24 +1474,26 @@
   // Normal Each Way, no extra places: tighter 12/1+ decimal 13.0+
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds);
-    return !isNaN(dec) && dec >= 17.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds);
-    return !isNaN(dec) && dec < 9.0;
+    return !isNaN(dec) && dec <= 9.0;
   };
 
   const getShortlistType = (entry) => {
     const tags = tagSet(entry);
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
+    const backOk = backOddsConfirmed(entry);
 
-    if (coreTags.length > 1 && isExtraPlaceRace(entry) && isBigEwEpPriced(entry)) {
+    if (backOk && coreTags.length > 1 && isExtraPlaceRace(entry) && isBigEwEpPriced(entry)) {
       return "Big E/W - EP";
     }
 
     if (
+      backOk &&
       coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isNormalEachWayPriced(entry) &&
@@ -1494,6 +1503,7 @@
     }
 
     if (
+      backOk &&
       coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
@@ -1855,7 +1865,7 @@
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec < 6.0;
+    return !isNaN(dec) && dec <= 9.0;
   };
 
   const hasAnyLayTag = (tags) => {
@@ -1924,12 +1934,14 @@
     const tags = tagSet(entry);
     const coreTags = tags.filter(t => !String(t).startsWith("overlay+"));
     const isExtraPlaceRace = extraPlaces.has(raceKey(entry.race_datetime, entry.course));
+    const backOk = backOddsConfirmed(entry);
 
-    if (coreTags.length > 1 && isExtraPlaceRace && isBigEwEpPriced(entry)) {
+    if (backOk && coreTags.length > 1 && isExtraPlaceRace && isBigEwEpPriced(entry)) {
       return "Big E/W - EP";
     }
 
     if (
+      backOk &&
       coreTags.length >= 3 &&
       !hasAnyLayTag(tags) &&
       isNormalEachWayPriced(entry) &&
@@ -1939,6 +1951,7 @@
     }
 
     if (
+      backOk &&
       coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
