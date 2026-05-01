@@ -800,7 +800,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 May 2026, 18:13</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 May 2026, 19:44</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -815,7 +815,7 @@
       <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
       <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
       <div class="meta-pill">✅ Must Win = shorter than 8/1</div>
-      <div class="meta-pill">🎯 Each Way (Not EP) = 12/1+</div>
+      <div class="meta-pill">🎯 EW = 34+ / 16–20 fields / premium overlay stack</div>
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
       <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
@@ -894,7 +894,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">8/1+ runners with multiple strong tags in races offering extra places.</div>
+        <div class="section-note">8/1+ runners with multiple model-support tags in races offering extra places.</div>
         <div class="table-wrap">
           <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
         </div>
@@ -920,7 +920,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">12/1+ runners with 3+ core tags, no lay tags, outside extra-place races.</div>
+        <div class="section-note">Optimised normal EW only: premium model-value/rank/raw stack, 34.0+ in 8–20 runner fields, or 16–20 runner fields.</div>
         <div class="table-wrap">
           <table id="ewnotep-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
         </div>
@@ -933,7 +933,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Same logic as above, but only runners shorter than 8/1.</div>
+        <div class="section-note">8/1 or shorter, clear top-rated, both model prices shorter than market.</div>
         <div class="table-wrap">
           <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
         </div>
@@ -1482,38 +1482,105 @@
     return !isNaN(dec) && dec <= 9.0;
   };
 
+  const getFieldSize = (entry) => {
+    const keys = ["field_size", "Field Size", "total_runners", "Total Runners", "runners", "Runners", "runner_count"];
+    for (const k of keys) {
+      const raw = entry?.[k];
+      if (raw === undefined || raw === null || String(raw).trim() === "") continue;
+      const m = String(raw).match(/\d+/);
+      if (m) {
+        const n = Number(m[0]);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+    }
+    return null;
+  };
+
+  const inFieldRange = (fieldSize, lo, hi) => {
+    if (fieldSize === null || fieldSize === undefined || !Number.isFinite(Number(fieldSize))) return false;
+    const n = Number(fieldSize);
+    return n >= lo && n <= hi;
+  };
+
+  const ewSupportCount = (tags) => {
+    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear", "sleeper"]);
+    return (tags || []).filter(t => supportTags.has(t)).length;
+  };
+
+  const hasPremiumEwStack = (tags) => {
+    const s = new Set(tags || []);
+    return s.has("value") && s.has("rank-overlay") && s.has("raw-value");
+  };
+
+  const hasOptimisedNormalEwShape = (entry, tags) => {
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    if (isNaN(dec) || dec < 13.0) return false;
+
+    const s = new Set(tags || []);
+    const field = getFieldSize(entry);
+
+    // Small-field EW was a clear backtest leak. If known, block normal EW below 8 runners.
+    if (field !== null && field < 8) return false;
+
+    // Premium stack can qualify from 12/1+.
+    if (hasPremiumEwStack(tags)) return true;
+
+    // Strongest longshot place/value pocket: 34.0+ in 8–20 runner fields.
+    if (
+      dec >= 34.0 &&
+      (field === null || inFieldRange(field, 8, 20)) &&
+      s.has("raw-value") &&
+      (s.has("blue") || s.has("value") || s.has("rank-overlay"))
+    ) {
+      return true;
+    }
+
+    // Best field-size pocket: 16–20 runners.
+    if (
+      inFieldRange(field, 16, 20) &&
+      s.has("raw-value") &&
+      (s.has("blue") || s.has("value") || s.has("rank-overlay") || s.has("sleeper"))
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+
   const getShortlistType = (entry) => {
     const tags = tagSet(entry);
     const isOverlayTag = t => t.startsWith("overlay+");
     const coreTags = tags.filter(t => !isOverlayTag(t));
+    const extra = isExtraPlaceRace(entry);
     const backOk = backOddsConfirmed(entry);
 
-    if (backOk && coreTags.length > 1 && isExtraPlaceRace(entry) && isBigEwEpPriced(entry)) {
+    if (isLayOnly(tags)) {
+      return "Must Lay";
+    }
+
+    if (!hasAnyLayTag(tags) && backOk && extra && isBigEwEpPriced(entry) && coreTags.length >= 2) {
       return "Big E/W - EP";
     }
 
     if (
       backOk &&
-      coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isNormalEachWayPriced(entry) &&
-      !isExtraPlaceRace(entry)
+      !extra &&
+      hasOptimisedNormalEwShape(entry, tags)
     ) {
       return "Each Way";
     }
 
     if (
       backOk &&
-      coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
-      !isExtraPlaceRace(entry)
+      tags.includes("top-rated-clear") &&
+      !extra
     ) {
       return "Must Win";
-    }
-
-    if (isLayOnly(tags)) {
-      return "Must Lay";
     }
 
     return "";
@@ -1868,6 +1935,72 @@
     return !isNaN(dec) && dec <= 9.0;
   };
 
+  const getFieldSize = (entry) => {
+    const keys = ["field_size", "Field Size", "total_runners", "Total Runners", "runners", "Runners", "runner_count"];
+    for (const k of keys) {
+      const raw = entry?.[k];
+      if (raw === undefined || raw === null || String(raw).trim() === "") continue;
+      const m = String(raw).match(/\d+/);
+      if (m) {
+        const n = Number(m[0]);
+        if (Number.isFinite(n) && n > 0) return n;
+      }
+    }
+    return null;
+  };
+
+  const inFieldRange = (fieldSize, lo, hi) => {
+    if (fieldSize === null || fieldSize === undefined || !Number.isFinite(Number(fieldSize))) return false;
+    const n = Number(fieldSize);
+    return n >= lo && n <= hi;
+  };
+
+  const ewSupportCount = (tags) => {
+    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear", "sleeper"]);
+    return (tags || []).filter(t => supportTags.has(t)).length;
+  };
+
+  const hasPremiumEwStack = (tags) => {
+    const s = new Set(tags || []);
+    return s.has("value") && s.has("rank-overlay") && s.has("raw-value");
+  };
+
+  const hasOptimisedNormalEwShape = (entry, tags) => {
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    if (isNaN(dec) || dec < 13.0) return false;
+
+    const s = new Set(tags || []);
+    const field = getFieldSize(entry);
+
+    // Small-field EW was a clear backtest leak. If known, block normal EW below 8 runners.
+    if (field !== null && field < 8) return false;
+
+    // Premium stack can qualify from 12/1+.
+    if (hasPremiumEwStack(tags)) return true;
+
+    // Strongest longshot place/value pocket: 34.0+ in 8–20 runner fields.
+    if (
+      dec >= 34.0 &&
+      (field === null || inFieldRange(field, 8, 20)) &&
+      s.has("raw-value") &&
+      (s.has("blue") || s.has("value") || s.has("rank-overlay"))
+    ) {
+      return true;
+    }
+
+    // Best field-size pocket: 16–20 runners.
+    if (
+      inFieldRange(field, 16, 20) &&
+      s.has("raw-value") &&
+      (s.has("blue") || s.has("value") || s.has("rank-overlay") || s.has("sleeper"))
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+
   const hasAnyLayTag = (tags) => {
     const core = (tags || []).filter(t => !String(t).startsWith("overlay+"));
     return core.some(t => t === "raw-lay" || t === "ai-lay");
@@ -1936,32 +2069,32 @@
     const isExtraPlaceRace = extraPlaces.has(raceKey(entry.race_datetime, entry.course));
     const backOk = backOddsConfirmed(entry);
 
-    if (backOk && coreTags.length > 1 && isExtraPlaceRace && isBigEwEpPriced(entry)) {
+    if (isLayOnly(tags)) {
+      return "Must Lay";
+    }
+
+    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && isBigEwEpPriced(entry) && coreTags.length >= 2) {
       return "Big E/W - EP";
     }
 
     if (
       backOk &&
-      coreTags.length >= 3 &&
       !hasAnyLayTag(tags) &&
       isNormalEachWayPriced(entry) &&
-      !isExtraPlaceRace
+      !isExtraPlaceRace &&
+      hasOptimisedNormalEwShape(entry, tags)
     ) {
       return "Each Way";
     }
 
     if (
       backOk &&
-      coreTags.length >= 2 &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
+      tags.includes("top-rated-clear") &&
       !isExtraPlaceRace
     ) {
       return "Must Win";
-    }
-
-    if (isLayOnly(tags)) {
-      return "Must Lay";
     }
 
     return "";
