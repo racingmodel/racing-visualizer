@@ -200,6 +200,7 @@
 
     details.section-card.section-shortlist { box-shadow: 0 10px 30px rgba(255,215,0,0.18); }
     details.section-card.section-ewep      { box-shadow: 0 10px 28px rgba(55,190,94,0.16); }
+    details.section-card.section-btew      { box-shadow: 0 10px 28px rgba(0,217,255,0.16); }
     details.section-card.section-lay       { box-shadow: 0 10px 28px rgba(255,76,76,0.16); }
     details.section-card.section-ew        { box-shadow: 0 10px 28px rgba(181,124,255,0.16); }
     details.section-card.section-win       { box-shadow: 0 10px 28px rgba(57,211,83,0.16); }
@@ -302,6 +303,7 @@
     tr.aibest-row     { background: #0f3057 !important; color: #ffffff; font-weight: bold; border-left: 8px solid #00d9ff; }
     tr.rawlay-row     { background: #6d0e0e !important; color: #fff2f2; font-weight: bold; border-left: 8px solid #ff4c4c; }
     tr.ewnotep-row    { background: #4a2f75 !important; color: #efe3ff; font-weight: bold; border-left: 8px solid #b57cff; }
+    tr.btew-row       { background: #083344 !important; color: #d5f8ff; font-weight: bold; border-left: 8px solid #00d9ff; }
     tr.mustwin-row    { background: #1f5a2e !important; color: #e7ffe7; font-weight: bold; border-left: 8px solid #39d353; }
     tr.rawvalue-row   { background: #555 !important; color: #fff5d7; font-weight: bold; border-left: 8px solid #c2e7ff; }
     tr.tonywatch-row  { background: #ffe6a7 !important; color: #2a2a2a; font-weight: bold; border-left: 8px solid #ffa500; }
@@ -397,6 +399,13 @@
       color: #faf1ff;
       border-color: rgba(181,124,255,0.45);
       box-shadow: 0 0 0 1px rgba(181,124,255,0.20), 0 0 18px rgba(181,124,255,0.24);
+    }
+
+    .type-badge.type-btew {
+      background: linear-gradient(180deg, rgba(0,217,255,0.62), rgba(8,51,68,0.72));
+      color: #eaffff;
+      border-color: rgba(0,217,255,0.55);
+      box-shadow: 0 0 0 1px rgba(0,217,255,0.22), 0 0 18px rgba(0,217,255,0.24);
     }
 
     .type-badge.type-win {
@@ -627,6 +636,7 @@
     .tag-chip.tag-sleeper         { background: linear-gradient(180deg, #7a42c7, #4f2487); color: #f4e8ff; border-color: rgba(181,124,255,0.48); }
     .tag-chip.tag-value           { background: linear-gradient(180deg, #ffd84d, #d6a700); color: #221900; border-color: rgba(255,216,77,0.60); }
     .tag-chip.tag-blue            { background: linear-gradient(180deg, #4ea7ff, #1668c7); color: #eef7ff; border-color: rgba(78,167,255,0.58); }
+    .tag-chip.tag-bt-ew           { background: linear-gradient(180deg, #00d9ff, #075985); color: #eaffff; border-color: rgba(0,217,255,0.66); }
     .tag-chip.tag-tony-watch      { background: linear-gradient(180deg, #ffbf5f, #e08300); color: #281700; border-color: rgba(255,191,95,0.60); }
     .tag-chip.tag-raw-value       { background: linear-gradient(180deg, #7fd2ff, #2494d9); color: #071a24; border-color: rgba(127,210,255,0.60); }
     .tag-chip.tag-rank-overlay    { background: linear-gradient(180deg, #4df0b1, #0ea56f); color: #042116; border-color: rgba(77,240,177,0.60); }
@@ -800,7 +810,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 May 2026, 23:28</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">02 May 2026, 10:02</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -815,7 +825,8 @@
       <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
       <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
       <div class="meta-pill">✅ Must Win = shorter than 8/1</div>
-      <div class="meta-pill">🎯 EW = 34+ / 16–20 fields / premium overlay stack</div>
+      <div class="meta-pill">🎯 EW = 21.0+ normal non-EP</div>
+      <div class="meta-pill">🧪 BT E/W = 16/1+ in 16+ runner EP fields</div>
       <div class="meta-pill">❌ Lay tags now highlighted harder</div>
       <div class="meta-pill">📱 Mobile swipe tables</div>
       <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
@@ -829,7 +840,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, Each Way, Must Win and Must Lay.</div>
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win and Must Lay.</div>
         <div class="table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -894,9 +905,22 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">8/1+ runners with multiple model-support tags in races offering extra places.</div>
+        <div class="section-note">16/1+ runners in extra-place races with fewer than 16 runners and multiple model-support tags.</div>
         <div class="table-wrap">
           <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </details>
+
+    <details class="section-card section-btew">
+      <summary class="section-title">
+        <span class="section-title-left">🧪 BT E/W</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">Backend-test each-way runners: same EP support shape as Big E/W - EP, but 16/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
+        <div class="table-wrap">
+          <table id="btew-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </details>
@@ -920,7 +944,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Optimised normal EW only: premium model-value/rank/raw stack, 34.0+ in 8–20 runner fields, or 16–20 runner fields.</div>
+        <div class="section-note">Normal non-extra-place EW only: 21.0+ decimal and still passing the existing model-value/rank/raw support shape.</div>
         <div class="table-wrap">
           <table id="ewnotep-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th></tr></thead><tbody></tbody></table>
         </div>
@@ -1278,6 +1302,7 @@
   const typeBadgeHTML = (type) => {
     if (type === 'Big E/W - EP') return `<span class="type-badge type-ewep">Big E/W - EP</span>`;
     if (type === 'Each Way') return `<span class="type-badge type-ew">Each Way</span>`;
+    if (type === 'BT E/W') return `<span class="type-badge type-btew">BT E/W</span>`;
     if (type === 'Must Win') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Must Lay') return `<span class="type-badge type-lay">MUST LAY</span>`;
     return `<span class="type-badge">${type || ''}</span>`;
@@ -1465,16 +1490,16 @@
     return !isNaN(book) && !isNaN(model) && !isNaN(raw) && model < book && raw < book;
   };
 
-  // Big E/W - Extra Places: allow 8/1+ decimal 9.0+
+  // Big E/W - Extra Places and BT E/W: 16/1+ decimal 17.0+
   const isBigEwEpPriced = (entry) => {
-    const dec = parseOdds(entry?.bookie_odds);
-    return !isNaN(dec) && dec >= 9.0;
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    return !isNaN(dec) && dec >= 17.0;
   };
 
-  // Normal Each Way, no extra places: tighter 12/1+ decimal 13.0+
+  // Normal Each Way, no extra places: user-requested decimal 21.0+
   const isNormalEachWayPriced = (entry) => {
-    const dec = parseOdds(entry?.bookie_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    return !isNaN(dec) && dec >= 21.0;
   };
 
   const isMustWinPriced = (entry) => {
@@ -1512,9 +1537,49 @@
     return s.has("value") && s.has("rank-overlay") && s.has("raw-value");
   };
 
+  const rawValueToleranceOk = (entry) => {
+    const real = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const raw = parseOdds(entry?.raw_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    if (isNaN(real) || isNaN(raw) || raw <= 1 || real <= 1 || raw >= real) return false;
+    const rawProb = 100 / raw;
+    const realProb = 100 / real;
+    const diff = rawProb - realProb;
+    const overlay = (real / raw) - 1;
+    let minPts, minOverlay;
+    if (real <= 2.5)      { minPts = 20.0; minOverlay = 0.16; }
+    else if (real <= 4.0) { minPts = 27.0; minOverlay = 0.22; }
+    else if (real <= 6.0) { minPts = 22.0; minOverlay = 0.22; }
+    else if (real <= 11.0){ minPts = 9.0;  minOverlay = 0.24; }
+    else if (real <= 21.0){ minPts = 1.75; minOverlay = 0.28; }
+    else                  { minPts = 1.40; minOverlay = 0.34; }
+    const modelOk = isNaN(model) ? true : (model < real && ((real / model) - 1) >= 0.05);
+    return diff >= minPts && overlay >= minOverlay && modelOk;
+  };
+
+  const modelValueToleranceOk = (entry) => {
+    const real = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    if (isNaN(real) || isNaN(model) || model <= 1 || real <= 1 || model >= real) return false;
+    const edge = (100 / model) - (100 / real);
+    const overlay = (real / model) - 1;
+    let minEdge, minOverlay;
+    if (real <= 3.5)       { minEdge = 2.75; minOverlay = 0.05; }
+    else if (real <= 6.0)  { minEdge = 2.25; minOverlay = 0.06; }
+    else if (real <= 11.0) { minEdge = 1.60; minOverlay = 0.07; }
+    else if (real <= 21.0) { minEdge = 1.10; minOverlay = 0.08; }
+    else                   { minEdge = 0.85; minOverlay = 0.10; }
+    return edge >= minEdge && overlay >= minOverlay;
+  };
+
+  const isBigEwOddsSectionCandidate = (entry) => {
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    return !isNaN(dec) && dec >= 17.0 && rawValueToleranceOk(entry);
+  };
+
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 13.0) return false;
+    if (isNaN(dec) || dec < 21.0) return false;
 
     const s = new Set(tags || []);
     const field = getFieldSize(entry);
@@ -1522,7 +1587,7 @@
     // Small-field EW was a clear backtest leak. If known, block normal EW below 8 runners.
     if (field !== null && field < 8) return false;
 
-    // Premium stack can qualify from 12/1+.
+    // Premium stack can qualify from the new 21.0+ normal EW gate.
     if (hasPremiumEwStack(tags)) return true;
 
     // Strongest longshot place/value pocket: 34.0+ in 8–20 runner fields.
@@ -1548,6 +1613,21 @@
   };
 
 
+  const isBigEwEpField = (entry) => {
+    const field = getFieldSize(entry);
+    return field !== null && field < 16;
+  };
+
+  const isBtEwField = (entry) => {
+    const field = getFieldSize(entry);
+    return field !== null && field >= 16;
+  };
+
+  const withTag = (entry, tag) => ({
+    ...entry,
+    tags: Array.from(new Set([...(Array.isArray(entry.tags) ? entry.tags : []), tag]))
+  });
+
   const getShortlistType = (entry) => {
     const tags = tagSet(entry);
     const isOverlayTag = t => t.startsWith("overlay+");
@@ -1559,8 +1639,12 @@
       return "Must Lay";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && extra && isBigEwEpPriced(entry) && coreTags.length >= 2) {
+    if (!hasAnyLayTag(tags) && backOk && extra && isBigEwEpPriced(entry) && isBigEwEpField(entry) && coreTags.length >= 2) {
       return "Big E/W - EP";
+    }
+
+    if (!hasAnyLayTag(tags) && backOk && extra && isBigEwEpPriced(entry) && isBtEwField(entry) && coreTags.length >= 2) {
+      return "BT E/W";
     }
 
     if (
@@ -1702,6 +1786,7 @@
   let multiItems = [];
   let rawlayItems = [];
   let ewnotepItems = [];
+  let btewItems = [];
   let mustwinItems = [];
   let rawvItems = [];
   let tonyItems = [];
@@ -1716,14 +1801,15 @@
 
     if (shortlistType === 'Big E/W - EP') multiItems.push({ ...entry, shortlist_type: 'Big E/W - EP' });
     if (shortlistType === 'Each Way')     ewnotepItems.push({ ...entry, shortlist_type: 'Each Way' });
+    if (shortlistType === 'BT E/W')       btewItems.push({ ...withTag(entry, 'bt-ew'), shortlist_type: 'BT E/W' });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
 
-    if (tags.includes("raw-value"))       rawvItems.push(entry);
+    if (tags.includes("raw-value") && rawValueToleranceOk(entry)) rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
-    if (tags.includes("value"))           valueItems.push(entry);
-    if (tags.includes("blue"))            blueItems.push(entry);
-    if (tags.includes("top-rated-clear")) topItems.push(entry);
+    if (tags.includes("value") && modelValueToleranceOk(entry)) valueItems.push(entry);
+    if (tags.includes("blue") && isBigEwOddsSectionCandidate(entry)) blueItems.push(entry);
+    if (tags.includes("top-rated-clear") && backOddsConfirmed(entry)) topItems.push(entry);
   });
 
   tonyItems = allEntries
@@ -1732,6 +1818,7 @@
 
   const shortlistItems = [
     ...multiItems,
+    ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
     ...rawlayItems
@@ -1741,6 +1828,7 @@
 
   const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 9);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
+  const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
   const ewnotep = buildGroupedRows(ewnotepItems, e => twoLineRow(e, tagSet(e), "ewnotep-row"), 4);
   const mustwin = buildGroupedRows(mustwinItems, e => twoLineRow(e, tagSet(e), "mustwin-row"), 4);
@@ -1800,6 +1888,7 @@
   setBody('#shortlist-table', shortlist, 9);
   setBody('#wasvalue-table', wasValueHtml, 4);
   setBody('#multitag-table',  multi, 4);
+  setBody('#btew-table',      btew, 4);
   setBody('#rawlays-table',   rawlays, 4);
   setBody('#ewnotep-table',   ewnotep, 4);
   setBody('#mustwin-table',   mustwin, 4);
@@ -1918,16 +2007,16 @@
     );
   };
 
-  // Big E/W - Extra Places: allow 8/1+ decimal 9.0+
+  // Big E/W - Extra Places and BT E/W: 16/1+ decimal 17.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 9.0;
+    return !isNaN(dec) && dec >= 17.0;
   };
 
-  // Normal Each Way, no extra places: tighter 12/1+ decimal 13.0+
+  // Normal Each Way, no extra places: user-requested decimal 21.0+
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    return !isNaN(dec) && dec >= 21.0;
   };
 
   const isMustWinPriced = (entry) => {
@@ -1967,7 +2056,7 @@
 
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 13.0) return false;
+    if (isNaN(dec) || dec < 21.0) return false;
 
     const s = new Set(tags || []);
     const field = getFieldSize(entry);
@@ -1975,7 +2064,7 @@
     // Small-field EW was a clear backtest leak. If known, block normal EW below 8 runners.
     if (field !== null && field < 8) return false;
 
-    // Premium stack can qualify from 12/1+.
+    // Premium stack can qualify from the new 21.0+ normal EW gate.
     if (hasPremiumEwStack(tags)) return true;
 
     // Strongest longshot place/value pocket: 34.0+ in 8–20 runner fields.
@@ -2063,6 +2152,16 @@
     return Array.from(merged.values());
   };
 
+  const isBigEwEpField = (entry) => {
+    const field = getFieldSize(entry);
+    return field !== null && field < 16;
+  };
+
+  const isBtEwField = (entry) => {
+    const field = getFieldSize(entry);
+    return field !== null && field >= 16;
+  };
+
   const getShortlistType = (entry, extraPlaces) => {
     const tags = tagSet(entry);
     const coreTags = tags.filter(t => !String(t).startsWith("overlay+"));
@@ -2073,8 +2172,12 @@
       return "Must Lay";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && isBigEwEpPriced(entry) && coreTags.length >= 2) {
+    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && isBigEwEpPriced(entry) && isBigEwEpField(entry) && coreTags.length >= 2) {
       return "Big E/W - EP";
+    }
+
+    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && isBigEwEpPriced(entry) && isBtEwField(entry) && coreTags.length >= 2) {
+      return "BT E/W";
     }
 
     if (
