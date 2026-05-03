@@ -810,7 +810,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 May 2026, 14:09</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 May 2026, 14:39</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1219,10 +1219,29 @@
     return expiryTime <= new Date();
   };
 
+  const isNonRunner = (entry) => {
+    const runnerStatus = String(entry?.bf_runner_status || "").toUpperCase();
+    const result = String(entry?.bf_result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+    const topDetails = entry?.bf_top_finish_details || {};
+    const removedInTopFinish = Object.values(topDetails || {}).some(d => {
+      const s = String(d?.runner_status || "").toUpperCase();
+      const r = String(d?.result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+      return s === "REMOVED" || s === "REMOVED_VACANT" || r === "non runner";
+    });
+
+    return (
+      runnerStatus === "REMOVED" ||
+      runnerStatus === "REMOVED_VACANT" ||
+      result === "non runner" ||
+      removedInTopFinish
+    );
+  };
+
   const isLiveEntry = (entry) => {
     return (
       entry?.currently_live !== false &&
-      entry?.status !== "was_value"
+      entry?.status !== "was_value" &&
+      !isNonRunner(entry)
     );
   };
 
@@ -1757,6 +1776,7 @@
         e?.was_value_earlier ||
         e?.status === "was_value" ||
         e?.currently_live === false ||
+        isNonRunner(e) ||
         raceHasStarted(e)
       )
     )
@@ -2000,10 +2020,23 @@
     return dt <= new Date();
   };
 
+  const isNonRunner = (entry) => {
+    const runnerStatus = String(entry?.bf_runner_status || "").toUpperCase();
+    const result = String(entry?.bf_result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+    const topDetails = entry?.bf_top_finish_details || {};
+    const removedInTopFinish = Object.values(topDetails || {}).some(d => {
+      const s = String(d?.runner_status || "").toUpperCase();
+      const r = String(d?.result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+      return s === "REMOVED" || s === "REMOVED_VACANT" || r === "non runner";
+    });
+    return runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT" || result === "non runner" || removedInTopFinish;
+  };
+
   const isLiveEntry = (entry) => {
     return (
       entry?.currently_live !== false &&
-      entry?.status !== "was_value"
+      entry?.status !== "was_value" &&
+      !isNonRunner(entry)
     );
   };
 
