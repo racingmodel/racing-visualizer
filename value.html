@@ -1173,7 +1173,24 @@
   const filterValid = (entry) => {
     const coverage   = Number(entry?.data_coverage ?? 100);
     const confidence = Number(entry?.race_data_confidence ?? 100);
-    return (coverage >= 86 && confidence >= 86);
+    const tags = Array.isArray(entry?.tags)
+      ? entry.tags.map(t => String(t).toLowerCase())
+      : [];
+  
+    const strongShortlistBypass =
+      confidence >= 86 &&
+      coverage >= 75 &&
+      (
+        tags.includes("bt-ew") ||
+        tags.includes("ai-back") ||
+        (
+          tags.includes("raw-value") &&
+          tags.includes("blue") &&
+          tags.includes("rank-overlay")
+        )
+      );
+  
+    return (coverage >= 86 && confidence >= 86) || strongShortlistBypass;
   };
 
   const valueMap = new Map(
