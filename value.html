@@ -916,6 +916,42 @@
       line-height: 1;
     }
 
+    .placepot-runner-mini.is-danger {
+      border-color: rgba(255,101,101,0.70);
+      background: linear-gradient(180deg, rgba(255,101,101,0.36), rgba(255,255,255,0.07));
+    }
+
+    .placepot-danger-pill {
+      color: #fff;
+      background: linear-gradient(180deg,#ff6565,#b91c1c);
+      border-color: rgba(255,120,120,0.70);
+    }
+
+    .placepot-leg-chip.is-danger {
+      border-color: rgba(255,101,101,0.48);
+      background: rgba(255,76,76,0.11);
+      box-shadow: 0 0 14px rgba(255,76,76,0.12);
+    }
+
+    .placepot-leg-chip.is-survived {
+      border-color: rgba(92,255,128,0.40);
+      background: rgba(57,211,83,0.12);
+    }
+
+    .placepot-leg-chip.is-knocked-out {
+      border-color: rgba(255,101,101,0.66);
+      background: rgba(255,76,76,0.18);
+    }
+
+    .placepot-leg-marker {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 0.10rem;
+      font-size: 0.75rem;
+      line-height: 1;
+    }
+
     .placepot-pill.risk-low { color: #031b08; background: linear-gradient(180deg,#9cffb0,#39d353); }
     .placepot-pill.risk-medium { color: #241900; background: linear-gradient(180deg,#ffef8a,#ffd700); }
     .placepot-pill.risk-high { color: #fff; background: linear-gradient(180deg,#ff6565,#b91c1c); }
@@ -1052,6 +1088,103 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.20);
     }
 
+    .placepot-side-stack {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .placepot-result-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 4.2rem;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 950;
+      line-height: 1.1;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.08);
+      color: #dbeafe;
+      white-space: nowrap;
+    }
+
+    .placepot-result-badge.status-won,
+    .placepot-result-badge.status-placed,
+    .placepot-result-badge.status-survived,
+    .placepot-result-badge.status-landed,
+    .placepot-result-badge.status-alive {
+      background: linear-gradient(180deg,#9cffb0,#39d353);
+      color: #031b08;
+      border-color: rgba(92,255,128,0.62);
+    }
+
+    .placepot-result-badge.status-lost,
+    .placepot-result-badge.status-knocked-out {
+      background: linear-gradient(180deg,#ff6565,#b91c1c);
+      color: #fff;
+      border-color: rgba(255,120,120,0.70);
+    }
+
+    .placepot-result-badge.status-non-runner,
+    .placepot-result-badge.status-nr-substitute {
+      background: linear-gradient(180deg,#6b7280,#374151);
+      color: #f9fafb;
+      border-color: rgba(209,213,219,0.35);
+    }
+
+    .placepot-leg-head-left {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .placepot-leg-head-meta {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.30rem;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .placepot-leg-conf {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.16rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 950;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.08);
+      color: #dbeafe;
+      white-space: nowrap;
+    }
+
+    .placepot-leg-conf.risk-low { color: #031b08; background: linear-gradient(180deg,#9cffb0,#39d353); }
+    .placepot-leg-conf.risk-medium { color: #241900; background: linear-gradient(180deg,#ffef8a,#ffd700); }
+    .placepot-leg-conf.risk-high { color: #fff; background: linear-gradient(180deg,#ff6565,#b91c1c); }
+
+    .placepot-vuln-note {
+      margin: 0.45rem 0.62rem 0 0.62rem;
+      padding: 0.38rem 0.52rem;
+      border-radius: 10px;
+      background: rgba(255,76,76,0.13);
+      border: 1px solid rgba(255,101,101,0.32);
+      color: #ffd5d5;
+      font-size: 0.74rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .placepot-prob {
+      color: #ffef8a;
+      font-weight: 900;
+    }
+
     .placepot-empty {
       padding: 1rem;
       text-align: center;
@@ -1094,7 +1227,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 13:05</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 13:29</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2281,6 +2414,10 @@
       return;
     }
 
+    const ppNorm = (v) => String(v || "").toLowerCase().trim().replace(/[^a-z0-9:/ ]+/g, "").replace(/\s+/g, " ");
+    const ppKey = (raceDT, course, horse) => `${ppNorm(raceDT)}_${ppNorm(course)}_${ppNorm(horse)}`;
+    const valueResultMap = new Map((Array.isArray(valueData) ? valueData : []).map(e => [ppKey(e.race_datetime, e.course, e.horse), e]));
+
     const runnerNoText = (s) => {
       const no = String(s.runner_number || s.saddle_cloth || s.number || s.runner_no || s.draw_number || "").trim();
       if (!no || no.toLowerCase() === "unknown" || no.toLowerCase() === "nan") return "?";
@@ -2293,15 +2430,85 @@
       return `<span class="placepot-runner-no">${escHTML(no)}</span>`;
     };
 
+    const ppStatusClass = (status) => {
+      const clean = String(status || "pending").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "pending";
+      return `status-${clean}`;
+    };
+
+    const ppStatusLabel = (status, fallback="Pending") => {
+      const s = String(status || "pending").toLowerCase().replace(/[_-]+/g, " ").trim();
+      if (["won", "winner"].includes(s)) return "Won";
+      if (["placed", "survived"].includes(s)) return s === "survived" ? "Survived" : "Placed";
+      if (s === "landed") return "Landed";
+      if (s === "alive") return "Alive";
+      if (s === "lost") return "Lost";
+      if (s === "knocked out") return "Knocked out";
+      if (["non runner", "non-runner", "nr"].includes(s)) return "NR";
+      if (s === "nr substitute") return "NR Sub";
+      if (s === "pending") return fallback || "Pending";
+      return fallback || s.replace(/\b\w/g, c => c.toUpperCase());
+    };
+
+    const topFinishStatusFromValue = (entry, places) => {
+      const details = entry?.bf_top_finish_details || {};
+      if (!details || typeof details !== "object") return "";
+      const wanted = [`top ${places}`, `top${places}`, String(places)];
+      for (const [key, val] of Object.entries(details)) {
+        const k = String(key || "").toLowerCase().replace(/_/g, " ");
+        if (!wanted.some(w => k.includes(w))) continue;
+        const result = String(val?.result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+        const runnerStatus = String(val?.runner_status || "").toUpperCase();
+        if (runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT" || result === "non runner") return "non-runner";
+        if (result.includes("placed") || result.includes("won") || result.includes("winner") || result.includes("top finish")) return "placed";
+        if (result.includes("lost") || result.includes("loser")) return "lost";
+      }
+      return "";
+    };
+
+    const selectionResult = (s, leg) => {
+      let status = String(s.result_status || "pending").toLowerCase();
+      let label = s.result_label || "";
+      let bfSp = s.bf_sp || "";
+
+      if (!status || status === "pending") {
+        const e = valueResultMap.get(ppKey(leg.race_datetime, leg.course || "", s.horse)) || valueResultMap.get(ppKey(leg.race_datetime, "", s.horse));
+        if (e) {
+          const runnerStatus = String(e.bf_runner_status || "").toUpperCase();
+          const rawResult = String(e.bf_result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+          const topResult = topFinishStatusFromValue(e, leg.places || 0);
+          bfSp = bfSp || e.bf_sp || e.bf_starting_price || e.bf_last_price_traded || "";
+          if (runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT" || rawResult === "non runner" || topResult === "non-runner") status = "non-runner";
+          else if (rawResult.includes("won") || rawResult.includes("winner")) status = "won";
+          else if (topResult === "placed") status = "placed";
+          else if (topResult === "lost" || rawResult.includes("lost") || rawResult.includes("loser")) status = "lost";
+        }
+      }
+
+      label = label || ppStatusLabel(status);
+      return { status: status || "pending", label, bfSp };
+    };
+
+    const placepotResultBadgeHTML = (status, label) => {
+      const st = status || "pending";
+      const text = label || ppStatusLabel(st);
+      return `<span class="placepot-result-badge ${ppStatusClass(st)}">${escHTML(text)}</span>`;
+    };
+
+    const riskClassName = (risk) => `risk-${String(risk || "medium").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+
     const placepotLegSummaryHTML = (legs) => {
       if (!Array.isArray(legs) || !legs.length) return "";
       return `<div class="placepot-leg-summary">${legs.map(leg => {
         const sels = Array.isArray(leg.selections) ? leg.selections : [];
         const nums = sels.map(runnerNoText).filter(Boolean);
+        const danger = !!leg.danger_leg;
+        const status = String(leg.leg_result_status || "pending").toLowerCase();
         const numHtml = nums.length
-          ? nums.map(n => `<span class="placepot-runner-mini">${escHTML(n)}</span>`).join("")
-          : `<span class="placepot-runner-mini">?</span>`;
-        return `<span class="placepot-leg-chip"><b>L${escHTML(leg.leg || "")}</b>${numHtml}</span>`;
+          ? nums.map(n => `<span class="placepot-runner-mini${danger ? " is-danger" : ""}">${escHTML(n)}</span>`).join("")
+          : `<span class="placepot-runner-mini${danger ? " is-danger" : ""}">?</span>`;
+        const marker = status === "survived" ? "✅" : (status === "knocked_out" ? "❌" : (danger ? "⚠️" : ""));
+        const chipClass = status === "survived" ? " is-survived" : (status === "knocked_out" ? " is-knocked-out" : (danger ? " is-danger" : ""));
+        return `<span class="placepot-leg-chip${chipClass}" title="Leg confidence ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%"><b>L${escHTML(leg.leg || "")}</b>${numHtml}${marker ? `<span class="placepot-leg-marker">${marker}</span>` : ""}</span>`;
       }).join("")}</div>`;
     };
 
@@ -2309,30 +2516,59 @@
       const legs = Array.isArray(p.legs) ? p.legs : [];
       const legHtml = legs.length ? legs.map(leg => {
         const sels = Array.isArray(leg.selections) ? leg.selections : [];
-        const selHtml = sels.length ? sels.map(s => `
-          <div class="placepot-pick">
-            ${runnerNoHTML(s)}
-            <div>
-              <span class="placepot-pick-name">${escHTML(s.horse)}</span>
-              <span class="placepot-pick-sub">
-                Real ${escHTML(s.real_odds || "-")} · Model ${escHTML(s.model_odds || "-")} · Raw ${escHTML(s.raw_odds || "-")}
+        const legRisk = String(leg.leg_risk || "Medium");
+        const legStatus = String(leg.leg_result_status || "pending");
+        const vulnerable = leg.vulnerable_favourite || {};
+        const vulnNote = vulnerable.is_vulnerable ? `
+          <div class="placepot-vuln-note">
+            ⚠️ Vulnerable favourite: ${vulnerable.runner_number ? `#${escHTML(vulnerable.runner_number)} ` : ""}${escHTML(vulnerable.horse || "")}
+            ${vulnerable.real_odds ? ` · Real ${escHTML(vulnerable.real_odds)}` : ""}
+            ${vulnerable.model_odds ? ` · Model ${escHTML(vulnerable.model_odds)}` : ""}
+            ${vulnerable.raw_odds ? ` · Raw ${escHTML(vulnerable.raw_odds)}` : ""}
+          </div>` : "";
+
+        const selHtml = sels.length ? sels.map(s => {
+          const res = selectionResult(s, leg);
+          const placeProb = Number(s.place_probability || 0);
+          return `
+            <div class="placepot-pick">
+              ${runnerNoHTML(s)}
+              <div>
+                <span class="placepot-pick-name">${escHTML(s.horse)}</span>
+                <span class="placepot-pick-sub">
+                  Real ${escHTML(s.real_odds || "-")} · Model ${escHTML(s.model_odds || "-")} · Raw ${escHTML(s.raw_odds || "-")}${placeProb ? ` · <span class="placepot-prob">Place ${placeProb.toFixed(0)}%</span>` : ""}
+                  ${res.bfSp ? ` · BF SP ${escHTML(res.bfSp)}` : ""}
+                </span>
+              </div>
+              <span class="placepot-side-stack">
+                <span class="placepot-score">${Number(s.placepot_score || 0).toFixed(0)}</span>
+                ${placepotResultBadgeHTML(res.status, res.label)}
               </span>
             </div>
-            <span class="placepot-score">${Number(s.placepot_score || 0).toFixed(0)}</span>
-          </div>
-        `).join("") : `<div class="placepot-empty">No selections for this leg.</div>`;
+          `;
+        }).join("") : `<div class="placepot-empty">No selections for this leg.</div>`;
 
         return `
           <div class="placepot-leg">
             <div class="placepot-leg-head">
-              <span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>
+              <span class="placepot-leg-head-left">
+                <span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>
+              </span>
+              <span class="placepot-leg-head-meta">
+                <span class="placepot-leg-conf ${riskClassName(legRisk)}">Conf ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%</span>
+                ${leg.danger_leg ? `<span class="placepot-leg-conf risk-high">⚠️ Danger${leg.danger_reason ? `: ${escHTML(leg.danger_reason)}` : ""}</span>` : ""}
+                ${placepotResultBadgeHTML(legStatus, leg.leg_result_label || ppStatusLabel(legStatus))}
+              </span>
             </div>
+            ${vulnNote}
             <div class="placepot-selections">${selHtml}</div>
           </div>
         `;
       }).join("") : `<div class="placepot-empty">Incomplete Placepot — six legs not found.</div>`;
 
       const startRaceDT = firstLegRaceDT(p);
+      const ticketStatus = String(p.result_status || "pending");
+      const dangerCount = Number(p.danger_legs || (legs.filter(l => l.danger_leg).length) || 0);
 
       return `
         <details class="placepot-card">
@@ -2343,6 +2579,8 @@
                 ${placepotStartPillHTML(startRaceDT)}
                 <span class="placepot-pill">${escHTML(p.lines || 0)} lines</span>
                 <span class="placepot-pill">Conf ${Number(p.confidence || 0).toFixed(0)}%</span>
+                ${dangerCount ? `<span class="placepot-pill placepot-danger-pill">⚠️ ${dangerCount} danger</span>` : ""}
+                ${ticketStatus !== "pending" ? placepotResultBadgeHTML(ticketStatus, p.result_label || ppStatusLabel(ticketStatus)) : ""}
               </div>
               ${placepotLegSummaryHTML(legs)}
             </div>
