@@ -920,13 +920,32 @@
 
     .placepot-pick {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: auto 1fr auto;
       gap: 0.5rem;
       align-items: center;
       padding: 0.45rem 0.52rem;
       border-radius: 11px;
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .placepot-runner-no {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.08));
+      color: #ffef8a;
+      border: 1px solid rgba(255,215,0,0.32);
+      font-weight: 950;
+      font-size: 0.86rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px rgba(0,0,0,0.18);
+    }
+
+    .placepot-runner-no.is-empty {
+      opacity: 0.0;
     }
 
     .placepot-pick-name {
@@ -999,7 +1018,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 10:46</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 11:22</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2151,19 +2170,30 @@
       return;
     }
 
+    const fmtStake = (v) => {
+      const n = Number(v || 0);
+      if (!Number.isFinite(n) || n <= 0) return "Stake -";
+      if (n < 1) return `Stake ${Math.round(n * 100)}p`;
+      return `Stake £${n.toFixed(2)}`;
+    };
+
+    const runnerNoHTML = (s) => {
+      const no = String(s.runner_number || s.saddle_cloth || s.number || "").trim();
+      if (!no || no.toLowerCase() === "unknown") return `<span class="placepot-runner-no is-empty"></span>`;
+      return `<span class="placepot-runner-no">${escHTML(no)}</span>`;
+    };
+
     root.innerHTML = items.map(p => {
       const legs = Array.isArray(p.legs) ? p.legs : [];
-      const risk = escHTML(p.risk_label || "Unknown");
       const legHtml = legs.length ? legs.map(leg => {
-        const shape = String(leg.leg_shape || "cover");
         const sels = Array.isArray(leg.selections) ? leg.selections : [];
         const selHtml = sels.length ? sels.map(s => `
           <div class="placepot-pick">
+            ${runnerNoHTML(s)}
             <div>
               <span class="placepot-pick-name">${escHTML(s.horse)}</span>
               <span class="placepot-pick-sub">
-                M${escHTML(s.model_rank)} / Mk${escHTML(s.market_rank)} · Real ${escHTML(s.real_odds || "-")} · Model ${escHTML(s.model_odds || "-")} · Raw ${escHTML(s.raw_odds || "-")}
-                <br>${escHTML(s.reason || "")}
+                Real ${escHTML(s.real_odds || "-")} · Model ${escHTML(s.model_odds || "-")} · Raw ${escHTML(s.raw_odds || "-")}
               </span>
             </div>
             <span class="placepot-score">${Number(s.placepot_score || 0).toFixed(0)}</span>
@@ -2173,13 +2203,12 @@
         return `
           <div class="placepot-leg">
             <div class="placepot-leg-head">
-              <span>${shapeIcon(shape)} Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>
-              <span class="placepot-leg-shape shape-${shape}">${escHTML(shape)}</span>
+              <span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>
             </div>
             <div class="placepot-selections">${selHtml}</div>
           </div>
         `;
-      }).join("") : `<div class="placepot-empty">${escHTML(p.note || "Incomplete Placepot — six legs not found.")}</div>`;
+      }).join("") : `<div class="placepot-empty">Incomplete Placepot — six legs not found.</div>`;
 
       return `
         <details class="placepot-card">
@@ -2187,17 +2216,14 @@
             <div>
               <h3>🧩 ${escHTML(p.course)} Placepot</h3>
               <div class="placepot-meta">
-                <span class="placepot-pill">${escHTML(p.strategy || "Balanced")}</span>
                 <span class="placepot-pill">${escHTML(p.lines || 0)} lines</span>
-                <span class="placepot-pill">£${Number(p.estimated_cost || 0).toFixed(2)}</span>
+                <span class="placepot-pill">${fmtStake(p.stake_per_line)}</span>
                 <span class="placepot-pill">Conf ${Number(p.confidence || 0).toFixed(0)}%</span>
-                <span class="placepot-pill ${riskClass(p.risk_label)}">${risk}</span>
               </div>
             </div>
             <span class="placepot-card-toggle">▶</span>
           </summary>
           <div class="placepot-card-body">
-            <p class="placepot-note">${escHTML(p.note || "")} ${escHTML(p.nr_note || "")}</p>
             ${legHtml}
           </div>
         </details>
