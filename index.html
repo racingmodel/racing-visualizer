@@ -203,7 +203,9 @@
             const obj = JSON.parse(line);
             const dt = String(obj.race_datetime || "").trim();
             const course = normCourse(obj.course || "");
-            const places = parseInt(obj.places, 10);
+            const places = parseInt(obj.places || obj.ew_places || obj.extra_places || 4, 10) || 4;
+            const bookmakerRaw = String(obj.bookmaker || obj.bookie || obj.provider || "EP").trim().toUpperCase().replace(/\s+/g, "");
+            const bookmaker = (["SKYBET", "SKY", "SBG"].includes(bookmakerRaw) ? "SBG" : (["BET365", "365", "B365"].includes(bookmakerRaw) ? "B365" : (bookmakerRaw || "EP")));
 
             const m = dt.match(/^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}):(\d{2})$/);
             if (!m || !course) continue;
@@ -216,10 +218,15 @@
             if (!isoDate) continue;
 
             const key = `${course}|${isoDate}|${hhmm}`;
-            const prev = EP_MAP.get(key);
-            if (prev == null || (Number.isFinite(places) && places > prev)) {
-              EP_MAP.set(key, places);
+            if (!EP_MAP.has(key)) EP_MAP.set(key, []);
+            const arr = EP_MAP.get(key);
+            const existing = arr.find(x => x.bookmaker === bookmaker);
+            if (existing) {
+              existing.places = Math.max(Number(existing.places || 0), places);
+            } else {
+              arr.push({ bookmaker, places });
             }
+            arr.sort((a, b) => ({ SBG: 1, B365: 2, EP: 99 }[a.bookmaker] || 50) - ({ SBG: 1, B365: 2, EP: 99 }[b.bookmaker] || 50));
           } catch (e) {}
         }
       }
@@ -298,7 +305,9 @@
             row.appendChild(badge("⛔ conf ?", "badge-mid"));
           }
 
-          if (epPlaces != null) {
+          if (Array.isArray(epPlaces) && epPlaces.length) {
+            epPlaces.forEach(ep => row.appendChild(badge(`⭐ ${ep.bookmaker}×${ep.places}`, "badge-ep")));
+          } else if (epPlaces != null) {
             row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
           }
 
