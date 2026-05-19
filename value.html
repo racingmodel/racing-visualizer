@@ -866,10 +866,79 @@
       white-space: nowrap;
     }
 
+    .placepot-leg-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.28rem;
+      margin-top: 0.45rem;
+      max-width: 100%;
+    }
+
+    .placepot-leg-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.24rem;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,215,0,0.18);
+      background: rgba(255,255,255,0.06);
+      color: #efe6ff;
+      font-size: 0.70rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .placepot-leg-chip b {
+      color: #ffef8a;
+      font-weight: 950;
+    }
+
+    .placepot-runner-mini {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.28rem;
+      height: 1.28rem;
+      padding: 0 0.25rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,215,0,0.26), rgba(255,255,255,0.07));
+      border: 1px solid rgba(255,215,0,0.28);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 950;
+      line-height: 1;
+    }
+
     .placepot-pill.risk-low { color: #031b08; background: linear-gradient(180deg,#9cffb0,#39d353); }
     .placepot-pill.risk-medium { color: #241900; background: linear-gradient(180deg,#ffef8a,#ffd700); }
     .placepot-pill.risk-high { color: #fff; background: linear-gradient(180deg,#ff6565,#b91c1c); }
     .placepot-pill.risk-no-bet { color: #fff; background: linear-gradient(180deg,#6b7280,#374151); }
+
+    .placepot-start-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.20rem 0.56rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      font-size: 0.74rem;
+      font-weight: 950;
+      white-space: nowrap;
+      letter-spacing: 0.12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .placepot-start-pill.is-open {
+      color: #031b08;
+      background: linear-gradient(180deg,#9cffb0,#39d353);
+      border-color: rgba(92,255,128,0.62);
+    }
+
+    .placepot-start-pill.is-closed {
+      color: #fff;
+      background: linear-gradient(180deg,#ff6565,#b91c1c);
+      border-color: rgba(255,120,120,0.70);
+    }
 
     .placepot-note {
       margin: 0.65rem 0.95rem 0 0.95rem;
@@ -1018,7 +1087,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 11:22</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 12:13</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2161,6 +2230,41 @@
 
   const riskClass = (risk) => `risk-${String(risk || "unknown").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "unknown"}`;
 
+  const firstLegRaceDT = (p) => {
+    const legs = Array.isArray(p?.legs) ? p.legs : [];
+    return legs.length ? String(legs[0]?.race_datetime || "") : String(p?.start_race_datetime || p?.race_datetime || "");
+  };
+
+  const placepotStartTimeText = (raceDT) => {
+    const t = timeFromRaceDT(raceDT);
+    return t ? `Starts ${t}` : "Starts --:--";
+  };
+
+  const placepotStartState = (raceDT) => {
+    const dt = parseRaceDT(raceDT);
+    if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) {
+      return { closed: false, text: placepotStartTimeText(raceDT) };
+    }
+    const closed = dt <= new Date();
+    return { closed, text: closed ? "Closed" : placepotStartTimeText(raceDT) };
+  };
+
+  const placepotStartPillHTML = (raceDT) => {
+    const st = placepotStartState(raceDT);
+    const cls = st.closed ? "is-closed" : "is-open";
+    return `<span class="placepot-start-pill ${cls}" data-placepot-start="${escHTML(raceDT || "")}">${escHTML(st.text)}</span>`;
+  };
+
+  const refreshPlacepotStartPills = () => {
+    document.querySelectorAll(".placepot-start-pill[data-placepot-start]").forEach(el => {
+      const raceDT = el.getAttribute("data-placepot-start") || "";
+      const st = placepotStartState(raceDT);
+      el.textContent = st.text;
+      el.classList.toggle("is-closed", !!st.closed);
+      el.classList.toggle("is-open", !st.closed);
+    });
+  };
+
   const renderPlacepotCards = (items) => {
     const root = document.getElementById("placepot-cards");
     if (!root) return;
@@ -2170,17 +2274,28 @@
       return;
     }
 
-    const fmtStake = (v) => {
-      const n = Number(v || 0);
-      if (!Number.isFinite(n) || n <= 0) return "Stake -";
-      if (n < 1) return `Stake ${Math.round(n * 100)}p`;
-      return `Stake £${n.toFixed(2)}`;
+    const runnerNoText = (s) => {
+      const no = String(s.runner_number || s.saddle_cloth || s.number || s.runner_no || s.draw_number || "").trim();
+      if (!no || no.toLowerCase() === "unknown" || no.toLowerCase() === "nan") return "?";
+      return no;
     };
 
     const runnerNoHTML = (s) => {
-      const no = String(s.runner_number || s.saddle_cloth || s.number || "").trim();
-      if (!no || no.toLowerCase() === "unknown") return `<span class="placepot-runner-no is-empty"></span>`;
+      const no = runnerNoText(s);
+      if (!no || no === "?") return `<span class="placepot-runner-no is-empty"></span>`;
       return `<span class="placepot-runner-no">${escHTML(no)}</span>`;
+    };
+
+    const placepotLegSummaryHTML = (legs) => {
+      if (!Array.isArray(legs) || !legs.length) return "";
+      return `<div class="placepot-leg-summary">${legs.map(leg => {
+        const sels = Array.isArray(leg.selections) ? leg.selections : [];
+        const nums = sels.map(runnerNoText).filter(Boolean);
+        const numHtml = nums.length
+          ? nums.map(n => `<span class="placepot-runner-mini">${escHTML(n)}</span>`).join("")
+          : `<span class="placepot-runner-mini">?</span>`;
+        return `<span class="placepot-leg-chip"><b>L${escHTML(leg.leg || "")}</b>${numHtml}</span>`;
+      }).join("")}</div>`;
     };
 
     root.innerHTML = items.map(p => {
@@ -2210,16 +2325,19 @@
         `;
       }).join("") : `<div class="placepot-empty">Incomplete Placepot — six legs not found.</div>`;
 
+      const startRaceDT = firstLegRaceDT(p);
+
       return `
         <details class="placepot-card">
           <summary class="placepot-card-head">
             <div>
               <h3>🧩 ${escHTML(p.course)} Placepot</h3>
               <div class="placepot-meta">
+                ${placepotStartPillHTML(startRaceDT)}
                 <span class="placepot-pill">${escHTML(p.lines || 0)} lines</span>
-                <span class="placepot-pill">${fmtStake(p.stake_per_line)}</span>
                 <span class="placepot-pill">Conf ${Number(p.confidence || 0).toFixed(0)}%</span>
               </div>
+              ${placepotLegSummaryHTML(legs)}
             </div>
             <span class="placepot-card-toggle">▶</span>
           </summary>
@@ -2238,6 +2356,8 @@
   };
 
   renderPlacepotCards(placepotData);
+  refreshPlacepotStartPills();
+  setInterval(refreshPlacepotStartPills, 30000);
 
   setBody('#shortlist-table', shortlist, 9);
   setBody('#wasvalue-table', wasValueHtml, 4);
