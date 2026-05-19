@@ -1251,7 +1251,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 18:26</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 18:54</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1623,9 +1623,14 @@
     }).join("");
   };
 
-  const valueData = await safeJSON('value_bets.json');
-  const placepotData = await safeJSON('placepot_picks.json');
+  let valueData = await safeJSON('value_bets.json');
+  let placepotData = await safeJSON('placepot_picks.json');
   let aiData = await safeJSON('ai_bets.json');
+
+  // Hard safety: a malformed/missing helper JSON must never blank the page.
+  if (!Array.isArray(valueData)) valueData = [];
+  if (!Array.isArray(placepotData)) placepotData = [];
+  if (!Array.isArray(aiData)) aiData = [];
 
   const filterValid = (entry) => {
     const coverage   = Number(entry?.data_coverage ?? 100);
@@ -1654,6 +1659,21 @@
     valueData.map(e => [raceKey(e.race_datetime, e.course) + "_" + e.horse, e])
   );
 
+  const normHorseName = s =>
+    String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[’']/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const normCourseBase = s =>
+    normCourse(s)
+      .replace(/\b\d{1,2}(st|nd|rd|th)?\s+[a-z]+\b/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
   const merged = new Map();
   [...valueData, ...aiData].forEach(e => {
     const key = raceKey(e.race_datetime, e.course) + "_" + e.horse;
@@ -1677,6 +1697,27 @@
 
   const allEntries = Array.from(merged.values())
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+
+  const findValueResult = (raceDT, course, horse) => {
+    const ndt = normDT(raceDT);
+    const nc = normCourseBase(course);
+    const nh = normHorseName(horse);
+    if (!ndt || !nh) return null;
+
+    const direct = valueMap.get(raceKey(raceDT, course) + "_" + horse);
+    if (direct) return direct;
+
+    return allEntries.find(e =>
+      normDT(e?.race_datetime) === ndt &&
+      normHorseName(e?.horse) === nh &&
+      (
+        !nc ||
+        normCourseBase(e?.course) === nc ||
+        normCourseBase(e?.course).includes(nc) ||
+        nc.includes(normCourseBase(e?.course))
+      )
+    ) || null;
+  };
 
   const entries = allEntries.filter(filterValid);
 
@@ -2646,9 +2687,17 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
-  renderPlacepotCards(placepotData);
-  refreshPlacepotStartPills();
-  setInterval(refreshPlacepotStartPills, 30000);
+  try {
+    renderPlacepotCards(placepotData);
+    refreshPlacepotStartPills();
+    setInterval(refreshPlacepotStartPills, 30000);
+  } catch (e) {
+    console.error("⚠️ Placepot render failed but value sections will continue:", e);
+    const ppRoot = document.getElementById("placepot-cards");
+    if (ppRoot) {
+      ppRoot.innerHTML = '<p class="section-note">Placepot cards could not render. Value sections below are still available.</p>';
+    }
+  }
 
   setBody('#shortlist-table', shortlist, 9);
   setBody('#wasvalue-table', wasValueHtml, 4);
