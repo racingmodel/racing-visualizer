@@ -1172,12 +1172,29 @@
       margin: 0.45rem 0.62rem 0 0.62rem;
       padding: 0.38rem 0.52rem;
       border-radius: 10px;
-      background: rgba(255,76,76,0.13);
-      border: 1px solid rgba(255,101,101,0.32);
-      color: #ffd5d5;
+      background: rgba(46,229,157,0.12);
+      border: 1px solid rgba(46,229,157,0.34);
+      color: #c2ffd7;
       font-size: 0.74rem;
       font-weight: 800;
       line-height: 1.25;
+    }
+
+    .placepot-opportunity-pill {
+      color: #031b08;
+      background: linear-gradient(180deg,#9cffb0,#39d353);
+      border-color: rgba(92,255,128,0.62);
+      box-shadow: 0 4px 14px rgba(57,211,83,0.20), inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+
+    .placepot-leg-chip.is-opportunity {
+      border-color: rgba(46,229,157,0.34);
+      background: rgba(46,229,157,0.10);
+    }
+
+    .placepot-runner-mini.is-opportunity {
+      border-color: rgba(46,229,157,0.42);
+      background: linear-gradient(180deg, rgba(46,229,157,0.30), rgba(255,255,255,0.07));
     }
 
     .placepot-prob {
@@ -1227,7 +1244,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 13:29</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 14:05</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2496,19 +2513,29 @@
 
     const riskClassName = (risk) => `risk-${String(risk || "medium").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
+    const isTrueDangerLeg = (leg) => {
+      if (!leg || !leg.danger_leg) return false;
+      const txt = String(leg.danger_reason || "").toLowerCase();
+      // Backwards compatibility: older JSON treated vulnerable favourite as danger.
+      // From now on, that is an opportunity angle, not a danger flag.
+      if (txt && txt.replace(/[,; ]+/g, " ").trim() === "vulnerable favourite") return false;
+      return true;
+    };
+
     const placepotLegSummaryHTML = (legs) => {
       if (!Array.isArray(legs) || !legs.length) return "";
       return `<div class="placepot-leg-summary">${legs.map(leg => {
         const sels = Array.isArray(leg.selections) ? leg.selections : [];
         const nums = sels.map(runnerNoText).filter(Boolean);
-        const danger = !!leg.danger_leg;
+        const danger = isTrueDangerLeg(leg);
+        const vuln = !!(leg.vulnerable_favourite && leg.vulnerable_favourite.is_vulnerable);
         const status = String(leg.leg_result_status || "pending").toLowerCase();
         const numHtml = nums.length
-          ? nums.map(n => `<span class="placepot-runner-mini${danger ? " is-danger" : ""}">${escHTML(n)}</span>`).join("")
-          : `<span class="placepot-runner-mini${danger ? " is-danger" : ""}">?</span>`;
-        const marker = status === "survived" ? "✅" : (status === "knocked_out" ? "❌" : (danger ? "⚠️" : ""));
-        const chipClass = status === "survived" ? " is-survived" : (status === "knocked_out" ? " is-knocked-out" : (danger ? " is-danger" : ""));
-        return `<span class="placepot-leg-chip${chipClass}" title="Leg confidence ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%"><b>L${escHTML(leg.leg || "")}</b>${numHtml}${marker ? `<span class="placepot-leg-marker">${marker}</span>` : ""}</span>`;
+          ? nums.map(n => `<span class="placepot-runner-mini${danger ? " is-danger" : (vuln ? " is-opportunity" : "")}">${escHTML(n)}</span>`).join("")
+          : `<span class="placepot-runner-mini${danger ? " is-danger" : (vuln ? " is-opportunity" : "")}">?</span>`;
+        const marker = status === "survived" ? "✅" : (status === "knocked_out" ? "❌" : (danger ? "⚠️" : (vuln ? "💎" : "")));
+        const chipClass = status === "survived" ? " is-survived" : (status === "knocked_out" ? " is-knocked-out" : (danger ? " is-danger" : (vuln ? " is-opportunity" : "")));
+        return `<span class="placepot-leg-chip${chipClass}" title="Leg confidence ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%${vuln ? " · vulnerable favourite angle" : ""}"><b>L${escHTML(leg.leg || "")}</b>${numHtml}${marker ? `<span class="placepot-leg-marker">${marker}</span>` : ""}</span>`;
       }).join("")}</div>`;
     };
 
@@ -2521,7 +2548,7 @@
         const vulnerable = leg.vulnerable_favourite || {};
         const vulnNote = vulnerable.is_vulnerable ? `
           <div class="placepot-vuln-note">
-            ⚠️ Vulnerable favourite: ${vulnerable.runner_number ? `#${escHTML(vulnerable.runner_number)} ` : ""}${escHTML(vulnerable.horse || "")}
+            💎 Vulnerable favourite angle: ${vulnerable.runner_number ? `#${escHTML(vulnerable.runner_number)} ` : ""}${escHTML(vulnerable.horse || "")}
             ${vulnerable.real_odds ? ` · Real ${escHTML(vulnerable.real_odds)}` : ""}
             ${vulnerable.model_odds ? ` · Model ${escHTML(vulnerable.model_odds)}` : ""}
             ${vulnerable.raw_odds ? ` · Raw ${escHTML(vulnerable.raw_odds)}` : ""}
@@ -2556,7 +2583,7 @@
               </span>
               <span class="placepot-leg-head-meta">
                 <span class="placepot-leg-conf ${riskClassName(legRisk)}">Conf ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%</span>
-                ${leg.danger_leg ? `<span class="placepot-leg-conf risk-high">⚠️ Danger${leg.danger_reason ? `: ${escHTML(leg.danger_reason)}` : ""}</span>` : ""}
+                ${isTrueDangerLeg(leg) ? `<span class="placepot-leg-conf risk-high">⚠️ Danger${leg.danger_reason ? `: ${escHTML(leg.danger_reason)}` : ""}</span>` : ""}
                 ${placepotResultBadgeHTML(legStatus, leg.leg_result_label || ppStatusLabel(legStatus))}
               </span>
             </div>
@@ -2568,7 +2595,8 @@
 
       const startRaceDT = firstLegRaceDT(p);
       const ticketStatus = String(p.result_status || "pending");
-      const dangerCount = Number(p.danger_legs || (legs.filter(l => l.danger_leg).length) || 0);
+      const dangerCount = legs.filter(isTrueDangerLeg).length;
+      const favVulnCount = legs.filter(l => l.vulnerable_favourite && l.vulnerable_favourite.is_vulnerable).length;
 
       return `
         <details class="placepot-card">
@@ -2580,6 +2608,7 @@
                 <span class="placepot-pill">${escHTML(p.lines || 0)} lines</span>
                 <span class="placepot-pill">Conf ${Number(p.confidence || 0).toFixed(0)}%</span>
                 ${dangerCount ? `<span class="placepot-pill placepot-danger-pill">⚠️ ${dangerCount} danger</span>` : ""}
+                ${favVulnCount ? `<span class="placepot-pill placepot-opportunity-pill">💎 ${favVulnCount} fav vulnerable</span>` : ""}
                 ${ticketStatus !== "pending" ? placepotResultBadgeHTML(ticketStatus, p.result_label || ppStatusLabel(ticketStatus)) : ""}
               </div>
               ${placepotLegSummaryHTML(legs)}
