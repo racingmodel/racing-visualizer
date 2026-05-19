@@ -808,6 +808,35 @@
       justify-content: space-between;
       align-items: flex-start;
       gap: 0.75rem;
+      cursor: pointer;
+      list-style: none;
+      user-select: none;
+    }
+
+    .placepot-card-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .placepot-card-head:hover {
+      filter: brightness(1.08);
+    }
+
+    .placepot-card-toggle {
+      color: #ffe98a;
+      font-size: 1.05rem;
+      font-weight: 950;
+      line-height: 1.2;
+      transition: transform 0.18s ease;
+      flex: 0 0 auto;
+      margin-top: 0.15rem;
+    }
+
+    .placepot-card[open] .placepot-card-toggle {
+      transform: rotate(90deg);
+    }
+
+    .placepot-card-body {
+      padding-bottom: 0.15rem;
     }
 
     .placepot-card-head h3 {
@@ -970,7 +999,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 10:00</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 10:46</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -995,19 +1024,6 @@
       <div class="meta-pill">🧩 Placepot = first six legs, 1-3 picks per leg</div>
     </div>
 
-
-    <details class="section-card section-placepot" open>
-      <summary class="section-title">
-        <span class="section-title-left">🧩 Placepot Picker</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="section-note">
-          Meeting-level six-leg Placepot perms. Optimised for placed probability, line control and data confidence. Low-data or big-field legs are widened automatically.
-        </div>
-        <div id="placepot-cards" class="placepot-grid"></div>
-      </div>
-    </details>
 
     <details class="section-card section-shortlist" open>
       <summary class="section-title">
@@ -1034,6 +1050,19 @@
             <tbody></tbody>
           </table>
         </div>
+      </div>
+    </details>
+
+    <details class="section-card section-placepot" open>
+      <summary class="section-title">
+        <span class="section-title-left">🧩 Placepot Picker</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">
+          Meeting-level six-leg Placepot perms. Click a course header to open the six legs. Cards are closed by default to keep the page compact.
+        </div>
+        <div id="placepot-cards" class="placepot-grid"></div>
       </div>
     </details>
 
@@ -2153,8 +2182,8 @@
       }).join("") : `<div class="placepot-empty">${escHTML(p.note || "Incomplete Placepot — six legs not found.")}</div>`;
 
       return `
-        <div class="placepot-card">
-          <div class="placepot-card-head">
+        <details class="placepot-card">
+          <summary class="placepot-card-head">
             <div>
               <h3>🧩 ${escHTML(p.course)} Placepot</h3>
               <div class="placepot-meta">
@@ -2165,10 +2194,13 @@
                 <span class="placepot-pill ${riskClass(p.risk_label)}">${risk}</span>
               </div>
             </div>
+            <span class="placepot-card-toggle">▶</span>
+          </summary>
+          <div class="placepot-card-body">
+            <p class="placepot-note">${escHTML(p.note || "")} ${escHTML(p.nr_note || "")}</p>
+            ${legHtml}
           </div>
-          <p class="placepot-note">${escHTML(p.note || "")} ${escHTML(p.nr_note || "")}</p>
-          ${legHtml}
-        </div>
+        </details>
       `;
     }).join("");
   };
