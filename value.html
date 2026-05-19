@@ -1135,6 +1135,13 @@
       border-color: rgba(209,213,219,0.35);
     }
 
+    .placepot-result-badge.status-check,
+    .placepot-result-badge.status-pending-top-finish {
+      background: linear-gradient(180deg,#ffef8a,#d4af37);
+      color: #241900;
+      border-color: rgba(255,215,0,0.70);
+    }
+
     .placepot-leg-head-left {
       display: inline-flex;
       flex-wrap: wrap;
@@ -1244,7 +1251,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 17:37</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 May 2026, 18:26</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2469,17 +2476,26 @@
     const topFinishStatusFromValue = (entry, places) => {
       const details = entry?.bf_top_finish_details || {};
       if (!details || typeof details !== "object") return "";
-      const wanted = [`top ${places}`, `top${places}`, String(places)];
-      for (const [key, val] of Object.entries(details)) {
-        const k = String(key || "").toLowerCase().replace(/_/g, " ");
-        if (!wanted.some(w => k.includes(w))) continue;
+      const required = Number(places || 0);
+      if (!required) return "";
+      let sawCheck = false;
+      const rows = Object.entries(details).sort((a, b) => Number(a?.[1]?.n || a?.[0] || 0) - Number(b?.[1]?.n || b?.[0] || 0));
+      for (const [key, val] of rows) {
+        const n = Number(val?.n || key || 0);
+        if (!n) continue;
         const result = String(val?.result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
         const runnerStatus = String(val?.runner_status || "").toUpperCase();
         if (runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT" || result === "non runner") return "non-runner";
-        if (result.includes("placed") || result.includes("won") || result.includes("winner") || result.includes("top finish")) return "placed";
-        if (result.includes("lost") || result.includes("loser")) return "lost";
+        const isNotTop = runnerStatus === "LOSER" || result.startsWith("not top") || ["lost", "loser"].includes(result);
+        const isTop = runnerStatus === "WINNER" || /^top\s*\d+\b/.test(result) || ["placed", "winner", "won"].includes(result);
+        if (isTop) {
+          if (n <= required) return "placed";
+          // e.g. Top 4 winner does not prove Top 3 Placepot survival.
+          sawCheck = true;
+        }
+        if (isNotTop && n >= required) return "lost";
       }
-      return "";
+      return sawCheck ? "check" : "";
     };
 
     const selectionResult = (s, leg) => {
@@ -2488,7 +2504,7 @@
       let bfSp = s.bf_sp || "";
 
       if (!status || status === "pending") {
-        const e = valueResultMap.get(ppKey(leg.race_datetime, leg.course || "", s.horse)) || valueResultMap.get(ppKey(leg.race_datetime, "", s.horse));
+        const e = findValueResult(leg.race_datetime, leg.course || leg.meeting_course || "", s.horse);
         if (e) {
           const runnerStatus = String(e.bf_runner_status || "").toUpperCase();
           const rawResult = String(e.bf_result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
@@ -2497,6 +2513,7 @@
           if (runnerStatus === "REMOVED" || runnerStatus === "REMOVED_VACANT" || rawResult === "non runner" || topResult === "non-runner") status = "non-runner";
           else if (rawResult.includes("won") || rawResult.includes("winner")) status = "won";
           else if (topResult === "placed") status = "placed";
+          else if (topResult === "check" || rawResult.includes("top ") || rawResult.includes("pending top finish")) status = "check";
           else if (topResult === "lost" || rawResult.includes("lost") || rawResult.includes("loser")) status = "lost";
         }
       }
@@ -2540,7 +2557,7 @@
     };
 
     root.innerHTML = items.map(p => {
-      const legs = Array.isArray(p.legs) ? p.legs : [];
+      const legs = (Array.isArray(p.legs) ? p.legs : []).map(l => ({...l, meeting_course: p.course, course: l.course || p.course}));
       const legHtml = legs.length ? legs.map(leg => {
         const sels = Array.isArray(leg.selections) ? leg.selections : [];
         const legRisk = String(leg.leg_risk || "Medium");
