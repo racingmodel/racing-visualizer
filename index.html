@@ -32,64 +32,6 @@
     .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
     .badge-mid { background: rgba(180, 180, 180, 0.14); border-color: rgba(180, 180, 180, 0.25); color: #e6e6e6; }
 
-
-    .extra-place-panel {
-      width: 100%;
-      margin: 0 0 2.2rem;
-      padding: 1rem;
-      border-radius: 16px;
-      background:
-        radial-gradient(circle at top left, rgba(255,215,0,0.16), transparent 28%),
-        linear-gradient(180deg, rgba(255,215,0,0.07), rgba(255,255,255,0.025));
-      border: 1px solid rgba(255,215,0,0.22);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.26), 0 0 24px rgba(255,215,0,0.08);
-    }
-
-    .extra-place-panel h2 {
-      margin-top: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      border-bottom-color: rgba(255,215,0,0.32);
-    }
-
-    .extra-place-panel .day-label {
-      margin-bottom: 1rem;
-      color: #f4e9b7;
-    }
-
-    .extra-place-panel .course-group {
-      margin-bottom: 0.2rem;
-    }
-
-    .extra-place-card {
-      border: 1px solid rgba(255,215,0,0.22);
-      background: linear-gradient(180deg, #332d21, #2c2c3e);
-      box-shadow: 0 0 14px rgba(255,215,0,0.10);
-    }
-
-    .extra-place-card:hover {
-      box-shadow: 0 0 18px rgba(255,215,0,0.48);
-    }
-
-    .badge-sbg {
-      background: rgba(0, 116, 204, 0.24);
-      border-color: rgba(239, 35, 60, 0.55);
-      color: #ffffff;
-    }
-
-    .badge-b365 {
-      background: rgba(8, 123, 61, 0.26);
-      border-color: rgba(255, 223, 0, 0.55);
-      color: #ffef7a;
-    }
-
-    .badge-ep-generic {
-      background: rgba(255, 215, 0, 0.16);
-      border-color: rgba(255, 215, 0, 0.32);
-      color: #fff1a8;
-    }
-
     footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
     @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
   </style>
@@ -100,12 +42,6 @@
   </header>
 
   <div class="container">
-    <section id="extra-place-races" class="extra-place-panel" hidden>
-      <h2>⭐ Extra Place Races</h2>
-      <div id="extra-place-summary" class="day-label">Loading extra-place races from extra_places.txt…</div>
-      <div id="extra-place-race-cards" class="course-group"></div>
-    </section>
-
     <h2>🏁 Bangor-on-Dee</h2>
     <div class="day-label">Saturday 23 May 2026</div>
     <div class="course-group">
@@ -265,7 +201,6 @@
       };
 
       let EP_MAP = new Map();
-      let EP_RACE_META = new Map();
       let EP_LOADED = false;
 
       async function loadExtraPlacesOnce() {
@@ -310,13 +245,6 @@
             if (!isoDate) continue;
 
             const key = `${course}|${isoDate}|${hhmm}`;
-            if (!EP_RACE_META.has(key)) {
-              EP_RACE_META.set(key, {
-                isoDate,
-                hhmm,
-                course: String(obj.course || "").trim() || course
-              });
-            }
             if (!EP_MAP.has(key)) EP_MAP.set(key, []);
             const arr = EP_MAP.get(key);
             const existing = arr.find(x => x.bookmaker === bookmaker);
@@ -328,107 +256,6 @@
             arr.sort((a, b) => ({ SBG: 1, B365: 2, EP: 99 }[a.bookmaker] || 50) - ({ SBG: 1, B365: 2, EP: 99 }[b.bookmaker] || 50));
           } catch (e) {}
         }
-      }
-
-
-      function keyForMeta(meta) {
-        if (!meta) return "";
-        return `${normCourse(meta.course)}|${meta.isoDate}|${meta.hhmm}`;
-      }
-
-      function epBadgeClass(bookmaker) {
-        const b = String(bookmaker || "").toUpperCase();
-        if (b === "SBG") return "badge-sbg";
-        if (b === "B365") return "badge-b365";
-        return "badge-ep-generic";
-      }
-
-      function raceHrefFromMeta(meta) {
-        const coursePart = String(meta?.course || "")
-          .trim()
-          .replace(/\s+/g, "-")
-          .replace(/[^A-Za-z0-9_-]+/g, "-")
-          .replace(/-+/g, "-")
-          .replace(/^-|-$/g, "");
-        const timePart = String(meta?.hhmm || "").replace(":", "-");
-        return `${meta.isoDate}_${timePart}_${coursePart}.html`;
-      }
-
-      function displayDateRange(rows) {
-        const dates = Array.from(new Set(rows.map(r => r.meta.isoDate).filter(Boolean))).sort();
-        if (!dates.length) return "";
-        const fmt = (iso) => {
-          const d = new Date(`${iso}T12:00:00`);
-          if (Number.isNaN(d.getTime())) return iso;
-          return d.toLocaleDateString("en-GB", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
-        };
-        return dates.length === 1 ? fmt(dates[0]) : `${fmt(dates[0])} → ${fmt(dates[dates.length - 1])}`;
-      }
-
-      function renderExtraPlaceRaceCards() {
-        const section = document.getElementById("extra-place-races");
-        const root = document.getElementById("extra-place-race-cards");
-        const summary = document.getElementById("extra-place-summary");
-        if (!section || !root || !summary) return;
-
-        const raceAnchors = Array.from(document.querySelectorAll(".card a"))
-          .filter(a => isRaceLink(a.getAttribute("href")));
-
-        const anchorByKey = new Map();
-        raceAnchors.forEach(a => {
-          const meta = extractRaceMetaFromHref(a);
-          const key = keyForMeta(meta);
-          if (key && !anchorByKey.has(key)) anchorByKey.set(key, a);
-        });
-
-        const rows = Array.from(EP_MAP.entries())
-          .map(([key, badges]) => {
-            const meta = EP_RACE_META.get(key);
-            if (!meta) return null;
-            return {
-              key,
-              meta,
-              badges: Array.isArray(badges) ? badges : [],
-              anchor: anchorByKey.get(key) || null
-            };
-          })
-          .filter(Boolean)
-          .sort((a, b) => {
-            const ad = `${a.meta.isoDate}T${a.meta.hhmm}:00`;
-            const bd = `${b.meta.isoDate}T${b.meta.hhmm}:00`;
-            if (ad !== bd) return ad.localeCompare(bd);
-            return String(a.meta.course || "").localeCompare(String(b.meta.course || ""));
-          });
-
-        root.innerHTML = "";
-
-        if (!rows.length) {
-          section.hidden = true;
-          return;
-        }
-
-        section.hidden = false;
-        summary.textContent = `${displayDateRange(rows)} • ${rows.length} extra-place race${rows.length === 1 ? "" : "s"} shown in time order`;
-
-        rows.forEach(rowData => {
-          const card = document.createElement("div");
-          card.className = "card extra-place-card";
-
-          const a = document.createElement("a");
-          a.href = rowData.anchor ? rowData.anchor.getAttribute("href") : raceHrefFromMeta(rowData.meta);
-          a.textContent = `${rowData.meta.hhmm} ${rowData.meta.course}`;
-          card.appendChild(a);
-
-          const metaRow = document.createElement("div");
-          metaRow.className = "meta-row";
-
-          rowData.badges.forEach(ep => {
-            metaRow.appendChild(badge(`⭐ ${ep.bookmaker}×${ep.places}`, `badge-ep ${epBadgeClass(ep.bookmaker)}`));
-          });
-
-          card.appendChild(metaRow);
-          root.appendChild(card);
-        });
       }
 
       function epPlacesForAnchor(a) {
@@ -506,7 +333,7 @@
           }
 
           if (Array.isArray(epPlaces) && epPlaces.length) {
-            epPlaces.forEach(ep => row.appendChild(badge(`⭐ ${ep.bookmaker}×${ep.places}`, `badge-ep ${epBadgeClass(ep.bookmaker)}`)));
+            epPlaces.forEach(ep => row.appendChild(badge(`⭐ ${ep.bookmaker}×${ep.places}`, "badge-ep")));
           } else if (epPlaces != null) {
             row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
           }
@@ -517,9 +344,7 @@
         }
       }
 
-      document.addEventListener("DOMContentLoaded", async () => {
-        await loadExtraPlacesOnce();
-        renderExtraPlaceRaceCards();
+      document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".card a").forEach(enrichCard);
       });
     })();
