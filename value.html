@@ -1264,6 +1264,7 @@
 
     <div class="meta-pill-row">
       <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
+      <div class="meta-pill">🛡️ Value sections require 80%+ race data and 80%+ horse data</div>
       <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
       <div class="meta-pill">✅ Must Win = shorter than 8/1</div>
       <div class="meta-pill">🎯 EW = 21.0+ normal non-EP</div>
@@ -1632,31 +1633,54 @@
   if (!Array.isArray(placepotData)) placepotData = [];
   if (!Array.isArray(aiData)) aiData = [];
 
-  const filterValid = (entry) => {
-    // DISPLAY-ONLY MODE:
-    // Do not re-gate gitmodel selections here by coverage/confidence.
-    // gitmodel.py is the source of truth for whether a runner should be saved/tagged.
-    const tags = Array.isArray(entry?.tags)
-      ? entry.tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const historyTags = Array.isArray(entry?.history_tags)
-      ? entry.history_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const wasTags = Array.isArray(entry?.was_tags)
-      ? entry.was_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const previousTags = Array.isArray(entry?.previous_tags)
-      ? entry.previous_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
+  const MIN_DISPLAY_DATA_PERCENT = 80;
 
+  const entryAllTags = (entry) => {
+    const fields = ["tags", "history_tags", "was_tags", "previous_tags"];
+    const out = [];
+    fields.forEach(k => {
+      if (Array.isArray(entry?.[k])) {
+        entry[k].forEach(t => {
+          const clean = String(t || "").trim().toLowerCase();
+          if (clean) out.push(clean);
+        });
+      }
+    });
+    return [...new Set(out)];
+  };
+
+  const hasAnyKnownTag = (entry) => {
+    const tags = entryAllTags(entry);
     return (
       tags.length > 0 ||
-      historyTags.length > 0 ||
-      wasTags.length > 0 ||
-      previousTags.length > 0 ||
       entry?.status === "was_value" ||
       entry?.was_value_earlier === true
     );
+  };
+
+  const numericPercent = (v, fallback = 0) => {
+    const n = Number(String(v ?? "").replace("%", "").trim());
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const dataQualityOk = (entry) => {
+    const horseData = numericPercent(
+      entry?.data_coverage ?? entry?.horse_data_coverage ?? entry?._data_coverage,
+      0
+    );
+    const raceData = numericPercent(
+      entry?.race_data_confidence ?? entry?.race_confidence ?? entry?.race_data_coverage,
+      0
+    );
+    return horseData >= MIN_DISPLAY_DATA_PERCENT && raceData >= MIN_DISPLAY_DATA_PERCENT;
+  };
+
+  const filterValid = (entry) => {
+    // Hard display gate for all value.html selection sections.
+    // Exceptions are handled outside this filter:
+    // - Tony Watch uses allEntries directly.
+    // - Placepot uses placepot_picks.json directly.
+    return hasAnyKnownTag(entry) && dataQualityOk(entry);
   };
 
   const valueMap = new Map(
@@ -2811,31 +2835,54 @@
     return isNaN(n) ? NaN : n;
   };
 
-  const filterValid = (entry) => {
-    // DISPLAY-ONLY MODE:
-    // Do not re-gate gitmodel selections here by coverage/confidence.
-    // gitmodel.py is the source of truth for whether a runner should be saved/tagged.
-    const tags = Array.isArray(entry?.tags)
-      ? entry.tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const historyTags = Array.isArray(entry?.history_tags)
-      ? entry.history_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const wasTags = Array.isArray(entry?.was_tags)
-      ? entry.was_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
-    const previousTags = Array.isArray(entry?.previous_tags)
-      ? entry.previous_tags.map(t => String(t).toLowerCase()).filter(Boolean)
-      : [];
+  const MIN_DISPLAY_DATA_PERCENT = 80;
 
+  const entryAllTags = (entry) => {
+    const fields = ["tags", "history_tags", "was_tags", "previous_tags"];
+    const out = [];
+    fields.forEach(k => {
+      if (Array.isArray(entry?.[k])) {
+        entry[k].forEach(t => {
+          const clean = String(t || "").trim().toLowerCase();
+          if (clean) out.push(clean);
+        });
+      }
+    });
+    return [...new Set(out)];
+  };
+
+  const hasAnyKnownTag = (entry) => {
+    const tags = entryAllTags(entry);
     return (
       tags.length > 0 ||
-      historyTags.length > 0 ||
-      wasTags.length > 0 ||
-      previousTags.length > 0 ||
       entry?.status === "was_value" ||
       entry?.was_value_earlier === true
     );
+  };
+
+  const numericPercent = (v, fallback = 0) => {
+    const n = Number(String(v ?? "").replace("%", "").trim());
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const dataQualityOk = (entry) => {
+    const horseData = numericPercent(
+      entry?.data_coverage ?? entry?.horse_data_coverage ?? entry?._data_coverage,
+      0
+    );
+    const raceData = numericPercent(
+      entry?.race_data_confidence ?? entry?.race_confidence ?? entry?.race_data_coverage,
+      0
+    );
+    return horseData >= MIN_DISPLAY_DATA_PERCENT && raceData >= MIN_DISPLAY_DATA_PERCENT;
+  };
+
+  const filterValid = (entry) => {
+    // Hard display gate for all value.html selection sections.
+    // Exceptions are handled outside this filter:
+    // - Tony Watch uses allEntries directly.
+    // - Placepot uses placepot_picks.json directly.
+    return hasAnyKnownTag(entry) && dataQualityOk(entry);
   };
 
   const tagSet = (entry) =>
