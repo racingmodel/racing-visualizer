@@ -26,6 +26,8 @@
 
     * { box-sizing: border-box; }
 
+    html { max-width: 100%; overflow-x: hidden; }
+
     body {
       background:
         radial-gradient(circle at top right, rgba(0,191,255,0.10), transparent 22%),
@@ -479,6 +481,52 @@
 
     table.shortlist-premium-table tr.shortlist-row:hover {
       filter: brightness(1.08);
+    }
+
+    /* Today shortlist: force fit to the page, no horizontal scrollbar */
+    .shortlist-table-wrap {
+      overflow-x: hidden;
+    }
+
+    #shortlist-table.shortlist-premium-table {
+      width: 100%;
+      min-width: 0 !important;
+      table-layout: fixed;
+    }
+
+    #shortlist-table th,
+    #shortlist-table td {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: normal;
+      padding-left: 0.46rem;
+      padding-right: 0.46rem;
+    }
+
+    #shortlist-table .shortlist-race-cell,
+    #shortlist-table .shortlist-ep-cell,
+    #shortlist-table .shortlist-tags,
+    #shortlist-table .shortlist-horse-name,
+    #shortlist-table .bf-exchange-cell,
+    #shortlist-table .price-pill {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    #shortlist-table .shortlist-tags {
+      gap: 0.24rem;
+    }
+
+    #shortlist-table .price-pill {
+      width: 100%;
+      padding-left: 0.34rem;
+      padding-right: 0.34rem;
+    }
+
+    #shortlist-table .bf-exchange-cell {
+      width: 100%;
+      grid-template-columns: 1fr;
+      gap: 0.22rem;
     }
 
     .shortlist-race-cell {
@@ -1319,7 +1367,7 @@
       summary.section-title { font-size: 1rem; padding: 0.85rem; }
       .section-note { font-size: 0.79rem; }
       table { min-width: 520px; }
-      table.shortlist-premium-table { min-width: 980px; }
+      table.shortlist-premium-table { min-width: 0 !important; }
       th, td { padding: 0.55rem 0.55rem; font-size: 0.88rem; }
       .meta-pill-row { justify-content: flex-start; }
       .shortlist-tags { min-width: 132px; gap: 0.3rem; }
@@ -1334,7 +1382,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 May 2026, 14:38</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 May 2026, 15:46</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1366,8 +1414,8 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win, Must Lay, plus the strongest cross-section Product Pick when the new intelligence sections all point the same way.</div>
-        <div class="table-wrap">
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win, Must Lay, plus the strongest cross-section Intel Pick when the new intelligence sections all point the same way.</div>
+        <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
               <tr>
@@ -2030,9 +2078,9 @@
     if (type === 'BT E/W') return `<span class="type-badge type-btew">BT E/W</span>`;
     if (type === 'Must Win') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Must Lay') return `<span class="type-badge type-lay">MUST LAY</span>`;
-    if (type === 'Product Win') return `<span class="type-badge type-win">Product Win</span>`;
-    if (type === 'Product EW') return `<span class="type-badge type-ew">Product EW</span>`;
-    if (type === 'Product Lay') return `<span class="type-badge type-lay">PRODUCT LAY</span>`;
+    if (type === 'Product Win' || type === 'Intel Win') return `<span class="type-badge type-win">Intel Win</span>`;
+    if (type === 'Product EW' || type === 'Intel EW') return `<span class="type-badge type-ew">Intel EW</span>`;
+    if (type === 'Product Lay' || type === 'Intel Lay') return `<span class="type-badge type-lay">INTEL LAY</span>`;
     return `<span class="type-badge">${type || ''}</span>`;
   };
 
@@ -2763,13 +2811,19 @@
     raceKey(e.race_datetime, e.course) + "_" + String(e.horse || "").toLowerCase().trim()
   ));
 
+  const intelShortlistType = (type) => {
+    const clean = String(type || "").trim();
+    if (!clean) return "Intel Win";
+    return clean.replace(/^Product\s+/i, "Intel ");
+  };
+
   const productShortlistItems = productItems("todays_product_shortlist", "items")
     .filter(e => e && !raceHasStarted(e))
     .map(e => ({
       ...e,
       tags: Array.isArray(e.tags) && e.tags.length ? e.tags : ["product-pick"],
-      shortlist_type: e.suggested_type || "Product Win",
-      reason: e.reason || e.product_reason || "Cross-section product intelligence pick."
+      shortlist_type: intelShortlistType(e.suggested_type),
+      reason: e.reason || e.product_reason || "Cross-section intel pick."
     }))
     // Avoid duplicate rows if the same horse is already in the normal shortlist.
     .filter(e => !normalShortlistKeys.has(raceKey(e.race_datetime, e.course) + "_" + String(e.horse || "").toLowerCase().trim()));
