@@ -652,6 +652,11 @@
     .tag-chip.tag-raw-value       { background: linear-gradient(180deg, #7fd2ff, #2494d9); color: #071a24; border-color: rgba(127,210,255,0.60); }
     .tag-chip.tag-rank-overlay    { background: linear-gradient(180deg, #4df0b1, #0ea56f); color: #042116; border-color: rgba(77,240,177,0.60); }
     .tag-chip.tag-ai-back         { background: linear-gradient(180deg, #56e67a, #189c3c); color: #041a0b; border-color: rgba(86,230,122,0.62); }
+    .tag-chip.tag-product-pick     { background: linear-gradient(180deg, #ffe066, #d4af37); color: #201800; border-color: rgba(255,224,102,0.65); }
+    .tag-chip.tag-product-win      { background: linear-gradient(180deg, #56e67a, #189c3c); color: #041a0b; border-color: rgba(86,230,122,0.62); }
+    .tag-chip.tag-product-ew       { background: linear-gradient(180deg, #b57cff, #6d37b8); color: #fff; border-color: rgba(181,124,255,0.58); }
+    .tag-chip.tag-product-lay      { background: linear-gradient(180deg, #ff6565, #d91515); color: #fff; border-color: rgba(255,140,140,0.88); }
+
 
     .tag-chip.tag-raw-lay,
     .tag-chip.tag-ai-lay {
@@ -1329,7 +1334,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 May 2026, 13:45</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 May 2026, 14:38</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1361,7 +1366,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win and Must Lay.</div>
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win, Must Lay, plus the strongest cross-section Product Pick when the new intelligence sections all point the same way.</div>
         <div class="table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -1397,7 +1402,7 @@
     </details>
 
 
-    <details class="section-card section-product-market" open>
+    <details class="section-card section-product-market">
       <summary class="section-title">
         <span class="section-title-left">🔥 Market Intelligence Hub</span>
         <span class="section-chevron">▶</span>
@@ -1415,7 +1420,7 @@
       </div>
     </details>
 
-    <details class="section-card section-product-vuln" open>
+    <details class="section-card section-product-vuln">
       <summary class="section-title">
         <span class="section-title-left">🧨 Favourite Vulnerability Index</span>
         <span class="section-chevron">▶</span>
@@ -1433,7 +1438,7 @@
       </div>
     </details>
 
-    <details class="section-card section-product-consensus" open>
+    <details class="section-card section-product-consensus">
       <summary class="section-title">
         <span class="section-title-left">🧠 Model Consensus Hub</span>
         <span class="section-chevron">▶</span>
@@ -1988,7 +1993,11 @@
     'raw-lay': '❌',
     'ai-back': '🟢',
     'ai-lay': '❌',
-    'rank-overlay': '📊'
+    'rank-overlay': '📊',
+    'product-pick': '⭐',
+    'product-win': '🏆',
+    'product-ew': '🎯',
+    'product-lay': '🚨'
   };
 
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
@@ -2021,6 +2030,9 @@
     if (type === 'BT E/W') return `<span class="type-badge type-btew">BT E/W</span>`;
     if (type === 'Must Win') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Must Lay') return `<span class="type-badge type-lay">MUST LAY</span>`;
+    if (type === 'Product Win') return `<span class="type-badge type-win">Product Win</span>`;
+    if (type === 'Product EW') return `<span class="type-badge type-ew">Product EW</span>`;
+    if (type === 'Product Lay') return `<span class="type-badge type-lay">PRODUCT LAY</span>`;
     return `<span class="type-badge">${type || ''}</span>`;
   };
 
@@ -2739,17 +2751,37 @@
   .filter(isLiveEntry)
   .filter(entry => tagSet(entry).includes("tony-watch"));
 
-  const shortlistItems = [
+  const normalShortlistItems = [
     ...multiItems,
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
     ...rawlayItems
+  ];
+
+  const normalShortlistKeys = new Set(normalShortlistItems.map(e =>
+    raceKey(e.race_datetime, e.course) + "_" + String(e.horse || "").toLowerCase().trim()
+  ));
+
+  const productShortlistItems = productItems("todays_product_shortlist", "items")
+    .filter(e => e && !raceHasStarted(e))
+    .map(e => ({
+      ...e,
+      tags: Array.isArray(e.tags) && e.tags.length ? e.tags : ["product-pick"],
+      shortlist_type: e.suggested_type || "Product Win",
+      reason: e.reason || e.product_reason || "Cross-section product intelligence pick."
+    }))
+    // Avoid duplicate rows if the same horse is already in the normal shortlist.
+    .filter(e => !normalShortlistKeys.has(raceKey(e.race_datetime, e.course) + "_" + String(e.horse || "").toLowerCase().trim()));
+
+  const shortlistItems = [
+    ...normalShortlistItems,
+    ...productShortlistItems
   ]
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 10);
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 9);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row"), 4);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row"), 4);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row"), 4);
