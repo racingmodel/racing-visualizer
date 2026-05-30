@@ -910,6 +910,62 @@
       font-weight: 950;
     }
 
+    /* Click-through links to the generated race visualiser racecards */
+    .racecard-link {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(255,215,0,0.46);
+      cursor: pointer;
+      -webkit-tap-highlight-color: rgba(255,215,0,0.16);
+    }
+
+    .racecard-link:hover,
+    .racecard-link:focus-visible {
+      color: #ffef8a;
+      text-decoration: none;
+      border-bottom-color: #ffef8a;
+      filter: brightness(1.08);
+      outline: none;
+    }
+
+    .race-racecard-link,
+    .horse-racecard-link,
+    .shortlist-race-link,
+    .shortlist-horse-link,
+    .mybets-race-link,
+    .mybets-horse-link,
+    .placepot-race-link,
+    .placepot-horse-link {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.08rem;
+    }
+
+    .horse-racecard-link,
+    .placepot-horse-link {
+      font-weight: 950;
+    }
+
+    .shortlist-horse-link {
+      margin: 0 auto;
+    }
+
+    .racecard-link::after {
+      content: "↗";
+      font-size: 0.66em;
+      margin-left: 0.22rem;
+      opacity: 0.62;
+      line-height: 1;
+    }
+
+    .racecard-link:hover::after,
+    .racecard-link:focus-visible::after {
+      opacity: 1;
+    }
+
+
 
 
 
@@ -1961,7 +2017,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">30 May 2026, 08:59</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 May 2026, 18:57</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2752,6 +2808,75 @@
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+
+  const racecardCourseSlug = (course) => {
+    const cleaned = String(course ?? "")
+      .replace(/\b\d{1,2}(?:st|nd|rd|th)?\s+[a-z]+\b/gi, "")
+      .replace(/\([^)]*\)/g, " ")
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^A-Za-z0-9_.-]+/g, "")
+      .replace(/^_+|_+$/g, "");
+    return cleaned || "Unknown";
+  };
+
+  const racecardDateSlug = (raceDT) => {
+    const raw = String(raceDT ?? "").trim();
+    if (!raw) return "";
+    const datePart = raw.split(/\s+/)[0] || "";
+
+    let m = datePart.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+    m = datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return datePart;
+
+    return "";
+  };
+
+  const racecardTimeSlug = (raceDT) => {
+    const raw = String(raceDT ?? "").trim();
+    const timePart = raw.split(/\s+/)[1] || raw;
+    const m = timePart.match(/^(\d{1,2}):(\d{2})/);
+    if (!m) return "";
+    return `${String(m[1]).padStart(2, "0")}-${m[2]}`;
+  };
+
+  const horseAnchorSlug = (horse) => String(horse ?? "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "runner";
+
+  const racecardHref = (entry, horseOverride = "") => {
+    const dateSlug = racecardDateSlug(entry?.race_datetime || entry?.datetime || entry?.race_dt || entry?.date_time || "");
+    const timeSlug = racecardTimeSlug(entry?.race_datetime || entry?.datetime || entry?.race_dt || entry?.date_time || "");
+    const courseSlug = racecardCourseSlug(entry?.course || entry?.racecourse || entry?.track || entry?.meeting_course || "");
+
+    if (!dateSlug || !timeSlug || !courseSlug) return "";
+
+    const horse = String(horseOverride || "").trim();
+    const hash = horse ? `#horse-${horseAnchorSlug(horse)}` : "";
+    return `${dateSlug}_${timeSlug}_${courseSlug}.html${hash}`;
+  };
+
+  const racecardLinkHTML = (entry, innerHTML, opts = {}) => {
+    const href = racecardHref(entry, opts.horse || "");
+    if (!href) return innerHTML;
+    const cls = ["racecard-link", opts.className || ""].filter(Boolean).join(" ");
+    const label = opts.horse ? `Open racecard and highlight ${opts.horse}` : "Open racecard";
+    return `<a class="${myBetsEsc(cls)}" href="${myBetsEsc(href)}" title="${myBetsEsc(label)}">${innerHTML}</a>`;
+  };
+
+  const racecardRaceLinkHTML = (entry, innerHTML, className = "race-racecard-link") =>
+    racecardLinkHTML(entry, innerHTML, { className, horse: "" });
+
+  const racecardHorseLinkHTML = (entry, horse, className = "horse-racecard-link") => {
+    const horseText = String(horse ?? "").trim();
+    if (!horseText) return "";
+    return racecardLinkHTML({ ...entry, horse: horseText }, myBetsEsc(horseText), { className, horse: horseText });
+  };
+
   const myBetsNorm = (v) => String(v || "")
     .trim()
     .toLowerCase()
@@ -2969,8 +3094,8 @@
     tableBody.innerHTML = items.map(item => {
       const tags = Array.isArray(item.tags) ? item.tags : [];
       return `<tr class="mybets-row" data-mybets-row="${myBetsEsc(item.id)}">
-        <td class="mybets-race-cell"><b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span></td>
-        <td class="mybets-horse-cell"><b>${myBetsEsc(item.horse)}</b><span class="mybets-sub">${shortlistTagsHTML(tags)}</span></td>
+        <td class="mybets-race-cell">${racecardRaceLinkHTML(item, `<b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span>`, "mybets-race-link")}</td>
+        <td class="mybets-horse-cell"><b>${racecardHorseLinkHTML(item, item.horse, "mybets-horse-link")}</b><span class="mybets-sub">${shortlistTagsHTML(tags)}</span></td>
         <td><span class="mybets-type-pill">${myBetsEsc(item.source_type || item.source || "Selection")}</span></td>
         <td>
           <select class="mybets-select" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="bet_type">
@@ -3143,15 +3268,15 @@
     const courseHtml = badges
       ? `${entry.course ?? ""} <span class="ep-badge-row">${badges}</span>`
       : `${entry.course ?? ""}`;
-    return `<div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div>`;
+    return racecardRaceLinkHTML(entry, `<div>${timeFromRaceDT(entry.race_datetime)}</div><div>${courseHtml}</div>`);
   };
 
 
   const shortlistRaceCellHTML = (entry) => {
-    return `<div class="shortlist-race-cell">
+    return racecardRaceLinkHTML(entry, `<div class="shortlist-race-cell">
       <div class="shortlist-race-time">${timeFromRaceDT(entry.race_datetime)}</div>
-      <div class="shortlist-race-course">${entry.course ?? ""}</div>
-    </div>`;
+      <div class="shortlist-race-course">${myBetsEsc(entry.course ?? "")}</div>
+    </div>`, "shortlist-race-link");
   };
 
   const epPlacesCellHTML = (entry) => {
@@ -3183,7 +3308,7 @@
 
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${raceCellHTML(entry)}</td>
-      <td><div>${entry.horse ?? ""}</div></td>
+      <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div></td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><div>${tags}</div></td>
       <td>${myBetButtonHTML(entry, source, source)}</td>
@@ -3244,7 +3369,7 @@
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${typeBadgeHTML(entry.shortlist_type)}</td>
       <td>${shortlistRaceCellHTML(entry)}</td>
-      <td><div class="shortlist-horse-name">${entry.horse ?? ""}</div></td>
+      <td>${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</td>
       <td>${pricePillHTML(bookie, "price-real")}</td>
       <td>${pricePillHTML(raw, "price-raw")}</td>
       <td>${pricePillHTML(model, "price-model")}</td>
@@ -3308,7 +3433,7 @@
     return `<tr class="wasvalue-row">
       <td>${raceCellHTML(entry)}</td>
       <td>
-        <div>${entry.horse ?? ""}</div>
+        <div>${racecardHorseLinkHTML(entry, entry.horse)}</div>
         <span class="was-note">${raceHasStarted(entry) ? "Race started — removed from shortlist" : "No longer in shortlist/latest run"}</span>
       </td>
       <td>
@@ -3338,7 +3463,7 @@
 
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${raceCellHTML(entry)}</td>
-      <td><div>${entry.horse ?? ""}</div>${reason}</td>
+      <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div>${reason}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td><strong>${delta}</strong></td>
       <td>${rModel || ""} / ${rMarket || ""}</td>
@@ -3374,7 +3499,7 @@
     return `<tr class="product-row ${cls}">
       <td>${entry._pill || `<span class="product-pill">${escHTML(angle)}</span>`}</td>
       <td>${raceCellHTML(entry)}</td>
-      <td><b>${escHTML(entry.horse || "")}</b></td>
+      <td><b>${racecardHorseLinkHTML(entry, entry.horse)}</b></td>
       <td>${productOddsHTML(entry)}</td>
       <td>${productMoveHTML(entry)}</td>
       <td><span class="product-pill product-purple">${escHTML(entry.agreement_count ?? "-")}/4</span></td>
@@ -3398,10 +3523,10 @@
 
   const favVulnRow = (entry) => `<tr class="product-row product-vuln-row">
     <td>${raceCellHTML(entry)}</td>
-    <td><b>${escHTML(entry.favourite || entry.horse || "")}</b></td>
+    <td><b>${racecardHorseLinkHTML(entry, entry.favourite || entry.horse)}</b></td>
     <td>${productOddsHTML(entry)}</td>
     <td><span class="product-pill product-danger">${Number(entry.vulnerability_score || 0).toFixed(0)}</span></td>
-    <td><b>${escHTML(entry.alternative || "-")}</b><span class="product-reason">Model rank ${escHTML(entry.alternative_model_rank || "-")}</span></td>
+    <td><b>${racecardHorseLinkHTML(entry, entry.alternative) || "-"}</b><span class="product-reason">Model rank ${escHTML(entry.alternative_model_rank || "-")}</span></td>
     <td><div>Real ${escHTML(entry.alternative_odds || "-")}</div><div>Model ${escHTML(entry.alternative_model_odds || "-")}</div><div>Raw ${escHTML(entry.alternative_raw_odds || "-")}</div></td>
     <td><span class="product-reason">${escHTML(entry.reason || "")}</span></td>
   </tr>`;
@@ -3412,7 +3537,7 @@
     return `<tr class="product-row ${isTrap ? "product-trap-row" : "product-consensus-row"}">
       <td><span class="product-pill ${isTrap ? "product-danger" : "product-good"}">${escHTML(bucket)}</span></td>
       <td>${raceCellHTML(entry)}</td>
-      <td><b>${escHTML(entry.horse || "")}</b></td>
+      <td><b>${racecardHorseLinkHTML(entry, entry.horse)}</b></td>
       <td>${productOddsHTML(entry)}</td>
       <td><span class="product-pill product-purple">${escHTML(entry.agreement_label || ((entry.agreement_count ?? "-") + "/4 aligned"))}</span></td>
       <td><span class="product-reason">M ${escHTML(entry.model_edge_pts ?? "-")}pp · R ${escHTML(entry.raw_edge_pts ?? "-")}pp · X ${escHTML(entry.xg_edge_pts ?? "-")}pp · K ${escHTML(entry.kelly_pct ?? "-")}</span></td>
@@ -3433,7 +3558,7 @@
     const clv = Number(entry.clv_pct || 0);
     return `<tr class="product-row ${clv >= 0 ? "product-clv-pos" : "product-clv-neg"}">
       <td>${raceCellHTML(entry)}</td>
-      <td><b>${escHTML(entry.horse || "")}</b></td>
+      <td><b>${racecardHorseLinkHTML(entry, entry.horse)}</b></td>
       <td><span class="product-metric">${escHTML(entry.flagged_odds || "-")}</span></td>
       <td>${escHTML(entry.latest_odds || "-")}</td>
       <td>${escHTML(entry.bfsp || entry.close_odds || "-")}</td>
@@ -3453,7 +3578,7 @@
   const paceProductRow = (entry) => `<tr class="product-row product-pace-row">
     <td><span class="product-pill product-purple">${escHTML(entry.pace_setup || "Pace")}</span></td>
     <td>${raceCellHTML(entry)}</td>
-    <td><b>${escHTML(entry.horse || "")}</b><span class="product-reason">Model rank ${escHTML(entry.model_rank || "-")}</span></td>
+    <td><b>${racecardHorseLinkHTML(entry, entry.horse)}</b><span class="product-reason">Model rank ${escHTML(entry.model_rank || "-")}</span></td>
     <td>${productOddsHTML(entry)}</td>
     <td><span class="product-pill product-gold">${escHTML(entry.front_count ?? "-")}</span></td>
     <td><span class="product-reason">${escHTML(entry.reason || "")}</span></td>
@@ -3924,8 +4049,8 @@
   const fcEntries = valueData.filter(filterValid).filter(isLiveEntry).filter(e => Array.isArray(e.tags) && e.tags.includes('forecast')).sort(byRaceTime);
   const tcEntries = valueData.filter(filterValid).filter(isLiveEntry).filter(e => Array.isArray(e.tags) && e.tags.includes('tricast')).sort(byRaceTime);
 
-  const fcHtml = buildGroupedRows(fcEntries, (e) => `<tr class="fc-row"><td>${raceCellHTML(e)}</td><td><b>${asComboLabel(e)}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
-  const tcHtml = buildGroupedRows(tcEntries, (e) => `<tr class="tc-row"><td>${raceCellHTML(e)}</td><td><b>${asComboLabel(e)}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
+  const fcHtml = buildGroupedRows(fcEntries, (e) => `<tr class="fc-row"><td>${raceCellHTML(e)}</td><td><b>${racecardRaceLinkHTML(e, myBetsEsc(asComboLabel(e)), "horse-racecard-link")}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
+  const tcHtml = buildGroupedRows(tcEntries, (e) => `<tr class="tc-row"><td>${raceCellHTML(e)}</td><td><b>${racecardRaceLinkHTML(e, myBetsEsc(asComboLabel(e)), "horse-racecard-link")}</b></td><td><small class="reason">${e.reason ?? ""}</small></td></tr>`, 3);
 
   aiData = aiData.filter(filterValid).sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
   const aiFiltered = aiData.filter(e => !!((e.tags || []).find(t => t === 'ai-back' || t === 'ai-lay')));
@@ -3940,7 +4065,7 @@
 
     return `<tr class="aibest-row">
       <td>${raceCellHTML(e)}</td>
-      <td>${e.horse ?? ""}</td>
+      <td>${racecardHorseLinkHTML(e, e.horse)}</td>
       <td><div>${bookie}</div><div>${raw}</div></td>
       <td>${renderAITag(aiTag)}</td>
       <td><small class="reason">🧠 ${reason}</small></td>
@@ -4130,7 +4255,7 @@
         const vulnerable = leg.vulnerable_favourite || {};
         const vulnNote = vulnerable.is_vulnerable ? `
           <div class="placepot-vuln-note">
-            💎 Vulnerable favourite angle: ${vulnerable.runner_number ? `#${escHTML(vulnerable.runner_number)} ` : ""}${escHTML(vulnerable.horse || "")}
+            💎 Vulnerable favourite angle: ${vulnerable.runner_number ? `#${escHTML(vulnerable.runner_number)} ` : ""}${racecardHorseLinkHTML({ race_datetime: leg.race_datetime, course: leg.course || leg.meeting_course || "" }, vulnerable.horse) || escHTML(vulnerable.horse || "")}
             ${vulnerable.real_odds ? ` · Real ${escHTML(vulnerable.real_odds)}` : ""}
             ${vulnerable.model_odds ? ` · Model ${escHTML(vulnerable.model_odds)}` : ""}
             ${vulnerable.raw_odds ? ` · Raw ${escHTML(vulnerable.raw_odds)}` : ""}
@@ -4143,7 +4268,7 @@
             <div class="placepot-pick">
               ${runnerNoHTML(s)}
               <div>
-                <span class="placepot-pick-name">${escHTML(s.horse)}</span>
+                <span class="placepot-pick-name">${racecardHorseLinkHTML({ race_datetime: leg.race_datetime, course: leg.course || leg.meeting_course || "" }, s.horse, "placepot-horse-link")}</span>
                 <span class="placepot-pick-sub">
                   ${s.model_score ? `Score ${Number(s.model_score || 0).toFixed(0)} · ` : ""}Real ${escHTML(s.real_odds || "-")} · Model ${escHTML(s.model_odds || "-")} · Raw ${escHTML(s.raw_odds || "-")}${placeProb ? ` · <span class="placepot-prob">Place ${placeProb.toFixed(0)}%</span>` : ""}${s.score_pct ? ` · Top score ${Number(s.score_pct || 0).toFixed(0)}%` : ""}
                   ${res.bfSp ? ` · BF SP ${escHTML(res.bfSp)}` : ""}
@@ -4171,7 +4296,7 @@
           <div class="placepot-leg">
             <div class="placepot-leg-head">
               <span class="placepot-leg-head-left">
-                <span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>
+                ${racecardRaceLinkHTML({ race_datetime: leg.race_datetime, course: leg.course || leg.meeting_course || "" }, `<span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>`, "placepot-race-link")}
               </span>
               <span class="placepot-leg-head-meta">
                 <span class="placepot-leg-conf ${riskClassName(legRisk)}">Conf ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%</span>
