@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>2</td>
-      <td>St Anton</td>
+      <td><span id="horse-st-anton" class="horse-anchor-target">St Anton</span></td>
       <td>3.50</td>
       <td>3.48</td>
       <td>3.32</td>
@@ -70,12 +78,12 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR ⬆️ CAR Uphill Finish 🧠 Model-history +1% (n=5, avg 6.21)</td>
+      <td>⬆️ CAR Uphill Finish 📘 ATR 🧠 Model-history +1% (n=5, avg 6.21)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>1</td>
-      <td>Factual</td>
+      <td><span id="horse-factual" class="horse-anchor-target">Factual</span></td>
       <td>3.00</td>
       <td>3.48</td>
       <td>5.01</td>
@@ -97,7 +105,7 @@
     </tr>
     <tr>
       <td>4</td>
-      <td>Wild Thoughts</td>
+      <td><span id="horse-wild-thoughts" class="horse-anchor-target">Wild Thoughts</span></td>
       <td>5.00</td>
       <td>5.24</td>
       <td>7.81</td>
@@ -114,12 +122,12 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ ⬆️ CAR Uphill Finish 🧠 Model-history +1% (n=4, avg 7.21)</td>
+      <td>⬆️ CAR Uphill Finish 📘 ATR+ 🧠 Model-history +1% (n=4, avg 7.21)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>Sovereign View</td>
+      <td><span id="horse-sovereign-view" class="horse-anchor-target">Sovereign View</span></td>
       <td>9.00</td>
       <td>11.84</td>
       <td>7.83</td>
@@ -136,12 +144,12 @@
       <td>+3.0%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR ⬆️ CAR Uphill Finish 🧠 Model-history +2% (n=5, avg 6.28)</td>
+      <td>⬆️ CAR Uphill Finish 📘 ATR 🧠 Model-history +2% (n=5, avg 6.28)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>6</td>
-      <td>Secret History</td>
+      <td><span id="horse-secret-history" class="horse-anchor-target">Secret History</span></td>
       <td>7.00</td>
       <td>10.93</td>
       <td>8.56</td>
@@ -163,7 +171,7 @@
     </tr>
     <tr>
       <td>3</td>
-      <td>Blue To Blue</td>
+      <td><span id="horse-blue-to-blue" class="horse-anchor-target">Blue To Blue</span></td>
       <td>15.00</td>
       <td>27.33</td>
       <td>14.97</td>
@@ -185,7 +193,7 @@
     </tr>
     <tr>
       <td>8</td>
-      <td>Horu Kanu</td>
+      <td><span id="horse-horu-kanu" class="horse-anchor-target">Horu Kanu</span></td>
       <td>41.00</td>
       <td>122.07</td>
       <td>25.96</td>
@@ -202,12 +210,12 @@
       <td>+1.2%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR ⬆️ CAR Uphill Finish 🧠 Model-history +1% (n=5, avg 6.0)</td>
+      <td>⬆️ CAR Uphill Finish 📘 ATR 🧠 Model-history +1% (n=5, avg 6.0)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>7</td>
-      <td>Kanishka</td>
+      <td><span id="horse-kanishka" class="horse-anchor-target">Kanishka</span></td>
       <td>21.00</td>
       <td>74.70</td>
       <td>38.43</td>
@@ -250,6 +258,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
