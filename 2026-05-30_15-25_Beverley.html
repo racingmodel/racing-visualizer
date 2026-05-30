@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>2</td>
-      <td>Urchin</td>
+      <td><span id="horse-urchin" class="horse-anchor-target">Urchin</span></td>
       <td>1.36</td>
       <td>1.60</td>
       <td>2.10</td>
@@ -70,12 +78,12 @@
       <td>+3.6%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +1% (n=2, avg 7.21)</td>
+      <td>🧬 Unexposed Improver 📘 ATR+ 🧠 Model-history +1% (n=2, avg 7.21)</td>
       <td>62.5</td>
     </tr>
     <tr>
       <td>3</td>
-      <td>Who's Lope</td>
+      <td><span id="horse-whos-lope" class="horse-anchor-target">Who&#x27;s Lope</span></td>
       <td>4.00</td>
       <td>3.57</td>
       <td>2.28</td>
@@ -92,12 +100,12 @@
       <td>+6.3%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history −0% (n=1, avg 3.32)</td>
+      <td>🧬 Unexposed Improver 📘 ATR+ 🧠 Model-history −0% (n=1, avg 3.32)</td>
       <td>62.5</td>
     </tr>
     <tr>
       <td>1</td>
-      <td>Hamadhan</td>
+      <td><span id="horse-hamadhan" class="horse-anchor-target">Hamadhan</span></td>
       <td>8.00</td>
       <td>10.32</td>
       <td>5.60</td>
@@ -114,7 +122,7 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR ⚠️ One-Dimensional 🔥 Hot Trainer 🧠 Model-history +1% (n=4, avg 5.37)</td>
+      <td>⚠️ One-Dimensional 📘 ATR 🔥 Hot Trainer 🧠 Model-history +1% (n=4, avg 5.37)</td>
       <td>100.0</td>
     </tr>
   </tbody>
@@ -140,6 +148,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
