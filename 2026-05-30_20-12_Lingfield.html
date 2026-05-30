@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>1</td>
-      <td>Vidmiyr</td>
+      <td><span id="horse-vidmiyr" class="horse-anchor-target">Vidmiyr</span></td>
       <td>4.50</td>
       <td>3.64</td>
       <td>3.11</td>
@@ -70,12 +78,12 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ ✅ LING Race-Fit (≤35d) 🔥 Hot Trainer 🏟️ Lingfield Proven (Top3) 🧠 Model-history +0% (n=5, avg 5.25)</td>
+      <td>✅ LING Race-Fit (≤35d) 📘 ATR+ 🔥 Hot Trainer 🏟️ Lingfield Proven (Top3) 🧠 Model-history +0% (n=5, avg 5.25)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>Velvet Rhythm</td>
+      <td><span id="horse-velvet-rhythm" class="horse-anchor-target">Velvet Rhythm</span></td>
       <td>6.00</td>
       <td>4.76</td>
       <td>3.33</td>
@@ -92,12 +100,12 @@
       <td>+0.0%</td>
       <td></td>
       <td></td>
-      <td>✅ LING Race-Fit (≤35d) 🏟️ Lingfield Proven (Top5) 🧠 Model-history +2% (n=4, avg 7.42)</td>
+      <td>🏟️ Lingfield Proven (Top5) ✅ LING Race-Fit (≤35d) 🧠 Model-history +2% (n=4, avg 7.42)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>2</td>
-      <td>Raging Raj</td>
+      <td><span id="horse-raging-raj" class="horse-anchor-target">Raging Raj</span></td>
       <td>11.00</td>
       <td>10.76</td>
       <td>5.83</td>
@@ -114,12 +122,12 @@
       <td>+3.0%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR ✅ LING Race-Fit (≤35d) 🧠 Model-history +1% (n=7, avg 6.38)</td>
+      <td>✅ LING Race-Fit (≤35d) 📘 ATR 🧠 Model-history +1% (n=7, avg 6.38)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>4</td>
-      <td>Get Outta Here</td>
+      <td><span id="horse-get-outta-here" class="horse-anchor-target">Get Outta Here</span></td>
       <td>2.50</td>
       <td>3.64</td>
       <td>9.39</td>
@@ -136,12 +144,12 @@
       <td>+3.0%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR ✅ LING Race-Fit (≤35d) 🧠 Model-history +0% (n=2, avg 6.37)</td>
+      <td>✅ LING Race-Fit (≤35d) 📘 ATR 🧠 Model-history +0% (n=2, avg 6.37)</td>
       <td>75.0</td>
     </tr>
     <tr>
       <td>3</td>
-      <td>Berkshire Boom</td>
+      <td><span id="horse-berkshire-boom" class="horse-anchor-target">Berkshire Boom</span></td>
       <td>7.50</td>
       <td>12.41</td>
       <td>10.85</td>
@@ -158,12 +166,12 @@
       <td>+0.6%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR ✅ LING Race-Fit (≤35d) 📌 LING Turf Position 🧠 Model-history +1% (n=3, avg 8.2)</td>
+      <td>✅ LING Race-Fit (≤35d) 📌 LING Turf Position 📘 ATR 🧠 Model-history +1% (n=3, avg 8.2)</td>
       <td>75.0</td>
     </tr>
     <tr>
       <td>6</td>
-      <td>Accademia</td>
+      <td><span id="horse-accademia" class="horse-anchor-target">Accademia</span></td>
       <td>7.50</td>
       <td>14.90</td>
       <td>18.98</td>
@@ -206,6 +214,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
