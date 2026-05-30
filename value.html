@@ -1802,6 +1802,90 @@
       }
     }
 
+
+    /* === Final compact tags + My Bets result/notes fixes === */
+    #mybets-table {
+      min-width: 1320px !important;
+    }
+
+    #mybets-table th:nth-child(9),
+    #mybets-table td:nth-child(9) {
+      min-width: 7.8rem;
+      width: 7.8rem;
+      max-width: 8.4rem;
+    }
+
+    #mybets-table .mybets-result-cell .result-badge {
+      min-width: 5.2rem;
+      font-size: 0.72rem;
+      padding: 0.24rem 0.48rem;
+    }
+
+    #mybets-table .mybets-note-input {
+      min-width: 12rem !important;
+    }
+
+    #shortlist-table th:nth-child(9),
+    #shortlist-table td:nth-child(9),
+    #live-intel-table th:nth-child(9),
+    #live-intel-table td:nth-child(9) {
+      width: 7.4rem !important;
+      min-width: 7.4rem !important;
+      max-width: 7.4rem !important;
+    }
+
+    #shortlist-table .shortlist-tags,
+    #live-intel-table .shortlist-tags,
+    .mybets-horse-cell .shortlist-tags {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1.9rem) !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 0.22rem !important;
+      width: 6.3rem !important;
+      min-width: 0 !important;
+      max-width: 6.3rem !important;
+      margin: 0 auto !important;
+      white-space: normal !important;
+    }
+
+    #shortlist-table .shortlist-tags .tag-chip,
+    #live-intel-table .shortlist-tags .tag-chip,
+    .mybets-horse-cell .shortlist-tags .tag-chip {
+      min-width: 1.75rem !important;
+      width: 1.75rem !important;
+      max-width: 1.75rem !important;
+      height: 1.55rem !important;
+      padding: 0.12rem 0.18rem !important;
+      font-size: 0.72rem !important;
+      line-height: 1 !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+    }
+
+    #shortlist-table .shortlist-tags .tag-chip[class*="tag-overlay"],
+    #live-intel-table .shortlist-tags .tag-chip[class*="tag-overlay"],
+    .mybets-horse-cell .shortlist-tags .tag-chip[class*="tag-overlay"] {
+      width: 2.25rem !important;
+      max-width: 2.25rem !important;
+      font-size: 0.68rem !important;
+      background: linear-gradient(180deg, #4df0b1, #0ea56f);
+      color: #042116;
+      border-color: rgba(77,240,177,0.60);
+    }
+
+    @media (max-width: 640px) {
+      #mybets-table { min-width: 1240px !important; }
+      #shortlist-table th:nth-child(9),
+      #shortlist-table td:nth-child(9),
+      #live-intel-table th:nth-child(9),
+      #live-intel-table td:nth-child(9) {
+        width: 7.2rem !important;
+        min-width: 7.2rem !important;
+        max-width: 7.2rem !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1810,7 +1894,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">30 May 2026, 07:43</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 May 2026, 18:57</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -1855,6 +1939,7 @@
                   <th>Stake</th>
                   <th>Estimate</th>
                   <th>Status</th>
+                  <th>Result</th>
                   <th>Notes</th>
                   <th>Actions</th>
                 </tr>
@@ -2571,11 +2656,20 @@
     return `<span class="was-tag-list">${tags.map(t => `<span class="tag-chip tag-${t}">${iconMap[t] || t}</span>`).join('')}</span>`;
   };
 
+  const tagClassName = (tag) => `tag-${String(tag || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+
+  const tagDisplayLabel = (tag) => {
+    const clean = String(tag || "").toLowerCase();
+    const overlay = clean.match(/^overlay\+(\d+)/);
+    if (overlay) return `📊+${overlay[1]}`;
+    return iconMap[clean] || tag;
+  };
+
   const shortlistTagsHTML = (tags) => {
-    const uniq = [...new Set((tags || []).filter(Boolean))];
+    const uniq = [...new Set((tags || []).filter(Boolean).map(t => String(t).toLowerCase()))];
     if (!uniq.length) return '';
     return `<div class="shortlist-tags">${
-      uniq.map(t => `<span class="tag-chip tag-${String(t).toLowerCase()}">${iconMap[t] || t}</span>`).join('')
+      uniq.map(t => `<span class="tag-chip ${tagClassName(t)}">${tagDisplayLabel(t)}</span>`).join('')
     }</div>`;
   };
 
@@ -2712,6 +2806,32 @@
     return "-";
   };
 
+  const resultEntryForMyBet = (item) => {
+    return findValueResult(item?.race_datetime, item?.course, item?.horse) || item || {};
+  };
+
+  const myBetsResultText = (item) => {
+    try {
+      return resultLabel(resultEntryForMyBet(item));
+    } catch {
+      return "Pending";
+    }
+  };
+
+  const myBetsResultHTML = (item) => {
+    const entry = resultEntryForMyBet(item);
+    let html = resultBadgeHTML(entry);
+    const sp = entry?.bf_actual_sp ?? entry?.bf_sp ?? "";
+    const updated = entry?.bf_result_updated || "";
+    if (sp !== undefined && sp !== null && String(sp).trim() !== "") {
+      html += `<span class="mybets-sub">BF SP ${myBetsEsc(sp)}</span>`;
+    }
+    if (updated) {
+      html += `<span class="mybets-sub">${myBetsEsc(updated)}</span>`;
+    }
+    return html;
+  };
+
   const formatMyBetsCopyText = () => {
     const items = readMyBets().sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
     if (!items.length) return "No bets selected yet.";
@@ -2721,7 +2841,9 @@
       const stake = item.stake ? ` · Stake £${item.stake}` : "";
       const notes = item.notes ? ` · Note: ${item.notes}` : "";
       const source = item.source_type ? ` · ${item.source_type}` : "";
-      lines.push(`${idx + 1}. ${race} — ${item.horse} — ${item.bet_type || "Watch"} @ ${item.bookie_odds || "-"}${stake}${source}${notes}`);
+      const result = myBetsResultText(item);
+      const resultTxt = result && result !== "Pending" ? ` · Result: ${result}` : "";
+      lines.push(`${idx + 1}. ${race} — ${item.horse} — ${item.bet_type || "Watch"} @ ${item.bookie_odds || "-"}${stake}${source}${resultTxt}${notes}`);
     });
     return lines.join("\n");
   };
@@ -2811,6 +2933,7 @@
             ${["Watching","Backed","Laid","Ignored","Settled"].map(opt => `<option value="${opt}"${String(item.user_status || "Watching") === opt ? " selected" : ""}>${opt}</option>`).join("")}
           </select>
         </td>
+        <td class="mybets-result-cell">${myBetsResultHTML(item)}</td>
         <td><input class="mybets-note-input" placeholder="Add note" value="${myBetsEsc(item.notes || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="notes"></td>
         <td><button type="button" class="mybets-mini-btn is-remove" data-mybets-remove="${myBetsEsc(item.id)}">Remove</button></td>
       </tr>`;
@@ -2833,10 +2956,33 @@
     renderMyBets();
   };
 
-  const updateMyBetField = (id, field, value) => {
+  const refreshMyBetsSummaryOnly = () => {
+    const summary = document.getElementById("mybets-summary");
+    if (summary) summary.innerHTML = myBetsSummaryHTML(readMyBets());
+  };
+
+  const safeSelectorValue = (value) => {
+    if (window.CSS && typeof CSS.escape === "function") return CSS.escape(value);
+    return String(value || "").replace(/\/g, "\\").replace(/"/g, '\"');
+  };
+
+  const updateMyBetField = (id, field, value, shouldRender = true) => {
     const items = readMyBets().map(item => item.id === id ? { ...item, [field]: value } : item);
     writeMyBets(items);
-    renderMyBets();
+
+    if (shouldRender) {
+      renderMyBets();
+      return;
+    }
+
+    refreshMyBetsSummaryOnly();
+
+    if (field === "stake") {
+      const updated = items.find(item => item.id === id);
+      const row = document.querySelector(`[data-mybets-row="${safeSelectorValue(id)}"]`);
+      const estimateCell = row?.querySelector(".mybets-return");
+      if (estimateCell && updated) estimateCell.textContent = estimateMyBetReturn(updated);
+    }
   };
 
   const removeMyBet = (id) => {
@@ -2851,9 +2997,13 @@
       showMyBetsToast("No selections to export yet.", true);
       return;
     }
-    const headers = ["race_datetime","course","horse","source_type","bet_type","bookie_odds","raw_odds","model_odds","stake","estimate","status","notes","added_at"];
+    const headers = ["race_datetime","course","horse","source_type","bet_type","bookie_odds","raw_odds","model_odds","stake","estimate","user_status","result","notes","added_at"];
     const csvEscape = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-    const rows = [headers.join(",")].concat(items.map(item => headers.map(h => csvEscape(h === "estimate" ? estimateMyBetReturn(item) : item[h])).join(",")));
+    const rows = [headers.join(",")].concat(items.map(item => headers.map(h => csvEscape(
+      h === "estimate" ? estimateMyBetReturn(item) :
+      h === "result" ? myBetsResultText(item) :
+      item[h]
+    )).join(",")));
     const blob = new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -2910,15 +3060,15 @@
   });
 
   document.addEventListener("input", (ev) => {
-    const el = ev.target.closest("[data-mybets-id][data-mybets-field]");
+    const el = ev.target.closest("input[data-mybets-id][data-mybets-field]");
     if (!el) return;
-    updateMyBetField(el.getAttribute("data-mybets-id"), el.getAttribute("data-mybets-field"), el.value);
+    updateMyBetField(el.getAttribute("data-mybets-id"), el.getAttribute("data-mybets-field"), el.value, false);
   });
 
   document.addEventListener("change", (ev) => {
     const el = ev.target.closest("select[data-mybets-id][data-mybets-field]");
     if (!el) return;
-    updateMyBetField(el.getAttribute("data-mybets-id"), el.getAttribute("data-mybets-field"), el.value);
+    updateMyBetField(el.getAttribute("data-mybets-id"), el.getAttribute("data-mybets-field"), el.value, true);
   });
 
   const typeBadgeHTML = (type) => {
