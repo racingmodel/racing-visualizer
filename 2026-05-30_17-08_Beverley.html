@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>1</td>
-      <td>Penny Ghent</td>
+      <td><span id="horse-penny-ghent" class="horse-anchor-target">Penny Ghent</span></td>
       <td>2.75</td>
       <td>3.21</td>
       <td>4.21</td>
@@ -70,12 +78,12 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ 🔥 Hot Jockey ⚠️ One-Dimensional 🏟️ Beverley Top3 🧠 Model-history +1% (n=10, avg 5.97)</td>
+      <td>🔥 Hot Jockey ⚠️ One-Dimensional 📘 ATR+ 🏟️ Beverley Top3 🧠 Model-history +1% (n=10, avg 5.97)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>2</td>
-      <td>Maple</td>
+      <td><span id="horse-maple" class="horse-anchor-target">Maple</span></td>
       <td>7.00</td>
       <td>6.26</td>
       <td>5.48</td>
@@ -97,7 +105,7 @@
     </tr>
     <tr>
       <td>7</td>
-      <td>Copper And Five</td>
+      <td><span id="horse-copper-and-five" class="horse-anchor-target">Copper And Five</span></td>
       <td>4.00</td>
       <td>4.82</td>
       <td>6.00</td>
@@ -119,7 +127,7 @@
     </tr>
     <tr>
       <td>5</td>
-      <td>Oilisa</td>
+      <td><span id="horse-oilisa" class="horse-anchor-target">Oilisa</span></td>
       <td>8.50</td>
       <td>9.63</td>
       <td>10.51</td>
@@ -141,7 +149,7 @@
     </tr>
     <tr>
       <td>6</td>
-      <td>Bullington Bry</td>
+      <td><span id="horse-bullington-bry" class="horse-anchor-target">Bullington Bry</span></td>
       <td>15.00</td>
       <td>19.26</td>
       <td>14.56</td>
@@ -163,7 +171,7 @@
     </tr>
     <tr>
       <td>12</td>
-      <td>Elettaria</td>
+      <td><span id="horse-elettaria" class="horse-anchor-target">Elettaria</span></td>
       <td>34.00</td>
       <td>50.08</td>
       <td>15.71</td>
@@ -185,7 +193,7 @@
     </tr>
     <tr>
       <td>3</td>
-      <td>Evelyn's Phoenix</td>
+      <td><span id="horse-evelyns-phoenix" class="horse-anchor-target">Evelyn&#x27;s Phoenix</span></td>
       <td>15.00</td>
       <td>25.04</td>
       <td>19.77</td>
@@ -202,12 +210,12 @@
       <td>+1.0%</td>
       <td></td>
       <td></td>
-      <td>🏟️ Beverley 2+ Runs ⏰ Beverley Held-up 📘 ATR 🔥 Hot Jockey 🔥 Hot Trainer 🧠 Model-history +0% (n=7, avg 4.91)</td>
+      <td>🔥 Hot Trainer 📘 ATR 🏟️ Beverley 2+ Runs ⏰ Beverley Held-up 🔥 Hot Jockey 🧠 Model-history +0% (n=7, avg 4.91)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>11</td>
-      <td>Far Ahead</td>
+      <td><span id="horse-far-ahead" class="horse-anchor-target">Far Ahead</span></td>
       <td>11.00</td>
       <td>21.19</td>
       <td>29.05</td>
@@ -229,7 +237,7 @@
     </tr>
     <tr>
       <td>4</td>
-      <td>Langton Wold</td>
+      <td><span id="horse-langton-wold" class="horse-anchor-target">Langton Wold</span></td>
       <td>21.00</td>
       <td>50.08</td>
       <td>30.23</td>
@@ -251,7 +259,7 @@
     </tr>
     <tr>
       <td>10</td>
-      <td>Caledonian Dream</td>
+      <td><span id="horse-caledonian-dream" class="horse-anchor-target">Caledonian Dream</span></td>
       <td>13.00</td>
       <td>40.45</td>
       <td>36.38</td>
@@ -273,7 +281,7 @@
     </tr>
     <tr>
       <td>9</td>
-      <td>Langholm</td>
+      <td><span id="horse-langholm" class="horse-anchor-target">Langholm</span></td>
       <td>26.00</td>
       <td>98.24</td>
       <td>38.63</td>
@@ -295,7 +303,7 @@
     </tr>
     <tr>
       <td>13</td>
-      <td>Anificas Beauty</td>
+      <td><span id="horse-anificas-beauty" class="horse-anchor-target">Anificas Beauty</span></td>
       <td>51.00</td>
       <td>290.87</td>
       <td>39.27</td>
@@ -338,6 +346,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
