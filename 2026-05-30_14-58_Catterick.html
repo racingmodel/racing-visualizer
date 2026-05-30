@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>3</td>
-      <td>Mr Writer</td>
+      <td><span id="horse-mr-writer" class="horse-anchor-target">Mr Writer</span></td>
       <td>1.36</td>
       <td>1.67</td>
       <td>2.53</td>
@@ -70,12 +78,12 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ ✅ Cat Race-Fit (≤35d) 🧠 Model-history +1% (n=5, avg 4.69)</td>
+      <td>✅ Cat Race-Fit (≤35d) 📘 ATR+ 🧠 Model-history +1% (n=5, avg 4.69)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>2</td>
-      <td>Grasmere Boy</td>
+      <td><span id="horse-grasmere-boy" class="horse-anchor-target">Grasmere Boy</span></td>
       <td>4.33</td>
       <td>3.85</td>
       <td>2.92</td>
@@ -92,12 +100,12 @@
       <td>+7.1%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR+ 🔥 Hot Jockey ✅ Cat Race-Fit (≤35d) 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 10.0)</td>
+      <td>🔥 Hot Jockey 🧬 Unexposed Improver 📘 ATR+ ✅ Cat Race-Fit (≤35d) 🧠 Model-history +1% (n=1, avg 10.0)</td>
       <td>50.0</td>
     </tr>
     <tr>
       <td>1</td>
-      <td>Brouhaha</td>
+      <td><span id="horse-brouhaha" class="horse-anchor-target">Brouhaha</span></td>
       <td>12.00</td>
       <td>11.35</td>
       <td>9.36</td>
@@ -114,12 +122,12 @@
       <td>-1.0%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 7.3)</td>
+      <td>🧬 Unexposed Improver 📘 ATR 🧠 Model-history +0% (n=1, avg 7.3)</td>
       <td>50.0</td>
     </tr>
     <tr>
       <td>4</td>
-      <td>Pacific Glory</td>
+      <td><span id="horse-pacific-glory" class="horse-anchor-target">Pacific Glory</span></td>
       <td>67.00</td>
       <td>66.48</td>
       <td>11.11</td>
@@ -136,12 +144,12 @@
       <td>+1.8%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR ✅ Cat Race-Fit (≤35d) 🧬 Unexposed Improver 🔥 Hot Trainer 🧠 Model-history +0% (n=2, avg 5.88)</td>
+      <td>🧬 Unexposed Improver 📘 ATR 🔥 Hot Trainer ✅ Cat Race-Fit (≤35d) 🧠 Model-history +0% (n=2, avg 5.88)</td>
       <td>62.5</td>
     </tr>
     <tr>
       <td>6</td>
-      <td>Gardening</td>
+      <td><span id="horse-gardening" class="horse-anchor-target">Gardening</span></td>
       <td>67.00</td>
       <td>108.64</td>
       <td>15.65</td>
@@ -158,12 +166,12 @@
       <td>-4.6%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR- ⚠️ Cat Long Layoff 🧬 Unexposed Improver 🧠 Model-history −0% (n=1, avg 3.1)</td>
+      <td>🧬 Unexposed Improver ⚠️ Cat Long Layoff 📘 ATR- 🧠 Model-history −0% (n=1, avg 3.1)</td>
       <td>50.0</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>Two Commanders</td>
+      <td><span id="horse-two-commanders" class="horse-anchor-target">Two Commanders</span></td>
       <td>13.00</td>
       <td>34.05</td>
       <td>17.17</td>
@@ -180,7 +188,7 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR 🧬 Unexposed Improver</td>
+      <td>🧬 Unexposed Improver 📘 ATR</td>
       <td>50.0</td>
     </tr>
   </tbody>
@@ -206,6 +214,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
