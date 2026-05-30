@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>5</td>
-      <td>Sword Salute</td>
+      <td><span id="horse-sword-salute" class="horse-anchor-target">Sword Salute</span></td>
       <td>2.88</td>
       <td>3.12</td>
       <td>3.05</td>
@@ -70,12 +78,12 @@
       <td>+3.1%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>🧬 Unexposed Improver ✅ LING Race-Fit (≤35d) 🌀 Balanced speed on downhill turf 📘 ATR 📌 LING Turf Position 🧠 Model-history +0% (n=1, avg 6.1)</td>
+      <td>✅ LING Race-Fit (≤35d) 🧬 Unexposed Improver 📘 ATR 🌀 Balanced speed on downhill turf 📌 LING Turf Position 🧠 Model-history +0% (n=1, avg 6.1)</td>
       <td>50.0</td>
     </tr>
     <tr>
       <td>9</td>
-      <td>Ariane Sky</td>
+      <td><span id="horse-ariane-sky" class="horse-anchor-target">Ariane Sky</span></td>
       <td>7.00</td>
       <td>5.88</td>
       <td>3.08</td>
@@ -92,12 +100,12 @@
       <td>+5.3%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR+ ✅ LING Race-Fit (≤35d) 🧬 Unexposed Improver 🔥 Hot Trainer 🧠 Model-history −0% (n=2, avg 4.8)</td>
+      <td>✅ LING Race-Fit (≤35d) 🧬 Unexposed Improver 📘 ATR+ 🔥 Hot Trainer 🧠 Model-history −0% (n=2, avg 4.8)</td>
       <td>62.5</td>
     </tr>
     <tr>
       <td>1</td>
-      <td>Sakowin</td>
+      <td><span id="horse-sakowin" class="horse-anchor-target">Sakowin</span></td>
       <td>6.00</td>
       <td>5.88</td>
       <td>5.38</td>
@@ -114,12 +122,12 @@
       <td>+3.8%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>🧬 Unexposed Improver ✅ LING Race-Fit (≤35d) 📘 ATR+ 🔥 Hot Jockey 📌 LING Turf Position 🧠 Model-history −0% (n=1, avg 2.67)</td>
+      <td>✅ LING Race-Fit (≤35d) 🧬 Unexposed Improver 📘 ATR+ 📌 LING Turf Position 🔥 Hot Jockey 🧠 Model-history −0% (n=1, avg 2.67)</td>
       <td>50.0</td>
     </tr>
     <tr>
       <td>8</td>
-      <td>Wadima</td>
+      <td><span id="horse-wadima" class="horse-anchor-target">Wadima</span></td>
       <td>8.50</td>
       <td>9.95</td>
       <td>9.42</td>
@@ -141,7 +149,7 @@
     </tr>
     <tr>
       <td>7</td>
-      <td>Nakila Sun</td>
+      <td><span id="horse-nakila-sun" class="horse-anchor-target">Nakila Sun</span></td>
       <td>8.00</td>
       <td>11.76</td>
       <td>16.48</td>
@@ -163,7 +171,7 @@
     </tr>
     <tr>
       <td>4</td>
-      <td>Pj's Corner</td>
+      <td><span id="horse-pjs-corner" class="horse-anchor-target">Pj&#x27;s Corner</span></td>
       <td>10.00</td>
       <td>16.28</td>
       <td>23.05</td>
@@ -185,7 +193,7 @@
     </tr>
     <tr>
       <td>2</td>
-      <td>Solar Maximus</td>
+      <td><span id="horse-solar-maximus" class="horse-anchor-target">Solar Maximus</span></td>
       <td>12.00</td>
       <td>23.52</td>
       <td>23.62</td>
@@ -207,7 +215,7 @@
     </tr>
     <tr>
       <td>6</td>
-      <td>Gliding Martha</td>
+      <td><span id="horse-gliding-martha" class="horse-anchor-target">Gliding Martha</span></td>
       <td>29.00</td>
       <td>74.17</td>
       <td>24.00</td>
@@ -229,7 +237,7 @@
     </tr>
     <tr>
       <td>3</td>
-      <td>Able Tasman</td>
+      <td><span id="horse-able-tasman" class="horse-anchor-target">Able Tasman</span></td>
       <td>8.50</td>
       <td>27.14</td>
       <td>24.41</td>
@@ -272,6 +280,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
