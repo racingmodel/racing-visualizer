@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,7 +61,7 @@
   <tbody>
     <tr>
       <td>4</td>
-      <td>Bobbarelli</td>
+      <td><span id="horse-bobbarelli" class="horse-anchor-target">Bobbarelli</span></td>
       <td>3.00</td>
       <td>2.91</td>
       <td>2.64</td>
@@ -75,7 +83,7 @@
     </tr>
     <tr>
       <td>2</td>
-      <td>Delpotro</td>
+      <td><span id="horse-delpotro" class="horse-anchor-target">Delpotro</span></td>
       <td>4.00</td>
       <td>3.94</td>
       <td>4.41</td>
@@ -92,12 +100,12 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ 🔥 Hot Jockey 🪶 Strat Clean Jumper 🧠 Model-history −1% (n=5, avg 4.73)</td>
+      <td>🔥 Hot Jockey 📘 ATR+ 🪶 Strat Clean Jumper 🧠 Model-history −1% (n=5, avg 4.73)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>3</td>
-      <td>Turpin Gold</td>
+      <td><span id="horse-turpin-gold" class="horse-anchor-target">Turpin Gold</span></td>
       <td>6.50</td>
       <td>7.00</td>
       <td>5.55</td>
@@ -114,12 +122,12 @@
       <td>+3.0%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR 🏟️ Stratford Proven ⚠️ One-Dimensional 🪶 Strat Clean Jumper 🧠 Model-history +0% (n=6, avg 5.08)</td>
+      <td>⚠️ One-Dimensional 📘 ATR 🪶 Strat Clean Jumper 🏟️ Stratford Proven 🧠 Model-history +0% (n=6, avg 5.08)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>Rocks Up Late</td>
+      <td><span id="horse-rocks-up-late" class="horse-anchor-target">Rocks Up Late</span></td>
       <td>3.00</td>
       <td>4.81</td>
       <td>5.78</td>
@@ -141,7 +149,7 @@
     </tr>
     <tr>
       <td>1</td>
-      <td>In This World</td>
+      <td><span id="horse-in-this-world" class="horse-anchor-target">In This World</span></td>
       <td>9.00</td>
       <td>19.24</td>
       <td>10.11</td>
@@ -158,7 +166,7 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR 🏟️ Stratford Proven 🪶 Strat Clean Jumper 🧠 Model-history +1% (n=3, avg 6.17)</td>
+      <td>📘 ATR 🪶 Strat Clean Jumper 🏟️ Stratford Proven 🧠 Model-history +1% (n=3, avg 6.17)</td>
       <td>100.0</td>
     </tr>
   </tbody>
@@ -184,6 +192,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
