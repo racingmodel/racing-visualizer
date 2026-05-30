@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,9 +61,9 @@
   <tbody>
     <tr>
       <td>3</td>
-      <td>Gemical</td>
+      <td><span id="horse-gemical" class="horse-anchor-target">Gemical</span></td>
       <td>5.00</td>
-      <td>4.12</td>
+      <td>4.14</td>
       <td>3.67</td>
       <td>267</td>
       <td>R1 Win/Leader</td>
@@ -70,14 +78,14 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR ✅ Cat Race-Fit (≤35d) 🧠 Model-history +1% (n=4, avg 5.94)</td>
+      <td>✅ Cat Race-Fit (≤35d) 📘 ATR 🧠 Model-history +1% (n=4, avg 5.94)</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>7</td>
-      <td>Favourite Friend</td>
+      <td><span id="horse-favourite-friend" class="horse-anchor-target">Favourite Friend</span></td>
       <td>4.33</td>
-      <td>4.35</td>
+      <td>4.37</td>
       <td>3.83</td>
       <td>263</td>
       <td>R1 Win/Leader</td>
@@ -97,9 +105,9 @@
     </tr>
     <tr>
       <td>1</td>
-      <td>La Tosca</td>
+      <td><span id="horse-la-tosca" class="horse-anchor-target">La Tosca</span></td>
       <td>4.50</td>
-      <td>5.26</td>
+      <td>5.29</td>
       <td>5.27</td>
       <td>238</td>
       <td>R2 Prominent/Place</td>
@@ -114,14 +122,14 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ ✅ Cat Race-Fit (≤35d) 🧠 Model-history −0% (n=2, avg 4.05)</td>
+      <td>✅ Cat Race-Fit (≤35d) 📘 ATR+ 🧠 Model-history −0% (n=2, avg 4.05)</td>
       <td>75.0</td>
     </tr>
     <tr>
       <td>5</td>
-      <td>Star Of Emerald</td>
+      <td><span id="horse-star-of-emerald" class="horse-anchor-target">Star Of Emerald</span></td>
       <td>2.50</td>
-      <td>3.84</td>
+      <td>3.87</td>
       <td>9.22</td>
       <td>194</td>
       <td>R2 Prominent/Place</td>
@@ -141,9 +149,9 @@
     </tr>
     <tr>
       <td>6</td>
-      <td>Evergreen Emerald</td>
+      <td><span id="horse-evergreen-emerald" class="horse-anchor-target">Evergreen Emerald</span></td>
       <td>13.00</td>
-      <td>21.96</td>
+      <td>22.10</td>
       <td>14.19</td>
       <td>159</td>
       <td>R3 Midfield/Unclear</td>
@@ -163,15 +171,15 @@
     </tr>
     <tr>
       <td>2</td>
-      <td>Red Rifle</td>
-      <td>19.00</td>
-      <td>38.44</td>
-      <td>17.40</td>
+      <td><span id="horse-red-rifle" class="horse-anchor-target">Red Rifle</span></td>
+      <td>15.00</td>
+      <td>31.31</td>
+      <td>17.39</td>
       <td>143</td>
       <td>R4 Weak/Lay</td>
-      <td>27.4</td>
-      <td>23.7</td>
-      <td>45.6</td>
+      <td>19.4</td>
+      <td>22.7</td>
+      <td>43.3</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -185,9 +193,9 @@
     </tr>
     <tr>
       <td>4</td>
-      <td>Mohaasset</td>
+      <td><span id="horse-mohaasset" class="horse-anchor-target">Mohaasset</span></td>
       <td>51.00</td>
-      <td>184.87</td>
+      <td>186.00</td>
       <td>24.50</td>
       <td>114</td>
       <td>R4 Weak/Lay</td>
@@ -228,6 +236,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
