@@ -13,6 +13,14 @@
             .value-cross { background-color: hotpink !important; }
             .value-horse { background-color: gold !important; }
             .undervalued { background-color: lightblue !important; }
+            .horse-anchor-target { scroll-margin-top: 95px; font-weight: 700; }
+            tr.horse-highlight,
+            tr.horse-highlight:nth-child(even) {
+                background-color: #fff2a8 !important;
+                outline: 3px solid #ffbf00;
+                box-shadow: inset 0 0 0 2px #ffbf00;
+            }
+            tr.horse-highlight td { font-weight: 700; }
         </style>
     </head>
     
@@ -53,9 +61,9 @@
   <tbody>
     <tr>
       <td>5</td>
-      <td>Jack Owen Jack</td>
+      <td><span id="horse-jack-owen-jack" class="horse-anchor-target">Jack Owen Jack</span></td>
       <td>3.25</td>
-      <td>3.25</td>
+      <td>3.31</td>
       <td>3.49</td>
       <td>391</td>
       <td>R1 Win/Leader</td>
@@ -75,9 +83,9 @@
     </tr>
     <tr>
       <td>3</td>
-      <td>Burning Ability</td>
+      <td><span id="horse-burning-ability" class="horse-anchor-target">Burning Ability</span></td>
       <td>5.00</td>
-      <td>4.65</td>
+      <td>4.74</td>
       <td>4.48</td>
       <td>360</td>
       <td>R1 Win/Leader</td>
@@ -97,9 +105,9 @@
     </tr>
     <tr>
       <td>4</td>
-      <td>Carajillo</td>
+      <td><span id="horse-carajillo" class="horse-anchor-target">Carajillo</span></td>
       <td>101.00</td>
-      <td>60.23</td>
+      <td>61.36</td>
       <td>6.31</td>
       <td>319</td>
       <td>R2 Prominent/Place</td>
@@ -119,9 +127,9 @@
     </tr>
     <tr>
       <td>6</td>
-      <td>Royal Approval</td>
+      <td><span id="horse-royal-approval" class="horse-anchor-target">Royal Approval</span></td>
       <td>6.50</td>
-      <td>7.09</td>
+      <td>7.22</td>
       <td>11.04</td>
       <td>246</td>
       <td>R2 Prominent/Place</td>
@@ -141,15 +149,15 @@
     </tr>
     <tr>
       <td>8</td>
-      <td>Withabitofluk</td>
-      <td>9.00</td>
-      <td>13.29</td>
+      <td><span id="horse-withabitofluk" class="horse-anchor-target">Withabitofluk</span></td>
+      <td>7.50</td>
+      <td>10.83</td>
       <td>13.92</td>
       <td>222</td>
       <td>R3 Midfield/Unclear</td>
-      <td>27.1</td>
-      <td>44.7</td>
-      <td>86.6</td>
+      <td>24.1</td>
+      <td>46.6</td>
+      <td>88.7</td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
       <td><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span><span style="color:#d11c1c;font-weight:bold;">✖</span></td>
@@ -163,9 +171,9 @@
     </tr>
     <tr>
       <td>1</td>
-      <td>Ajp Falco</td>
+      <td><span id="horse-ajp-falco" class="horse-anchor-target">Ajp Falco</span></td>
       <td>34.00</td>
-      <td>51.37</td>
+      <td>52.34</td>
       <td>17.57</td>
       <td>193</td>
       <td>R3 Midfield/Unclear</td>
@@ -185,9 +193,9 @@
     </tr>
     <tr>
       <td>7</td>
-      <td>Speed For Fun</td>
+      <td><span id="horse-speed-for-fun" class="horse-anchor-target">Speed For Fun</span></td>
       <td>2.50</td>
-      <td>4.65</td>
+      <td>4.74</td>
       <td>18.75</td>
       <td>185</td>
       <td>R3 Midfield/Unclear</td>
@@ -202,14 +210,14 @@
       <td>+5.3%</td>
       <td>ATR 1</td>
       <td>✖️</td>
-      <td>📘 ATR+ 🔥 Hot Jockey 🔥 Hot Trainer</td>
+      <td>🔥 Hot Jockey 📘 ATR+ 🔥 Hot Trainer</td>
       <td>100.0</td>
     </tr>
     <tr>
       <td>2</td>
-      <td>Black Dakota</td>
+      <td><span id="horse-black-dakota" class="horse-anchor-target">Black Dakota</span></td>
       <td>41.00</td>
-      <td>118.69</td>
+      <td>120.92</td>
       <td>28.39</td>
       <td>131</td>
       <td>R4 Weak/Lay</td>
@@ -229,9 +237,9 @@
     </tr>
     <tr>
       <td>9</td>
-      <td>Pegasuslane</td>
+      <td><span id="horse-pegasuslane" class="horse-anchor-target">Pegasuslane</span></td>
       <td>201.00</td>
-      <td>887.53</td>
+      <td>904.23</td>
       <td>36.15</td>
       <td>99</td>
       <td>R4 Weak/Lay</td>
@@ -272,6 +280,38 @@
                 horseCell.classList.add('undervalued');
             }
         });
+
+        function racingHorseAnchorSlug(name) {
+            return String(name || "")
+                .toLowerCase()
+                .replace(/[’']/g, "")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "") || "runner";
+        }
+
+        function highlightHorseFromURL() {
+            try {
+                const params = new URLSearchParams(window.location.search || "");
+                const queryHorse = params.get("horse") || "";
+                const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+                const targetId = hash || (queryHorse ? ("horse-" + racingHorseAnchorSlug(queryHorse)) : "");
+                if (!targetId) return;
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+                const row = target.closest("tr");
+                if (row) row.classList.add("horse-highlight");
+
+                setTimeout(() => {
+                    (row || target).scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 80);
+            } catch (e) {}
+        }
+
+        highlightHorseFromURL();
+        window.addEventListener("hashchange", highlightHorseFromURL);
         </script>
     </body>
     </html>
