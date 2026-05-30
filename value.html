@@ -2468,16 +2468,18 @@
   if (!productData || Array.isArray(productData) || typeof productData !== "object") productData = {};
 
   const filterValid = (entry) => {
-    const coverage   = Number(entry?.data_coverage ?? 0);
-    const confidence = Number(entry?.race_data_confidence ?? 0);
+    const hasCoverage = entry?.data_coverage !== undefined && entry?.data_coverage !== null && String(entry?.data_coverage).trim() !== "";
+    const hasConfidence = entry?.race_data_confidence !== undefined && entry?.race_data_confidence !== null && String(entry?.race_data_confidence).trim() !== "";
+    const coverage = hasCoverage ? Number(entry.data_coverage) : 100;
+    const confidence = hasConfidence ? Number(entry.race_data_confidence) : 100;
     const tags = Array.isArray(entry?.tags)
       ? entry.tags.map(t => String(t).toLowerCase())
       : [];
 
-    // Hard display gate for all normal betting sections.
-    // Tony Watch and Placepot are handled separately and are the only exemptions.
+    // Do not blank legacy rows that were written before coverage fields existed.
+    // Where coverage/confidence exists, keep the display gate at 75%+.
     if (tags.includes("tony-watch")) return true;
-    return coverage >= 80 && confidence >= 80;
+    return coverage >= 75 && confidence >= 75;
   };
 
   const valueMap = new Map(
@@ -2963,7 +2965,7 @@
 
   const safeSelectorValue = (value) => {
     if (window.CSS && typeof CSS.escape === "function") return CSS.escape(value);
-    return String(value || "").replace(/\/g, "\\").replace(/"/g, '\"');
+    return String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   };
 
   const updateMyBetField = (id, field, value, shouldRender = true) => {
