@@ -1735,98 +1735,70 @@
       }
     }
 
-  
-    /* === Final compact tag-column override ===
-       Keeps desktop wide, but makes Tags take ~3 chips per row instead of a long single row. */
-    .page-shell {
-      width: min(98vw, 1900px) !important;
-      max-width: min(98vw, 1900px) !important;
-    }
 
-    #shortlist-table.shortlist-premium-table,
-    #live-intel-table.shortlist-premium-table {
-      min-width: 1240px !important;
-    }
+    /* === Wide desktop layout upgrade ===
+       Use more of laptop/desktop width so wide tables do not need sideways scrolling.
+       Mobile/tablet still keep horizontal swipe behaviour. */
+    @media (min-width: 1024px) {
+      body {
+        padding-left: max(1.2rem, 2vw);
+        padding-right: max(1.2rem, 2vw);
+      }
 
-    #shortlist-table th:nth-child(9),
-    #shortlist-table td:nth-child(9),
-    #live-intel-table th:nth-child(9),
-    #live-intel-table td:nth-child(9) {
-      width: 7.1rem !important;
-      min-width: 7.1rem !important;
-      max-width: 7.1rem !important;
-      padding-left: 0.25rem !important;
-      padding-right: 0.25rem !important;
-    }
+      .page-shell {
+        width: min(96vw, 1920px);
+        max-width: none !important;
+      }
 
-    #shortlist-table .shortlist-tags,
-    #live-intel-table .shortlist-tags {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1.75rem) !important;
-      justify-content: center !important;
-      justify-items: center !important;
-      align-items: center !important;
-      gap: 0.22rem 0.18rem !important;
-      width: 5.7rem !important;
-      min-width: 5.7rem !important;
-      max-width: 5.7rem !important;
-      margin: 0 auto !important;
-    }
+      .section-body {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
 
-    #shortlist-table .shortlist-tags .tag-chip,
-    #live-intel-table .shortlist-tags .tag-chip,
-    #mybets-table .shortlist-tags .tag-chip {
-      width: 1.72rem !important;
-      min-width: 1.72rem !important;
-      max-width: 1.72rem !important;
-      height: 1.34rem !important;
-      padding: 0.12rem 0.12rem !important;
-      font-size: 0.78rem !important;
-      line-height: 1 !important;
-      overflow: hidden !important;
-      white-space: nowrap !important;
-    }
+      .table-wrap,
+      .shortlist-table-wrap {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
 
-    #mybets-table .shortlist-tags {
-      display: grid !important;
-      grid-template-columns: repeat(3, 1.72rem) !important;
-      gap: 0.20rem 0.16rem !important;
-      width: 5.55rem !important;
-      min-width: 5.55rem !important;
-      max-width: 5.55rem !important;
-      margin: 0 auto !important;
-    }
-
-    @media (max-width: 640px) {
+      #mybets-table,
       #shortlist-table.shortlist-premium-table,
       #live-intel-table.shortlist-premium-table {
-        min-width: 1220px !important;
+        width: 100% !important;
       }
 
-      #shortlist-table th:nth-child(9),
-      #shortlist-table td:nth-child(9),
-      #live-intel-table th:nth-child(9),
-      #live-intel-table td:nth-child(9) {
-        width: 6.7rem !important;
-        min-width: 6.7rem !important;
-        max-width: 6.7rem !important;
+      #mybets-table {
+        min-width: 1320px !important;
+      }
+    }
+
+    @media (min-width: 1500px) {
+      .page-shell {
+        width: min(96vw, 2160px);
       }
 
-      #shortlist-table .shortlist-tags,
-      #live-intel-table .shortlist-tags {
-        grid-template-columns: repeat(3, 1.62rem) !important;
-        width: 5.25rem !important;
-        min-width: 5.25rem !important;
-        max-width: 5.25rem !important;
+      #mybets-table {
+        min-width: 1500px !important;
       }
 
-      #shortlist-table .shortlist-tags .tag-chip,
-      #live-intel-table .shortlist-tags .tag-chip {
-        width: 1.60rem !important;
-        min-width: 1.60rem !important;
-        max-width: 1.60rem !important;
-        height: 1.28rem !important;
-        font-size: 0.74rem !important;
+      #shortlist-table.shortlist-premium-table,
+      #live-intel-table.shortlist-premium-table {
+        min-width: 1440px !important;
+      }
+    }
+
+    @media (min-width: 1850px) {
+      .page-shell {
+        width: min(96vw, 2320px);
+      }
+
+      #mybets-table {
+        min-width: 1640px !important;
+      }
+
+      #shortlist-table.shortlist-premium-table,
+      #live-intel-table.shortlist-premium-table {
+        min-width: 1540px !important;
       }
     }
 
@@ -1838,7 +1810,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 May 2026, 18:57</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">30 May 2026, 07:43</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2583,20 +2555,6 @@
     'placepot': '🧩'
   };
 
-  const tagLabel = (tag) => {
-    const t = String(tag || "").toLowerCase();
-    if (iconMap[t]) return iconMap[t];
-    if (t.startsWith("overlay+")) return `Δ+${t.replace("overlay+", "")}`;
-    if (t.startsWith("overlay-")) return `Δ-${t.replace("overlay-", "")}`;
-    if (t.startsWith("overlay")) return "Δ";
-    return t.length > 6 ? t.slice(0, 6) : t;
-  };
-
-  const tagClassName = (tag) => String(tag || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
 
   const wasTagsFor = (entry) => {
@@ -2610,14 +2568,14 @@
   const wasTagsHTML = (entry) => {
     const tags = [...new Set(wasTagsFor(entry).filter(Boolean))];
     if (!tags.length) return "-";
-    return `<span class="was-tag-list">${tags.map(t => `<span class="tag-chip tag-${tagClassName(t)}" title="${myBetsEsc(t)}">${tagLabel(t)}</span>`).join('')}</span>`;
+    return `<span class="was-tag-list">${tags.map(t => `<span class="tag-chip tag-${t}">${iconMap[t] || t}</span>`).join('')}</span>`;
   };
 
   const shortlistTagsHTML = (tags) => {
     const uniq = [...new Set((tags || []).filter(Boolean))];
     if (!uniq.length) return '';
     return `<div class="shortlist-tags">${
-      uniq.map(t => `<span class="tag-chip tag-${tagClassName(t)}" title="${myBetsEsc(t)}">${tagLabel(t)}</span>`).join('')
+      uniq.map(t => `<span class="tag-chip tag-${String(t).toLowerCase()}">${iconMap[t] || t}</span>`).join('')
     }</div>`;
   };
 
