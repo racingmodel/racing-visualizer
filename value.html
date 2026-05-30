@@ -1886,6 +1886,73 @@
       }
     }
 
+
+    /* === My Bets header/columns compact update ===
+       - Hide top summary metrics: Selections / Total stake / Lay liability
+       - Move Copy / WhatsApp / CSV / Clear buttons to the left
+       - Hide Bet Type, Stake and Estimate columns in My Bets Today
+    */
+    .mybets-summary-bar {
+      justify-content: flex-start !important;
+      align-items: center !important;
+    }
+
+    .mybets-summary-left {
+      display: none !important;
+    }
+
+    .mybets-summary-actions {
+      justify-content: flex-start !important;
+      width: auto !important;
+      margin-left: 0 !important;
+    }
+
+    #mybets-table {
+      min-width: 980px !important;
+    }
+
+    #mybets-table th:nth-child(4),
+    #mybets-table td:nth-child(4),
+    #mybets-table th:nth-child(6),
+    #mybets-table td:nth-child(6),
+    #mybets-table th:nth-child(7),
+    #mybets-table td:nth-child(7) {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      .mybets-summary-bar {
+        align-items: center !important;
+      }
+
+      .mybets-summary-actions {
+        width: 100% !important;
+        justify-content: flex-start !important;
+      }
+
+      #mybets-table {
+        min-width: 900px !important;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      #mybets-table {
+        min-width: 980px !important;
+      }
+    }
+
+    @media (min-width: 1500px) {
+      #mybets-table {
+        min-width: 1040px !important;
+      }
+    }
+
+    @media (min-width: 1850px) {
+      #mybets-table {
+        min-width: 1080px !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2884,23 +2951,9 @@
   };
 
   const myBetsSummaryHTML = (items) => {
-    const count = items.length;
-    let totalStake = 0;
-    let layLiability = 0;
-    items.forEach(item => {
-      const stake = Number(item.stake || 0);
-      const odds = myBetsParseOdds(item.bookie_odds);
-      const type = String(item.bet_type || "").toLowerCase();
-      if (!stake) return;
-      if (type === "each way") totalStake += stake * 2;
-      else totalStake += stake;
-      if (type === "lay" && !Number.isNaN(odds) && odds > 1) layLiability += stake * (odds - 1);
-    });
-    return `
-      <span class="mybets-stat">Selections <strong>${count}</strong></span>
-      <span class="mybets-stat">Total stake <strong>£${totalStake.toFixed(2)}</strong></span>
-      <span class="mybets-stat">Lay liability <strong>£${layLiability.toFixed(2)}</strong></span>
-    `;
+    // Layout request: keep the My Bets action buttons, but do not show
+    // selection count, total stake or lay liability in the top bar.
+    return "";
   };
 
   const renderMyBets = () => {
