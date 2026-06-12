@@ -2017,7 +2017,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">12 Jun 2026, 19:52</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">12 Jun 2026, 22:59</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2219,7 +2219,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Backend-test each-way runners: same EP support shape as Big E/W - EP, but 16/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
+        <div class="section-note">Backend-test each-way runners: same great-value EP support shape as Big E/W - EP, but 16/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
         <div class="table-wrap">
           <table id="btew-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2245,7 +2245,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Normal non-extra-place EW only: 21.0+ decimal and still passing the existing model-value/rank/raw support shape.</div>
+        <div class="section-note">Normal non-extra-place EW only: 21.0+ decimal and passing the tightened great-value model/raw/place-profile shape.</div>
         <div class="table-wrap">
           <table id="ewnotep-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -3677,6 +3677,22 @@
     return s.has("value") && s.has("rank-overlay") && s.has("raw-value");
   };
 
+  const hasGreatEwValueStack = (entry, tags) => {
+    const s = new Set(tags || []);
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    if (isNaN(dec) || dec < 21.0) return false;
+    if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
+    if (!placeProfileOk(entry, 60.0)) return false;
+
+    const rankScoreRaw = entry?.ordinal_rank_score ?? entry?.["Ordinal Rank Score"];
+    if (rankScoreRaw !== undefined && rankScoreRaw !== null && String(rankScoreRaw).trim() !== "") {
+      const rankScore = Number(rankScoreRaw);
+      if (Number.isFinite(rankScore) && rankScore < 44.0) return false;
+    }
+
+    return rawValueToleranceOk(entry) && modelValueToleranceOk(entry);
+  };
+
   const placeProfileOk = (entry, minVal = 58.0) => {
     const raw = entry?.place_profile ?? entry?.["Place Profile"] ?? entry?.ordinal_place_profile;
     if (raw === undefined || raw === null || String(raw).trim() === "") return true;
@@ -3737,9 +3753,10 @@
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     if (!placeProfileOk(entry, 58.0)) return false;
 
-    // Dangerous 21-34 band: require the full premium stack, not just blue/raw value.
+    // Dangerous 21-34 band: require either the full premium stack OR a confirmed
+    // great-value stack: model value + raw value + ai-back + place profile.
     if (dec < 34.0) {
-      return hasPremiumEwStack(tags);
+      return hasPremiumEwStack(tags) || hasGreatEwValueStack(entry, tags);
     }
 
     // 34.0+ can qualify, but sleeper alone is watch-only and no longer promotes a bet.
@@ -4570,6 +4587,22 @@
     return s.has("value") && s.has("rank-overlay") && s.has("raw-value");
   };
 
+  const hasGreatEwValueStack = (entry, tags) => {
+    const s = new Set(tags || []);
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    if (isNaN(dec) || dec < 21.0) return false;
+    if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
+    if (!placeProfileOk(entry, 60.0)) return false;
+
+    const rankScoreRaw = entry?.ordinal_rank_score ?? entry?.["Ordinal Rank Score"];
+    if (rankScoreRaw !== undefined && rankScoreRaw !== null && String(rankScoreRaw).trim() !== "") {
+      const rankScore = Number(rankScoreRaw);
+      if (Number.isFinite(rankScore) && rankScore < 44.0) return false;
+    }
+
+    return rawValueToleranceOk(entry) && modelValueToleranceOk(entry);
+  };
+
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     if (isNaN(dec) || dec < 21.0) return false;
@@ -4583,9 +4616,10 @@
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     if (!placeProfileOk(entry, 58.0)) return false;
 
-    // Dangerous 21-34 band: require the full premium stack, not just blue/raw value.
+    // Dangerous 21-34 band: require either the full premium stack OR a confirmed
+    // great-value stack: model value + raw value + ai-back + place profile.
     if (dec < 34.0) {
-      return hasPremiumEwStack(tags);
+      return hasPremiumEwStack(tags) || hasGreatEwValueStack(entry, tags);
     }
 
     // 34.0+ can qualify, but sleeper alone is watch-only and no longer promotes a bet.
