@@ -1881,10 +1881,10 @@
       min-width: 12rem !important;
     }
 
-    #shortlist-table th:nth-child(10),
-    #shortlist-table td:nth-child(10),
-    #live-intel-table th:nth-child(10),
-    #live-intel-table td:nth-child(10) {
+    #shortlist-table th:nth-child(9),
+    #shortlist-table td:nth-child(9),
+    #live-intel-table th:nth-child(9),
+    #live-intel-table td:nth-child(9) {
       width: 7.4rem !important;
       min-width: 7.4rem !important;
       max-width: 7.4rem !important;
@@ -1932,10 +1932,10 @@
 
     @media (max-width: 640px) {
       #mybets-table { min-width: 1240px !important; }
-      #shortlist-table th:nth-child(10),
-      #shortlist-table td:nth-child(10),
-      #live-intel-table th:nth-child(10),
-      #live-intel-table td:nth-child(10) {
+      #shortlist-table th:nth-child(9),
+      #shortlist-table td:nth-child(9),
+      #live-intel-table th:nth-child(9),
+      #live-intel-table td:nth-child(9) {
         width: 7.2rem !important;
         min-width: 7.2rem !important;
         max-width: 7.2rem !important;
@@ -2017,7 +2017,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">21 Jun 2026, 23:23</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">21 Jun 2026, 23:44</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2110,7 +2110,6 @@
                 <th>Model 100%</th>
                 <th>BF Exchange</th>
                 <th>EP Places</th>
-                <th>QVE</th>
                 <th>Tags</th>
                 <th>My List</th>
               </tr>
@@ -2154,7 +2153,6 @@
                 <th>Model 100%</th>
                 <th>BF Exchange</th>
                 <th>EP Places</th>
-                <th>QVE</th>
                 <th>Tags</th>
                 <th>My List</th>
               </tr>
@@ -3289,21 +3287,6 @@
     return `<div class="shortlist-ep-cell"><span class="ep-badge-row">${badges}</span></div>`;
   };
 
-  const qveCellHTML = (entry) => {
-    const label = entry?.quantum_label || (entry?.agreement_count_5 !== undefined && entry?.agreement_count_5 !== null && String(entry.agreement_count_5).trim() !== "" ? `${entry.agreement_count_5}/5 QVE` : "");
-    const ens = entry?.ensemble_odds || entry?.ensemble_edge_pts ? `Ens ${entry?.ensemble_odds || "-"}${entry?.ensemble_edge_pts ? ` / ${entry.ensemble_edge_pts}` : ""}` : "";
-    const winq = entry?.win_quality ? `W${entry.win_quality}` : "";
-    const ewq = entry?.ew_quality ? `E${entry.ew_quality}` : "";
-    const pp = entry?.place_probability ? `P${entry.place_probability}%` : "";
-    const note = entry?.quantum_note || "";
-    if (!label && !ens && !winq && !ewq && !pp) return `<span class="no-ep-badge">—</span>`;
-    return `<div class="qve-cell" title="${escHTML(note)}">
-      ${label ? `<span class="product-pill product-purple">${escHTML(label)}</span>` : ""}
-      ${ens ? `<span class="product-reason">${escHTML(ens)}</span>` : ""}
-      ${(winq || ewq || pp) ? `<span class="product-reason">${escHTML([winq, ewq, pp].filter(Boolean).join(" · "))}</span>` : ""}
-    </div>`;
-  };
-
   const pricePillHTML = (value, cls) => {
     const clean = (value === undefined || value === null || String(value).trim() === "") ? "-" : String(value);
     return `<span class="price-pill ${cls}">${clean}</span>`;
@@ -3394,7 +3377,6 @@
       <td>${pricePillHTML(model, "price-model")}</td>
       <td>${bfExchangeHTML(bfBack, bfLay)}</td>
       <td>${epPlacesCellHTML(entry)}</td>
-      <td>${qveCellHTML(entry)}</td>
       <td>${shortlistTagsHTML(tags)}</td>
       <td>${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
     </tr>`;
