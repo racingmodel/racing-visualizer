@@ -2017,7 +2017,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 00:13</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 00:33</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3644,7 +3644,52 @@
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec <= 9.0;
+    return !isNaN(dec) && dec <= 5.0;
+  };
+
+
+  const toNum = (v, fallback = NaN) => {
+    const n = parseFloat(String(v ?? '').replace('%', '').trim());
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const boolField = (v) => {
+    if (v === true) return true;
+    const s = String(v ?? '').trim().toLowerCase();
+    return s === 'true' || s === '1' || s === 'yes';
+  };
+
+  const eliteMustWinQVE = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
+    if (!(book <= 5.0 && model < book && raw < book)) return false;
+
+    const qveCount = toNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, 0);
+    const ensOdds = parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds);
+    const ensEdge = toNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge, -999);
+    const winQ = toNum(entry?.win_quality ?? entry?.WinQ, 0);
+    const placePct = toNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
+    const leader = toNum(entry?.leader_profile, 0);
+    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
+    const cov = toNum(entry?.data_coverage, 0);
+    const conf = toNum(entry?.race_data_confidence, 0);
+
+    const explicitQVEPass = boolField(entry?.qve_must_win);
+    const fieldsQVEPass = (
+      qveCount >= 4 &&
+      !isNaN(ensOdds) && ensOdds < book &&
+      ensEdge >= 3.0 &&
+      winQ >= 72.0 &&
+      placePct >= 58.0
+    );
+
+    return Boolean(
+      (explicitQVEPass || fieldsQVEPass) &&
+      cov >= 85.0 && conf >= 85.0 &&
+      leader >= 60.0 && placeProfile >= 58.0
+    );
   };
 
   const getFieldSize = (entry) => {
@@ -3811,7 +3856,9 @@
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
-      if (backendType === "Must Win A") return "Must Win";
+      if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
+        return eliteMustWinQVE(entry) ? "Must Win" : "";
+      }
       return backendType;
     }
     const tags = tagSet(entry);
@@ -3863,6 +3910,7 @@
       backOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
+      eliteMustWinQVE(entry) &&
       tags.includes("top-rated-clear") &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
@@ -4554,7 +4602,52 @@
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec <= 9.0;
+    return !isNaN(dec) && dec <= 5.0;
+  };
+
+
+  const toNum = (v, fallback = NaN) => {
+    const n = parseFloat(String(v ?? '').replace('%', '').trim());
+    return Number.isFinite(n) ? n : fallback;
+  };
+
+  const boolField = (v) => {
+    if (v === true) return true;
+    const s = String(v ?? '').trim().toLowerCase();
+    return s === 'true' || s === '1' || s === 'yes';
+  };
+
+  const eliteMustWinQVE = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
+    if (!(book <= 5.0 && model < book && raw < book)) return false;
+
+    const qveCount = toNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, 0);
+    const ensOdds = parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds);
+    const ensEdge = toNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge, -999);
+    const winQ = toNum(entry?.win_quality ?? entry?.WinQ, 0);
+    const placePct = toNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
+    const leader = toNum(entry?.leader_profile, 0);
+    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
+    const cov = toNum(entry?.data_coverage, 0);
+    const conf = toNum(entry?.race_data_confidence, 0);
+
+    const explicitQVEPass = boolField(entry?.qve_must_win);
+    const fieldsQVEPass = (
+      qveCount >= 4 &&
+      !isNaN(ensOdds) && ensOdds < book &&
+      ensEdge >= 3.0 &&
+      winQ >= 72.0 &&
+      placePct >= 58.0
+    );
+
+    return Boolean(
+      (explicitQVEPass || fieldsQVEPass) &&
+      cov >= 85.0 && conf >= 85.0 &&
+      leader >= 60.0 && placeProfile >= 58.0
+    );
   };
 
   const getFieldSize = (entry) => {
@@ -4722,7 +4815,9 @@
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
-      if (backendType === "Must Win A") return "Must Win";
+      if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
+        return eliteMustWinQVE(entry) ? "Must Win" : "";
+      }
       return backendType;
     }
     const tags = tagSet(entry);
@@ -4758,6 +4853,7 @@
       backOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
+      eliteMustWinQVE(entry) &&
       tags.includes("ai-back") &&
       tags.includes("top-rated-clear") &&
       !tags.includes("blue") &&
