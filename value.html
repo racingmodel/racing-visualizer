@@ -3717,6 +3717,12 @@
     return Number.isFinite(n) ? n : fallback;
   };
 
+
+  // Shared numeric parser used by both QVE and legacy shortlist gates.
+  // This prevents the whole value page render from aborting when legacy fallback
+  // checks run against QVE/ATR-enriched rows.
+  const toNum = qveNum;
+
   const qveBool = (v) => {
     if (v === true) return true;
     const s = String(v ?? '').trim().toLowerCase();
@@ -4743,6 +4749,12 @@
     const n = parseFloat(String(v ?? '').replace('%', '').trim());
     return Number.isFinite(n) ? n : fallback;
   };
+
+
+  // Shared numeric parser used by both QVE and legacy shortlist gates.
+  // This prevents the whole value page render from aborting when legacy fallback
+  // checks run against QVE/ATR-enriched rows.
+  const toNum = qveNum;
 
   const qveBool = (v) => {
     if (v === true) return true;
