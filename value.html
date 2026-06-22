@@ -1881,13 +1881,74 @@
       min-width: 12rem !important;
     }
 
+    #shortlist-table th:nth-child(10),
+    #shortlist-table td:nth-child(10),
+    #live-intel-table th:nth-child(10),
+    #live-intel-table td:nth-child(10) {
+      width: 7.4rem !important;
+      min-width: 7.4rem !important;
+      max-width: 7.4rem !important;
+    }
+
+
     #shortlist-table th:nth-child(9),
     #shortlist-table td:nth-child(9),
     #live-intel-table th:nth-child(9),
     #live-intel-table td:nth-child(9) {
-      width: 7.4rem !important;
-      min-width: 7.4rem !important;
-      max-width: 7.4rem !important;
+      width: 6.4rem !important;
+      min-width: 6.4rem !important;
+      max-width: 6.4rem !important;
+    }
+
+    .qve-cell {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12rem;
+      min-width: 5.6rem;
+      max-width: 6.2rem;
+      margin: 0 auto;
+      line-height: 1.05;
+      white-space: normal;
+    }
+
+    .qve-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 3.5rem;
+      padding: 0.18rem 0.42rem;
+      border-radius: 999px;
+      font-size: 0.70rem;
+      font-weight: 950;
+      color: #041a0b;
+      background: linear-gradient(180deg, #9cffb0, #39d353);
+      border: 1px solid rgba(92,255,128,0.68);
+      box-shadow: 0 0 14px rgba(57,211,83,0.28), inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+
+    .qve-badge.qve-mid {
+      color: #201800;
+      background: linear-gradient(180deg, #ffe066, #d4af37);
+      border-color: rgba(255,224,102,0.70);
+      box-shadow: 0 0 14px rgba(255,215,0,0.22), inset 0 1px 0 rgba(255,255,255,0.16);
+    }
+
+    .qve-badge.qve-low {
+      color: #dbeafe;
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(147,197,253,0.25);
+      box-shadow: none;
+    }
+
+    .qve-sub {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 850;
+      color: #cbd5e1;
+      opacity: 0.94;
+      white-space: normal;
     }
 
     #shortlist-table .shortlist-tags,
@@ -1932,10 +1993,10 @@
 
     @media (max-width: 640px) {
       #mybets-table { min-width: 1240px !important; }
-      #shortlist-table th:nth-child(9),
-      #shortlist-table td:nth-child(9),
-      #live-intel-table th:nth-child(9),
-      #live-intel-table td:nth-child(9) {
+      #shortlist-table th:nth-child(10),
+      #shortlist-table td:nth-child(10),
+      #live-intel-table th:nth-child(10),
+      #live-intel-table td:nth-child(10) {
         width: 7.2rem !important;
         min-width: 7.2rem !important;
         max-width: 7.2rem !important;
@@ -2017,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 11:34</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 12:31</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2110,6 +2171,7 @@
                 <th>Model 100%</th>
                 <th>BF Exchange</th>
                 <th>EP Places</th>
+                <th>QVE</th>
                 <th>Tags</th>
                 <th>My List</th>
               </tr>
@@ -2153,6 +2215,7 @@
                 <th>Model 100%</th>
                 <th>BF Exchange</th>
                 <th>EP Places</th>
+                <th>QVE</th>
                 <th>Tags</th>
                 <th>My List</th>
               </tr>
@@ -3377,6 +3440,7 @@
       <td>${pricePillHTML(model, "price-model")}</td>
       <td>${bfExchangeHTML(bfBack, bfLay)}</td>
       <td>${epPlacesCellHTML(entry)}</td>
+      <td>${qveCellHTML(entry)}</td>
       <td>${shortlistTagsHTML(tags)}</td>
       <td>${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
     </tr>`;
@@ -3647,17 +3711,29 @@
     return !isNaN(dec) && dec <= 5.0;
   };
 
-
-  const toNum = (v, fallback = NaN) => {
+  const qveNum = (v, fallback = NaN) => {
     const n = parseFloat(String(v ?? '').replace('%', '').trim());
     return Number.isFinite(n) ? n : fallback;
   };
 
-  const boolField = (v) => {
+  const qveBool = (v) => {
     if (v === true) return true;
     const s = String(v ?? '').trim().toLowerCase();
     return s === 'true' || s === '1' || s === 'yes';
   };
+
+  const qveCountFor = (entry) => {
+    const explicit = qveNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, NaN);
+    if (Number.isFinite(explicit)) return explicit;
+    const label = String(entry?.quantum_label ?? entry?.QVE ?? '').trim();
+    const m = label.match(/(\d+)\s*\/\s*5/);
+    return m ? Number(m[1]) : 0;
+  };
+
+  const qveOddsFor = (entry) => parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds ?? entry?.ensembleOdds);
+  const qveEdgeFor = (entry) => qveNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge ?? entry?.ensemble_edge, 0);
+  const qveWinQFor = (entry) => qveNum(entry?.win_quality ?? entry?.WinQ, 0);
+  const qvePlaceFor = (entry) => qveNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
 
   const eliteMustWinQVE = (entry) => {
     const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
@@ -3666,17 +3742,17 @@
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
     if (!(book <= 5.0 && model < book && raw < book)) return false;
 
-    const qveCount = toNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, 0);
-    const ensOdds = parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds);
-    const ensEdge = toNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge, -999);
-    const winQ = toNum(entry?.win_quality ?? entry?.WinQ, 0);
-    const placePct = toNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
-    const leader = toNum(entry?.leader_profile, 0);
-    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
-    const cov = toNum(entry?.data_coverage, 0);
-    const conf = toNum(entry?.race_data_confidence, 0);
+    const qveCount = qveCountFor(entry);
+    const ensOdds = qveOddsFor(entry);
+    const ensEdge = qveEdgeFor(entry);
+    const winQ = qveWinQFor(entry);
+    const placePct = qvePlaceFor(entry);
+    const leader = qveNum(entry?.leader_profile, 0);
+    const placeProfile = qveNum(entry?.place_profile ?? entry?.place_probability, 0);
+    const cov = qveNum(entry?.data_coverage, 0);
+    const conf = qveNum(entry?.race_data_confidence, 0);
 
-    const explicitQVEPass = boolField(entry?.qve_must_win);
+    const explicitQVEPass = qveBool(entry?.qve_must_win);
     const fieldsQVEPass = (
       qveCount >= 4 &&
       !isNaN(ensOdds) && ensOdds < book &&
@@ -3690,6 +3766,28 @@
       cov >= 85.0 && conf >= 85.0 &&
       leader >= 60.0 && placeProfile >= 58.0
     );
+  };
+
+  const qveCellHTML = (entry) => {
+    const count = qveCountFor(entry);
+    const ensEdge = qveEdgeFor(entry);
+    const winQ = qveWinQFor(entry);
+    const placePct = qvePlaceFor(entry);
+    const label = String(entry?.quantum_label || (count ? `${count}/5 QVE` : '')).trim();
+    const note = String(entry?.quantum_note || '').trim();
+
+    if (!count && !label && !ensEdge && !winQ && !placePct) {
+      return '<span class="no-ep-badge" title="QVE data not available">—</span>';
+    }
+
+    const klass = count >= 4 ? 'qve-badge' : (count >= 3 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
+    const edgeTxt = Number.isFinite(ensEdge) && ensEdge !== 0 ? `E${ensEdge > 0 ? '+' : ''}${ensEdge.toFixed(1)}` : '';
+    const winTxt = winQ ? `W${Number(winQ).toFixed(0)}` : '';
+    const placeTxt = placePct ? `P${Number(placePct).toFixed(0)}%` : '';
+    const sub = [edgeTxt, winTxt, placeTxt].filter(Boolean).join(' • ');
+    const title = note || [label, sub].filter(Boolean).join(' | ');
+
+    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/5`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
   };
 
   const getFieldSize = (entry) => {
@@ -3911,6 +4009,7 @@
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
       eliteMustWinQVE(entry) &&
+      tags.includes("ai-back") &&
       tags.includes("top-rated-clear") &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
@@ -4097,7 +4196,7 @@
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 10);
-  const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 10);
+  const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 11);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row", "Must Lay"), 5);
@@ -4451,8 +4550,8 @@
   setBody('#race-shape-table', raceShapeHtml, 6);
   setBody('#pick7-table', pick7Html, 7);
 
-  setBody('#shortlist-table', shortlist, 10);
-  setBody('#live-intel-table', liveIntel, 10);
+  setBody('#shortlist-table', shortlist, 11);
+  setBody('#live-intel-table', liveIntel, 11);
   setBody('#wasvalue-table', wasValueHtml, 6);
   setBody('#multitag-table',  multi, 5);
   setBody('#btew-table',      btew, 5);
@@ -4605,17 +4704,29 @@
     return !isNaN(dec) && dec <= 5.0;
   };
 
-
-  const toNum = (v, fallback = NaN) => {
+  const qveNum = (v, fallback = NaN) => {
     const n = parseFloat(String(v ?? '').replace('%', '').trim());
     return Number.isFinite(n) ? n : fallback;
   };
 
-  const boolField = (v) => {
+  const qveBool = (v) => {
     if (v === true) return true;
     const s = String(v ?? '').trim().toLowerCase();
     return s === 'true' || s === '1' || s === 'yes';
   };
+
+  const qveCountFor = (entry) => {
+    const explicit = qveNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, NaN);
+    if (Number.isFinite(explicit)) return explicit;
+    const label = String(entry?.quantum_label ?? entry?.QVE ?? '').trim();
+    const m = label.match(/(\d+)\s*\/\s*5/);
+    return m ? Number(m[1]) : 0;
+  };
+
+  const qveOddsFor = (entry) => parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds ?? entry?.ensembleOdds);
+  const qveEdgeFor = (entry) => qveNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge ?? entry?.ensemble_edge, 0);
+  const qveWinQFor = (entry) => qveNum(entry?.win_quality ?? entry?.WinQ, 0);
+  const qvePlaceFor = (entry) => qveNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
 
   const eliteMustWinQVE = (entry) => {
     const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
@@ -4624,17 +4735,17 @@
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
     if (!(book <= 5.0 && model < book && raw < book)) return false;
 
-    const qveCount = toNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, 0);
-    const ensOdds = parseOdds(entry?.ensemble_odds ?? entry?.Ens_Odds);
-    const ensEdge = toNum(entry?.ensemble_edge_pts ?? entry?.Ens_Edge, -999);
-    const winQ = toNum(entry?.win_quality ?? entry?.WinQ, 0);
-    const placePct = toNum(entry?.place_probability ?? entry?.PlacePct ?? entry?.place_profile, 0);
-    const leader = toNum(entry?.leader_profile, 0);
-    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
-    const cov = toNum(entry?.data_coverage, 0);
-    const conf = toNum(entry?.race_data_confidence, 0);
+    const qveCount = qveCountFor(entry);
+    const ensOdds = qveOddsFor(entry);
+    const ensEdge = qveEdgeFor(entry);
+    const winQ = qveWinQFor(entry);
+    const placePct = qvePlaceFor(entry);
+    const leader = qveNum(entry?.leader_profile, 0);
+    const placeProfile = qveNum(entry?.place_profile ?? entry?.place_probability, 0);
+    const cov = qveNum(entry?.data_coverage, 0);
+    const conf = qveNum(entry?.race_data_confidence, 0);
 
-    const explicitQVEPass = boolField(entry?.qve_must_win);
+    const explicitQVEPass = qveBool(entry?.qve_must_win);
     const fieldsQVEPass = (
       qveCount >= 4 &&
       !isNaN(ensOdds) && ensOdds < book &&
@@ -4648,6 +4759,28 @@
       cov >= 85.0 && conf >= 85.0 &&
       leader >= 60.0 && placeProfile >= 58.0
     );
+  };
+
+  const qveCellHTML = (entry) => {
+    const count = qveCountFor(entry);
+    const ensEdge = qveEdgeFor(entry);
+    const winQ = qveWinQFor(entry);
+    const placePct = qvePlaceFor(entry);
+    const label = String(entry?.quantum_label || (count ? `${count}/5 QVE` : '')).trim();
+    const note = String(entry?.quantum_note || '').trim();
+
+    if (!count && !label && !ensEdge && !winQ && !placePct) {
+      return '<span class="no-ep-badge" title="QVE data not available">—</span>';
+    }
+
+    const klass = count >= 4 ? 'qve-badge' : (count >= 3 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
+    const edgeTxt = Number.isFinite(ensEdge) && ensEdge !== 0 ? `E${ensEdge > 0 ? '+' : ''}${ensEdge.toFixed(1)}` : '';
+    const winTxt = winQ ? `W${Number(winQ).toFixed(0)}` : '';
+    const placeTxt = placePct ? `P${Number(placePct).toFixed(0)}%` : '';
+    const sub = [edgeTxt, winTxt, placeTxt].filter(Boolean).join(' • ');
+    const title = note || [label, sub].filter(Boolean).join(' | ');
+
+    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/5`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
   };
 
   const getFieldSize = (entry) => {
@@ -4890,6 +5023,10 @@
           horse: String(e.horse || ""),
           bookie_odds: String(e.bookie_odds ?? e.real_odds ?? ""),
           raw_odds: String(e.raw_odds ?? ""),
+          qve: String(e.agreement_count_5 ?? e.quantum_label ?? ""),
+          ens_edge: String(e.ensemble_edge_pts ?? ""),
+          win_q: String(e.win_quality ?? ""),
+          place_pct: String(e.place_probability ?? ""),
           tags: tagSet(e).sort().join("|"),
           ep_badges: (extraPlaces.get(raceKey(e.race_datetime, e.course)) || [])
             .map(b => `${b.bookmaker}x${b.places}`)
