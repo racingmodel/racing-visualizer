@@ -2078,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 13:14</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Jun 2026, 13:40</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2158,7 +2158,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win and Must Lay. Intel picks now live in the separate Live Intel section below Placepot.</div>
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win, Win Value and Must Lay. QVE rows show ensemble/quality proof; pre-QVE rows display as Win Value rather than Must Win.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -2735,7 +2735,7 @@
 
   const entries = allEntries.filter(filterValid);
 
-  const RACE_EXPIRY_GRACE_MINS = 0;
+  const RACE_EXPIRY_GRACE_MINS = 1440;
 
   const tagSet = (entry) =>
     Array.isArray(entry.tags) ? [...new Set(entry.tags.map(t => String(t).toLowerCase()))] : [];
@@ -3320,6 +3320,7 @@
     if (type === 'BT E/W') return `<span class="type-badge type-btew">BT E/W</span>`;
     if (type === 'Must Win' || type === 'Must Win A') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Win Value A') return `<span class="type-badge type-win">Win Value A</span>`;
+    if (type === 'Win Value') return `<span class="type-badge type-win">Win Value</span>`;
     if (type === 'Must Lay' || type === 'Must Lay A') return `<span class="type-badge type-lay">MUST LAY</span>`;
     if (type === 'Lay Watch') return `<span class="type-badge type-lay">LAY WATCH</span>`;
     if (type === 'Product Win' || type === 'Intel Win') return `<span class="type-badge type-win">Intel Win</span>`;
@@ -3768,6 +3769,36 @@
     );
   };
 
+  const qveFieldsPresent = (entry) => {
+    // Central QVE/ensemble fields only.  Older rows may already have place_probability,
+    // so place_probability alone must not block the pre-QVE Win Value fallback.
+    return ["agreement_count_5", "quantum_label", "ensemble_odds", "ensemble_edge_pts", "win_quality", "qve_must_win"]
+      .some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
+  };
+
+  const legacyWinValueFallback = (entry) => {
+    // Temporary safety net for rows created before QVE fields were written into value_bets.json.
+    // These display as Win Value, not Must Win. Once QVE fields exist, eliteMustWinQVE controls Must Win.
+    if (qveFieldsPresent(entry)) return false;
+    const tags = tagSet(entry);
+    if (hasAnyLayTag(tags)) return false;
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
+    if (!(book <= 5.0 && model < book && raw < book)) return false;
+    const cov = toNum(entry?.data_coverage, 0);
+    const conf = toNum(entry?.race_data_confidence, 0);
+    const leader = toNum(entry?.leader_profile, 0);
+    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
+    return Boolean(
+      cov >= 85.0 && conf >= 85.0 &&
+      leader >= 60.0 && placeProfile >= 58.0 &&
+      (tags.includes("top-rated-clear") || tags.includes("value") || tags.includes("raw-value"))
+    );
+  };
+
+
   const qveCellHTML = (entry) => {
     const count = qveCountFor(entry);
     const ensEdge = qveEdgeFor(entry);
@@ -3955,7 +3986,9 @@
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
-        return eliteMustWinQVE(entry) ? "Must Win" : "";
+        if (eliteMustWinQVE(entry)) return "Must Win";
+        if (legacyWinValueFallback(entry)) return "Win Value";
+        return "";
       }
       return backendType;
     }
@@ -4009,12 +4042,14 @@
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
       eliteMustWinQVE(entry) &&
-      tags.includes("ai-back") &&
-      tags.includes("top-rated-clear") &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
     ) {
       return "Must Win";
+    }
+
+    if (legacyWinValueFallback(entry)) {
+      return "Win Value";
     }
 
     return "";
@@ -4182,7 +4217,7 @@
   };
 
   const liveIntelItems = productItems("todays_product_shortlist", "items")
-    .filter(e => e && !raceHasStarted(e))
+    .filter(e => e)
     .map(e => ({
       ...e,
       tags: Array.isArray(e.tags) && e.tags.length ? e.tags : ["product-pick"],
@@ -4195,7 +4230,7 @@
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 10);
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 11);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 11);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
@@ -4761,6 +4796,36 @@
     );
   };
 
+  const qveFieldsPresent = (entry) => {
+    // Central QVE/ensemble fields only.  Older rows may already have place_probability,
+    // so place_probability alone must not block the pre-QVE Win Value fallback.
+    return ["agreement_count_5", "quantum_label", "ensemble_odds", "ensemble_edge_pts", "win_quality", "qve_must_win"]
+      .some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
+  };
+
+  const legacyWinValueFallback = (entry) => {
+    // Temporary safety net for rows created before QVE fields were written into value_bets.json.
+    // These display as Win Value, not Must Win. Once QVE fields exist, eliteMustWinQVE controls Must Win.
+    if (qveFieldsPresent(entry)) return false;
+    const tags = tagSet(entry);
+    if (hasAnyLayTag(tags)) return false;
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
+    if (!(book <= 5.0 && model < book && raw < book)) return false;
+    const cov = toNum(entry?.data_coverage, 0);
+    const conf = toNum(entry?.race_data_confidence, 0);
+    const leader = toNum(entry?.leader_profile, 0);
+    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
+    return Boolean(
+      cov >= 85.0 && conf >= 85.0 &&
+      leader >= 60.0 && placeProfile >= 58.0 &&
+      (tags.includes("top-rated-clear") || tags.includes("value") || tags.includes("raw-value"))
+    );
+  };
+
+
   const qveCellHTML = (entry) => {
     const count = qveCountFor(entry);
     const ensEdge = qveEdgeFor(entry);
@@ -4949,7 +5014,9 @@
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
-        return eliteMustWinQVE(entry) ? "Must Win" : "";
+        if (eliteMustWinQVE(entry)) return "Must Win";
+        if (legacyWinValueFallback(entry)) return "Win Value";
+        return "";
       }
       return backendType;
     }
@@ -4987,12 +5054,14 @@
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
       eliteMustWinQVE(entry) &&
-      tags.includes("ai-back") &&
-      tags.includes("top-rated-clear") &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
     ) {
       return "Must Win";
+    }
+
+    if (legacyWinValueFallback(entry)) {
+      return "Win Value";
     }
 
     return "";
