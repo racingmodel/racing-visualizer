@@ -2078,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Jun 2026, 12:48</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Jun 2026, 13:19</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4180,6 +4180,7 @@
   let ewnotepItems = [];
   let btewItems = [];
   let mustwinItems = [];
+  let winvalueItems = [];
   let rawvItems = [];
   let tonyItems = [];
   let sleeperItems = [];
@@ -4195,6 +4196,7 @@
     if (shortlistType === 'Each Way')     ewnotepItems.push({ ...entry, shortlist_type: 'Each Way' });
     if (shortlistType === 'BT E/W')       btewItems.push({ ...withTag(entry, 'bt-ew'), shortlist_type: 'BT E/W' });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
+    if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
 
     if (tags.includes("raw-value")) rawvItems.push(entry);
@@ -4213,6 +4215,7 @@
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
+    ...winvalueItems,
     ...rawlayItems
   ];
 
@@ -4616,6 +4619,7 @@
 <script>
 (function () {
   const CHECK_EVERY_MS = 60000;
+  const RACE_EXPIRY_GRACE_MINS = 1440;
   const SIGNATURE_KEY = "racing_shortlist_signature_v2";
   const ALERTS_ON_KEY = "racing_shortlist_alerts_enabled_v2";
   const BASELINE_SET_KEY = "racing_shortlist_baseline_set_v2";
@@ -4692,9 +4696,11 @@
   };
 
   const filterValid = (entry) => {
+    const tags = tagSet(entry);
     const coverage = Number(entry?.data_coverage ?? 100);
     const confidence = Number(entry?.race_data_confidence ?? 100);
-    return coverage >= 86 && confidence >= 86;
+    if (tags.includes("tony-watch")) return true;
+    return coverage >= 75 && confidence >= 75;
   };
 
   const tagSet = (entry) =>
@@ -4705,7 +4711,8 @@
   const raceHasStarted = (entry) => {
     const dt = parseRaceDT(entry?.race_datetime);
     if (!(dt instanceof Date) || Number.isNaN(dt.getTime())) return false;
-    return dt <= new Date();
+    const expiryTime = new Date(dt.getTime() + (RACE_EXPIRY_GRACE_MINS * 60 * 1000));
+    return expiryTime <= new Date();
   };
 
   const isNonRunner = (entry) => {
