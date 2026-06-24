@@ -2078,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Jun 2026, 13:19</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">24 Jun 2026, 12:48</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3806,6 +3806,13 @@
 
 
   const qveCellHTML = (entry) => {
+    // Only show a QVE badge when central QVE/ensemble fields actually exist.
+    // Older/pre-QVE rows can have place_profile, but that is not QVE proof and
+    // must not render as misleading "0/5".
+    if (!qveFieldsPresent(entry)) {
+      return '<span class="no-ep-badge" title="Pre-QVE row: no ensemble/QVE proof written for this runner">—</span>';
+    }
+
     const count = qveCountFor(entry);
     const ensEdge = qveEdgeFor(entry);
     const winQ = qveWinQFor(entry);
@@ -4846,6 +4853,13 @@
 
 
   const qveCellHTML = (entry) => {
+    // Only show a QVE badge when central QVE/ensemble fields actually exist.
+    // Older/pre-QVE rows can have place_profile, but that is not QVE proof and
+    // must not render as misleading "0/5".
+    if (!qveFieldsPresent(entry)) {
+      return '<span class="no-ep-badge" title="Pre-QVE row: no ensemble/QVE proof written for this runner">—</span>';
+    }
+
     const count = qveCountFor(entry);
     const ensEdge = qveEdgeFor(entry);
     const winQ = qveWinQFor(entry);
