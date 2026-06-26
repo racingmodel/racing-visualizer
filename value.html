@@ -2232,7 +2232,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 17:23</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 18:12</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4929,8 +4929,127 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
+  const buildShortlistBacktestPreviewFromValueData = () => {
+    // Emergency frontend fallback: if shortlist_backtest.json is missing from the live site,
+    // build a non-persistent preview from the same value_bets.json rows that feed the visible shortlist.
+    // The real persistent ledger still comes from shortlist_backtest_update.py.
+    try {
+      const source = Array.isArray(entries) ? entries : [];
+      const seen = new Set();
+      const rows = [];
+
+      const isWon = (result) => String(result || "").trim().toLowerCase() === "won";
+      const isTopN = (result) => /^top\s+\d+/i.test(String(result || "").trim());
+      const isNR = (entry, result) => {
+        const r = String(result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
+        const st = String(entry?.bf_runner_status || "").toUpperCase();
+        return ["non runner", "nonrunner", "nr"].includes(r) || ["REMOVED", "REMOVED_VACANT"].includes(st);
+      };
+      const isSettledResult = (entry, result) => {
+        if (entry?.bf_settled === true) return true;
+        const r = String(result || "").toLowerCase().trim();
+        return r === "won" || r === "lost" || /^top\s+\d+/.test(r) || isNR(entry, result);
+      };
+      const calcPL = (entry, type, odds, result) => {
+        const ewTypes = new Set(["Each Way", "Big E/W - EP", "BT E/W"]);
+        if (isNR(entry, result)) return { stake: 0, settled_stake: 0, pl: 0, note: "Void / non-runner" };
+        const settled = isSettledResult(entry, result);
+        const stake = ewTypes.has(type) ? 2 : 1;
+        if (!settled || !odds || odds <= 1) return { stake, settled_stake: 0, pl: 0, note: "Pending" };
+        if (type === "Must Lay") {
+          if (isWon(result)) return { stake: 1, settled_stake: Math.max(0, odds - 1), pl: -Math.max(0, odds - 1), note: "£1 lay lost" };
+          return { stake: 1, settled_stake: 1, pl: 1, note: "£1 lay won" };
+        }
+        if (ewTypes.has(type)) {
+          const placeProfit = (odds / 5) - 1;
+          if (isWon(result)) return { stake: 2, settled_stake: 2, pl: (odds - 1) + placeProfit, note: "EW won" };
+          if (isTopN(result)) return { stake: 2, settled_stake: 2, pl: -1 + placeProfit, note: "EW placed" };
+          return { stake: 2, settled_stake: 2, pl: -2, note: "EW lost" };
+        }
+        if (isWon(result)) return { stake: 1, settled_stake: 1, pl: odds - 1, note: "£1 win won" };
+        return { stake: 1, settled_stake: 1, pl: -1, note: "£1 win lost" };
+      };
+
+      source
+        .filter(filterValid)
+        .filter(isLiveEntry)
+        .forEach(entry => {
+          const type = getShortlistType(entry);
+          if (!type) return;
+          const key = `${normDT(entry?.race_datetime)}|${normCourseBase(entry?.course)}|${normHorseName(entry?.horse)}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          const odds = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+          const result = String(entry?.bf_result || entry?.result || "Pending").trim() || "Pending";
+          const settled = isSettledResult(entry, result);
+          const plInfo = calcPL(entry, type, odds, result);
+          rows.push({
+            race_datetime: entry?.race_datetime || "",
+            course: entry?.course || "",
+            horse: entry?.horse || "",
+            type,
+            advised_odds: Number.isFinite(odds) ? odds : 0,
+            bookie_odds: entry?.bookie_odds ?? entry?.real_odds ?? "",
+            model_odds: entry?.model_odds || "",
+            raw_odds: entry?.raw_odds || "",
+            first_seen: entry?.first_seen || entry?.last_live_seen || entry?.last_checked || "",
+            result,
+            settled,
+            stake: plInfo.stake,
+            settled_stake: plInfo.settled_stake,
+            pl: Number((plInfo.pl || 0).toFixed(2)),
+            pl_note: plInfo.note,
+            bf_actual_sp: entry?.bf_actual_sp || "",
+            source: "Frontend preview from value_bets.json"
+          });
+        });
+
+      rows.sort((a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
+      const settledRows = rows.filter(r => r.settled);
+      const settledStake = settledRows.reduce((a, r) => a + Number(r.settled_stake || 0), 0);
+      const pl = settledRows.reduce((a, r) => a + Number(r.pl || 0), 0);
+      const by_type = {};
+      ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"].forEach(t => {
+        const tr = rows.filter(r => r.type === t);
+        const ts = tr.filter(r => r.settled);
+        const tStake = ts.reduce((a, r) => a + Number(r.settled_stake || 0), 0);
+        const tPl = ts.reduce((a, r) => a + Number(r.pl || 0), 0);
+        by_type[t] = {
+          selections: tr.length,
+          settled: ts.length,
+          open: tr.length - ts.length,
+          stake: Number(tStake.toFixed(2)),
+          pl: Number(tPl.toFixed(2)),
+          roi_pct: tStake > 0 ? Number(((tPl / tStake) * 100).toFixed(1)) : 0
+        };
+      });
+
+      return {
+        version: "preview",
+        updated_at: "Preview from value_bets.json — shortlist_backtest.json not loaded",
+        summary: {
+          selections: rows.length,
+          settled: settledRows.length,
+          open: rows.length - settledRows.length,
+          settled_stake: Number(settledStake.toFixed(2)),
+          pl: Number(pl.toFixed(2)),
+          roi_pct: settledStake > 0 ? Number(((pl / settledStake) * 100).toFixed(1)) : 0,
+          since: rows[0]?.race_datetime ? String(rows[0].race_datetime).split(" ")[0] : "",
+          to: rows[rows.length - 1]?.race_datetime ? String(rows[rows.length - 1].race_datetime).split(" ")[0] : "",
+          by_type
+        },
+        rows
+      };
+    } catch (e) {
+      console.warn("⚠️ Shortlist backtest preview failed:", e);
+      return { updated_at: "", summary: {}, rows: [] };
+    }
+  };
+
   try {
-    renderShortlistBacktest(shortlistBacktestData);
+    const ledgerPayload = backtestPayload(shortlistBacktestData);
+    const backtestSource = ledgerPayload.rows.length ? shortlistBacktestData : buildShortlistBacktestPreviewFromValueData();
+    renderShortlistBacktest(backtestSource);
   } catch (e) {
     console.error("⚠️ Shortlist backtest render failed but value sections will continue:", e);
   }
