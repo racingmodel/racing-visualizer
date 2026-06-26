@@ -2077,6 +2077,153 @@
       }
     }
 
+
+    /* === Persistent Live Shortlist Backtest === */
+    .backtest-card {
+      margin: 0.15rem 0 1.1rem 0;
+      border: 1px solid rgba(255,215,0,0.20);
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at top left, rgba(255,215,0,0.12), transparent 26%),
+        linear-gradient(180deg, rgba(35,35,56,0.98), rgba(20,20,32,0.98));
+      box-shadow: 0 12px 32px rgba(255,215,0,0.13), 0 10px 24px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+
+    .backtest-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.85rem 1rem;
+      background: linear-gradient(90deg, rgba(255,215,0,0.16), rgba(255,255,255,0.04));
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .backtest-title {
+      color: #ffef8a;
+      font-weight: 950;
+      font-size: 1.05rem;
+      letter-spacing: 0.2px;
+    }
+
+    .backtest-updated {
+      color: #cbd5e1;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .backtest-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 0.55rem;
+      padding: 0.85rem 1rem 0.55rem 1rem;
+    }
+
+    .backtest-stat {
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 13px;
+      padding: 0.55rem 0.65rem;
+      background: rgba(255,255,255,0.055);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+      min-width: 0;
+    }
+
+    .backtest-stat span {
+      display: block;
+      color: #aebbd5;
+      font-size: 0.70rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      margin-bottom: 0.15rem;
+    }
+
+    .backtest-stat strong {
+      display: block;
+      color: #ffffff;
+      font-size: 1.04rem;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .backtest-stat .is-profit { color: #9cffb0; }
+    .backtest-stat .is-loss { color: #ff9c9c; }
+
+    .backtest-type-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      padding: 0 1rem 0.85rem 1rem;
+    }
+
+    .backtest-type-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.34rem;
+      padding: 0.32rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.11);
+      color: #dbeafe;
+      font-size: 0.76rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .backtest-type-pill b { color: #ffef8a; }
+    .backtest-type-pill .pl-pos { color: #9cffb0; }
+    .backtest-type-pill .pl-neg { color: #ff9c9c; }
+
+    details.backtest-details {
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .backtest-details summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 0.65rem 1rem;
+      color: #ffef8a;
+      font-weight: 900;
+      user-select: none;
+      background: rgba(0,0,0,0.12);
+    }
+
+    .backtest-details summary::-webkit-details-marker { display: none; }
+
+    .backtest-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 1rem 0.9rem 1rem;
+    }
+
+    #backtest-table {
+      min-width: 960px;
+      margin-bottom: 0;
+      background: rgba(44,44,62,0.92);
+    }
+
+    #backtest-table th {
+      font-size: 0.70rem;
+      text-transform: uppercase;
+      letter-spacing: 0.45px;
+    }
+
+    #backtest-table td {
+      font-size: 0.82rem;
+      vertical-align: middle;
+    }
+
+    .backtest-pl-pos { color: #9cffb0; font-weight: 950; }
+    .backtest-pl-neg { color: #ff9c9c; font-weight: 950; }
+    .backtest-pl-zero { color: #dbeafe; font-weight: 950; }
+
+    @media (max-width: 900px) {
+      .backtest-summary-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .backtest-head { align-items: flex-start; }
+    }
+
   </style>
 </head>
 <body>
@@ -2085,7 +2232,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 15:11</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 16:00</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2096,6 +2243,36 @@
       </div>
     </div>
 
+    <section id="shortlist-backtest-card" class="backtest-card" aria-live="polite">
+      <div class="backtest-head">
+        <div class="backtest-title">📊 Live Shortlist Backtest</div>
+        <div id="backtest-updated" class="backtest-updated">Loading shortlist_backtest.json…</div>
+      </div>
+      <div id="backtest-summary-grid" class="backtest-summary-grid">
+        <div class="backtest-stat"><span>Status</span><strong>Loading…</strong></div>
+      </div>
+      <div id="backtest-type-row" class="backtest-type-row"></div>
+      <details class="backtest-details">
+        <summary>📋 Recent tracked shortlist selections</summary>
+        <div class="backtest-table-wrap">
+          <table id="backtest-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Odds</th>
+                <th>Stake</th>
+                <th>Result</th>
+                <th>P/L</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </details>
+    </section>
 
 
 <details class="section-card section-mybets" open>
@@ -2654,12 +2831,124 @@
   let placepotData = await safeJSON('placepot_picks.json');
   let aiData = await safeJSON('ai_bets.json');
   let productData = await safeJSON('racing_products.json');
+  let shortlistBacktestData = await safeJSON('shortlist_backtest.json');
 
   // Hard safety: a malformed/missing helper JSON must never blank the page.
   if (!Array.isArray(valueData)) valueData = [];
   if (!Array.isArray(placepotData)) placepotData = [];
   if (!Array.isArray(aiData)) aiData = [];
   if (!productData || Array.isArray(productData) || typeof productData !== "object") productData = {};
+
+
+  const moneyFmt = (v) => {
+    const n = Number(v || 0);
+    const sign = n < 0 ? "-" : "";
+    return `${sign}£${Math.abs(n).toFixed(2)}`;
+  };
+
+  const pctFmt = (v) => `${Number(v || 0).toFixed(1)}%`;
+
+  const plClass = (v) => {
+    const n = Number(v || 0);
+    if (n > 0) return "backtest-pl-pos";
+    if (n < 0) return "backtest-pl-neg";
+    return "backtest-pl-zero";
+  };
+
+  const backtestPayload = (raw) => {
+    if (raw && !Array.isArray(raw) && typeof raw === "object") {
+      return {
+        updated_at: raw.updated_at || "",
+        summary: raw.summary || {},
+        rows: Array.isArray(raw.rows) ? raw.rows : []
+      };
+    }
+    if (Array.isArray(raw)) {
+      const rows = raw;
+      const settled = rows.filter(r => r && r.settled);
+      const stake = settled.reduce((a,r) => a + Number(r.settled_stake || r.stake || 0), 0);
+      const pl = settled.reduce((a,r) => a + Number(r.pl || 0), 0);
+      return {
+        updated_at: "",
+        summary: {
+          selections: rows.length,
+          settled: settled.length,
+          open: rows.length - settled.length,
+          settled_stake: stake,
+          pl,
+          roi_pct: stake > 0 ? (pl / stake) * 100 : 0,
+          by_type: {}
+        },
+        rows
+      };
+    }
+    return { updated_at: "", summary: {}, rows: [] };
+  };
+
+  const renderShortlistBacktest = (raw) => {
+    const payload = backtestPayload(raw);
+    const summary = payload.summary || {};
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    const updatedEl = document.getElementById("backtest-updated");
+    const gridEl = document.getElementById("backtest-summary-grid");
+    const typeEl = document.getElementById("backtest-type-row");
+    const tbody = document.querySelector("#backtest-table tbody");
+    if (!gridEl || !tbody) return;
+
+    if (!rows.length) {
+      if (updatedEl) updatedEl.textContent = "No tracked shortlist selections yet. Run shortlist_backtest_update.py after the model.";
+      gridEl.innerHTML = `<div class="backtest-stat"><span>Status</span><strong>No ledger yet</strong></div>`;
+      if (typeEl) typeEl.innerHTML = "";
+      tbody.innerHTML = `<tr><td colspan="8">No backtest entries found.</td></tr>`;
+      return;
+    }
+
+    const pl = Number(summary.pl || 0);
+    const sinceTxt = summary.since && summary.to && summary.since !== summary.to ? `${summary.since} → ${summary.to}` : (summary.since || "Current ledger");
+    if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
+
+    gridEl.innerHTML = `
+      <div class="backtest-stat"><span>Selections</span><strong>${Number(summary.selections || rows.length)}</strong></div>
+      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || 0)}</strong></div>
+      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open || 0)}</strong></div>
+      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(summary.settled_stake || 0)}</strong></div>
+      <div class="backtest-stat"><span>P/L</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${moneyFmt(pl)}</strong></div>
+      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(summary.roi_pct || 0)}</strong></div>
+    `;
+
+    const byType = summary.by_type || {};
+    const typeOrder = ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"];
+    if (typeEl) {
+      typeEl.innerHTML = typeOrder
+        .filter(t => byType[t] && Number(byType[t].selections || 0) > 0)
+        .map(t => {
+          const info = byType[t] || {};
+          const tPl = Number(info.pl || 0);
+          return `<span class="backtest-type-pill"><b>${escHTML(t)}</b> ${Number(info.settled || 0)}/${Number(info.selections || 0)} · <span class="${tPl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(tPl)}</span></span>`;
+        })
+        .join("");
+    }
+
+    const recent = [...rows]
+      .sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || "")))
+      .slice(0, 30);
+
+    tbody.innerHTML = recent.map(r => {
+      const plVal = Number(r.pl || 0);
+      const result = r.result || r.bf_result || "Pending";
+      const raceTxt = `${timeFromRaceDT(r.race_datetime)} ${r.course || ""}`.trim();
+      return `<tr>
+        <td>${escHTML(dateFromRaceDT(r.race_datetime) || "-")}</td>
+        <td><span class="type-badge ${typeClass(String(r.type || ""))}">${escHTML(r.type || "-")}</span></td>
+        <td>${racecardRaceLinkHTML(r, escHTML(raceTxt || "-"), "race-racecard-link")}</td>
+        <td>${racecardHorseLinkHTML(r, r.horse || "-", "horse-racecard-link")}</td>
+        <td>${escHTML(r.bookie_odds || r.advised_odds || "-")}</td>
+        <td>${moneyFmt(r.stake || 0)}</td>
+        <td>${escHTML(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${escHTML(r.bf_actual_sp)}</span>` : ""}</td>
+        <td class="${plClass(plVal)}">${moneyFmt(plVal)}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="8">No backtest entries found.</td></tr>`;
+  };
 
   const filterValid = (entry) => {
     const hasCoverage = entry?.data_coverage !== undefined && entry?.data_coverage !== null && String(entry?.data_coverage).trim() !== "";
@@ -4641,6 +4930,12 @@
   };
 
   try {
+    renderShortlistBacktest(shortlistBacktestData);
+  } catch (e) {
+    console.error("⚠️ Shortlist backtest render failed but value sections will continue:", e);
+  }
+
+  try {
     renderPlacepotCards(placepotData);
     refreshPlacepotStartPills();
     setInterval(refreshPlacepotStartPills, 30000);
@@ -4758,6 +5053,117 @@
 
     const n = parseFloat(s.replace(/[^\d.]/g, ""));
     return isNaN(n) ? NaN : n;
+  };
+
+
+  const moneyFmt = (v) => {
+    const n = Number(v || 0);
+    const sign = n < 0 ? "-" : "";
+    return `${sign}£${Math.abs(n).toFixed(2)}`;
+  };
+
+  const pctFmt = (v) => `${Number(v || 0).toFixed(1)}%`;
+
+  const plClass = (v) => {
+    const n = Number(v || 0);
+    if (n > 0) return "backtest-pl-pos";
+    if (n < 0) return "backtest-pl-neg";
+    return "backtest-pl-zero";
+  };
+
+  const backtestPayload = (raw) => {
+    if (raw && !Array.isArray(raw) && typeof raw === "object") {
+      return {
+        updated_at: raw.updated_at || "",
+        summary: raw.summary || {},
+        rows: Array.isArray(raw.rows) ? raw.rows : []
+      };
+    }
+    if (Array.isArray(raw)) {
+      const rows = raw;
+      const settled = rows.filter(r => r && r.settled);
+      const stake = settled.reduce((a,r) => a + Number(r.settled_stake || r.stake || 0), 0);
+      const pl = settled.reduce((a,r) => a + Number(r.pl || 0), 0);
+      return {
+        updated_at: "",
+        summary: {
+          selections: rows.length,
+          settled: settled.length,
+          open: rows.length - settled.length,
+          settled_stake: stake,
+          pl,
+          roi_pct: stake > 0 ? (pl / stake) * 100 : 0,
+          by_type: {}
+        },
+        rows
+      };
+    }
+    return { updated_at: "", summary: {}, rows: [] };
+  };
+
+  const renderShortlistBacktest = (raw) => {
+    const payload = backtestPayload(raw);
+    const summary = payload.summary || {};
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    const updatedEl = document.getElementById("backtest-updated");
+    const gridEl = document.getElementById("backtest-summary-grid");
+    const typeEl = document.getElementById("backtest-type-row");
+    const tbody = document.querySelector("#backtest-table tbody");
+    if (!gridEl || !tbody) return;
+
+    if (!rows.length) {
+      if (updatedEl) updatedEl.textContent = "No tracked shortlist selections yet. Run shortlist_backtest_update.py after the model.";
+      gridEl.innerHTML = `<div class="backtest-stat"><span>Status</span><strong>No ledger yet</strong></div>`;
+      if (typeEl) typeEl.innerHTML = "";
+      tbody.innerHTML = `<tr><td colspan="8">No backtest entries found.</td></tr>`;
+      return;
+    }
+
+    const pl = Number(summary.pl || 0);
+    const sinceTxt = summary.since && summary.to && summary.since !== summary.to ? `${summary.since} → ${summary.to}` : (summary.since || "Current ledger");
+    if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
+
+    gridEl.innerHTML = `
+      <div class="backtest-stat"><span>Selections</span><strong>${Number(summary.selections || rows.length)}</strong></div>
+      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || 0)}</strong></div>
+      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open || 0)}</strong></div>
+      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(summary.settled_stake || 0)}</strong></div>
+      <div class="backtest-stat"><span>P/L</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${moneyFmt(pl)}</strong></div>
+      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(summary.roi_pct || 0)}</strong></div>
+    `;
+
+    const byType = summary.by_type || {};
+    const typeOrder = ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"];
+    if (typeEl) {
+      typeEl.innerHTML = typeOrder
+        .filter(t => byType[t] && Number(byType[t].selections || 0) > 0)
+        .map(t => {
+          const info = byType[t] || {};
+          const tPl = Number(info.pl || 0);
+          return `<span class="backtest-type-pill"><b>${escHTML(t)}</b> ${Number(info.settled || 0)}/${Number(info.selections || 0)} · <span class="${tPl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(tPl)}</span></span>`;
+        })
+        .join("");
+    }
+
+    const recent = [...rows]
+      .sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || "")))
+      .slice(0, 30);
+
+    tbody.innerHTML = recent.map(r => {
+      const plVal = Number(r.pl || 0);
+      const result = r.result || r.bf_result || "Pending";
+      const raceTxt = `${timeFromRaceDT(r.race_datetime)} ${r.course || ""}`.trim();
+      return `<tr>
+        <td>${escHTML(dateFromRaceDT(r.race_datetime) || "-")}</td>
+        <td><span class="type-badge ${typeClass(String(r.type || ""))}">${escHTML(r.type || "-")}</span></td>
+        <td>${racecardRaceLinkHTML(r, escHTML(raceTxt || "-"), "race-racecard-link")}</td>
+        <td>${racecardHorseLinkHTML(r, r.horse || "-", "horse-racecard-link")}</td>
+        <td>${escHTML(r.bookie_odds || r.advised_odds || "-")}</td>
+        <td>${moneyFmt(r.stake || 0)}</td>
+        <td>${escHTML(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${escHTML(r.bf_actual_sp)}</span>` : ""}</td>
+        <td class="${plClass(plVal)}">${moneyFmt(plVal)}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="8">No backtest entries found.</td></tr>`;
   };
 
   const filterValid = (entry) => {
