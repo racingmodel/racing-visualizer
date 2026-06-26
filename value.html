@@ -2078,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 12:02</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 13:05</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3695,10 +3695,18 @@
     return !isNaN(book) && !isNaN(model) && !isNaN(raw) && model < book && raw < book;
   };
 
+  const shortlistDataOk = (entry, minVal = 86.0) => {
+    const hasCov = entry?.data_coverage !== undefined && entry?.data_coverage !== null && String(entry?.data_coverage).trim() !== "";
+    const hasConf = entry?.race_data_confidence !== undefined && entry?.race_data_confidence !== null && String(entry?.race_data_confidence).trim() !== "";
+    const cov = hasCov ? Number(entry.data_coverage) : 100;
+    const conf = hasConf ? Number(entry.race_data_confidence) : 100;
+    return Number.isFinite(cov) && Number.isFinite(conf) && cov >= minVal && conf >= minVal;
+  };
+
   // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 17.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
@@ -3996,7 +4004,7 @@
 
     const backendType = String(entry?.shortlist_type || "").trim();
     const backendTags = tagSet(entry);
-    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
+    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && shortlistDataOk(entry, 86.0) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
       if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
       if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
       if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
@@ -4015,6 +4023,7 @@
     const coreTags = tags.filter(t => !t.startsWith("overlay+"));
     const extra = isExtraPlaceRace(entry);
     const backOk = backOddsConfirmed(entry);
+    const dataOk = shortlistDataOk(entry, 86.0);
 
     if (isLayOnly(tags)) {
       return "Must Lay";
@@ -4023,6 +4032,7 @@
     if (
       !hasAnyLayTag(tags) &&
       backOk &&
+      dataOk &&
       extra &&
       isBigEwEpPriced(entry) &&
       isBigEwEpField(entry) &&
@@ -4036,6 +4046,7 @@
     if (
       !hasAnyLayTag(tags) &&
       backOk &&
+      dataOk &&
       extra &&
       isBigEwEpPriced(entry) &&
       isBtEwField(entry) &&
@@ -4048,6 +4059,7 @@
 
     if (
       backOk &&
+      dataOk &&
       !hasAnyLayTag(tags) &&
       isNormalEachWayPriced(entry) &&
       !extra &&
@@ -4058,6 +4070,7 @@
 
     if (
       backOk &&
+      dataOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
       eliteMustWinQVE(entry) &&
@@ -4751,7 +4764,7 @@
   // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 17.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
@@ -5051,7 +5064,7 @@
     const epMap = extraPlacesArg || extraPlaces || new Map();
     const backendType = String(entry?.shortlist_type || "").trim();
     const backendTags = tagSet(entry);
-    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
+    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && shortlistDataOk(entry, 86.0) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
       if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
       if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
       if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
@@ -5070,21 +5083,23 @@
     const coreTags = tags.filter(t => !String(t).startsWith("overlay+"));
     const isExtraPlaceRace = epMap.has(raceKey(entry.race_datetime, entry.course));
     const backOk = backOddsConfirmed(entry);
+    const dataOk = shortlistDataOk(entry, 86.0);
 
     if (isLayOnly(tags)) {
       return "Must Lay";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && tags.includes("blue") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) {
+    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("blue") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) {
       return "Big E/W - EP";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && isExtraPlaceRace && tags.includes("bt-ew") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) {
+    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("bt-ew") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) {
       return "BT E/W";
     }
 
     if (
       backOk &&
+      dataOk &&
       !hasAnyLayTag(tags) &&
       tags.includes("blue") &&
       tags.includes("ai-back") &&
@@ -5097,6 +5112,7 @@
 
     if (
       backOk &&
+      dataOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
       eliteMustWinQVE(entry) &&
