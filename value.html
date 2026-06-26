@@ -2078,7 +2078,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 11:09</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 12:02</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2141,8 +2141,8 @@
         <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
         <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
         <div class="meta-pill">✅ Must Win = strict A-grade, usually 8/1 or shorter</div>
-        <div class="meta-pill">🎯 EW = 21.0+ normal non-EP</div>
-        <div class="meta-pill">🧪 BT E/W = 16/1+ in 16+ runner EP fields</div>
+        <div class="meta-pill">🎯 EW = 13.0+ normal non-EP</div>
+        <div class="meta-pill">🧪 BT E/W = 12/1+ in 16+ runner EP fields</div>
         <div class="meta-pill">❌ Lay tags now highlighted harder</div>
         <div class="meta-pill">📱 Mobile swipe tables</div>
         <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
@@ -2308,7 +2308,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Normal non-extra-place EW only: 21.0+ decimal and passing the tightened great-value model/raw/place-profile shape.</div>
+        <div class="section-note">Normal non-extra-place EW only: 13.0+ decimal and passing the tightened great-value model/raw/place-profile shape.</div>
         <div class="table-wrap">
           <table id="ewnotep-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -3695,16 +3695,16 @@
     return !isNaN(book) && !isNaN(model) && !isNaN(raw) && model < book && raw < book;
   };
 
-  // Big E/W - Extra Places and BT E/W: 16/1+ decimal 17.0+
+  // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     return !isNaN(dec) && dec >= 17.0;
   };
 
-  // Normal Each Way, no extra places: user-requested decimal 21.0+
+  // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 21.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   const isMustWinPriced = (entry) => {
@@ -3867,7 +3867,7 @@
   const hasGreatEwValueStack = (entry, tags) => {
     const s = new Set(tags || []);
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 21.0) return false;
+    if (isNaN(dec) || dec < 13.0) return false;
     if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
     if (!placeProfileOk(entry, 60.0)) return false;
 
@@ -3924,12 +3924,12 @@
 
   const isBigEwOddsSectionCandidate = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 17.0 && rawValueToleranceOk(entry);
+    return !isNaN(dec) && dec >= 13.0 && rawValueToleranceOk(entry);
   };
 
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 21.0) return false;
+    if (isNaN(dec) || dec < 13.0) return false;
 
     const s = new Set(tags || []);
     const field = getFieldSize(entry);
@@ -3940,7 +3940,7 @@
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     if (!placeProfileOk(entry, 58.0)) return false;
 
-    // Dangerous 21-34 band: require either the full premium stack OR a confirmed
+    // Dangerous 13-34 band: require either the full premium stack OR a confirmed
     // great-value stack: model value + raw value + ai-back + place profile.
     if (dec < 34.0) {
       return hasPremiumEwStack(tags) || hasGreatEwValueStack(entry, tags);
@@ -3995,6 +3995,12 @@
     */
 
     const backendType = String(entry?.shortlist_type || "").trim();
+    const backendTags = tagSet(entry);
+    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
+      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
+      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
+      if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
+    }
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
@@ -4742,16 +4748,16 @@
     );
   };
 
-  // Big E/W - Extra Places and BT E/W: 16/1+ decimal 17.0+
+  // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     return !isNaN(dec) && dec >= 17.0;
   };
 
-  // Normal Each Way, no extra places: user-requested decimal 21.0+
+  // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 21.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   const isMustWinPriced = (entry) => {
@@ -4914,7 +4920,7 @@
   const hasGreatEwValueStack = (entry, tags) => {
     const s = new Set(tags || []);
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 21.0) return false;
+    if (isNaN(dec) || dec < 13.0) return false;
     if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
     if (!placeProfileOk(entry, 60.0)) return false;
 
@@ -4929,7 +4935,7 @@
 
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    if (isNaN(dec) || dec < 21.0) return false;
+    if (isNaN(dec) || dec < 13.0) return false;
 
     const s = new Set(tags || []);
     const field = getFieldSize(entry);
@@ -4940,7 +4946,7 @@
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     if (!placeProfileOk(entry, 58.0)) return false;
 
-    // Dangerous 21-34 band: require either the full premium stack OR a confirmed
+    // Dangerous 13-34 band: require either the full premium stack OR a confirmed
     // great-value stack: model value + raw value + ai-back + place profile.
     if (dec < 34.0) {
       return hasPremiumEwStack(tags) || hasGreatEwValueStack(entry, tags);
@@ -5041,8 +5047,15 @@
     return field !== null && field >= 16;
   };
 
-  const getShortlistType = (entry, extraPlaces) => {
+  const getShortlistType = (entry, extraPlacesArg) => {
+    const epMap = extraPlacesArg || extraPlaces || new Map();
     const backendType = String(entry?.shortlist_type || "").trim();
+    const backendTags = tagSet(entry);
+    if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
+      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
+      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
+      if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
+    }
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
@@ -5055,7 +5068,7 @@
     }
     const tags = tagSet(entry);
     const coreTags = tags.filter(t => !String(t).startsWith("overlay+"));
-    const isExtraPlaceRace = extraPlaces.has(raceKey(entry.race_datetime, entry.course));
+    const isExtraPlaceRace = epMap.has(raceKey(entry.race_datetime, entry.course));
     const backOk = backOddsConfirmed(entry);
 
     if (isLayOnly(tags)) {
