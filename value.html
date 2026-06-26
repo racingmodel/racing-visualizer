@@ -1881,8 +1881,8 @@
       min-width: 12rem !important;
     }
 
-    #shortlist-table th:nth-child(10),
-    #shortlist-table td:nth-child(10),
+    #shortlist-table th:nth-child(11),
+    #shortlist-table td:nth-child(11),
     #live-intel-table th:nth-child(10),
     #live-intel-table td:nth-child(10) {
       width: 7.4rem !important;
@@ -1891,13 +1891,20 @@
     }
 
 
-    #shortlist-table th:nth-child(9),
-    #shortlist-table td:nth-child(9),
+    #shortlist-table th:nth-child(10),
+    #shortlist-table td:nth-child(10),
     #live-intel-table th:nth-child(9),
     #live-intel-table td:nth-child(9) {
       width: 6.4rem !important;
       min-width: 6.4rem !important;
       max-width: 6.4rem !important;
+    }
+
+    #shortlist-table th:nth-child(9),
+    #shortlist-table td:nth-child(9) {
+      width: 6.8rem !important;
+      min-width: 6.8rem !important;
+      max-width: 6.8rem !important;
     }
 
     .qve-cell {
@@ -1993,8 +2000,8 @@
 
     @media (max-width: 640px) {
       #mybets-table { min-width: 1240px !important; }
-      #shortlist-table th:nth-child(10),
-      #shortlist-table td:nth-child(10),
+      #shortlist-table th:nth-child(11),
+      #shortlist-table td:nth-child(11),
       #live-intel-table th:nth-child(10),
       #live-intel-table td:nth-child(10) {
         width: 7.2rem !important;
@@ -2171,6 +2178,7 @@
                 <th>Model 100%</th>
                 <th>BF Exchange</th>
                 <th>EP Places</th>
+                <th>Result</th>
                 <th>QVE</th>
                 <th>Tags</th>
                 <th>My List</th>
@@ -2282,7 +2290,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Backend-test each-way runners: same great-value EP support shape as Big E/W - EP, but 16/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
+        <div class="section-note">Backend-test each-way runners: same great-value EP support shape as Big E/W - EP, but 12/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
         <div class="table-wrap">
           <table id="btew-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -3441,6 +3449,7 @@
       <td>${pricePillHTML(model, "price-model")}</td>
       <td>${bfExchangeHTML(bfBack, bfLay)}</td>
       <td>${epPlacesCellHTML(entry)}</td>
+      <td>${resultBadgeHTML(entry)}</td>
       <td>${qveCellHTML(entry)}</td>
       <td>${shortlistTagsHTML(tags)}</td>
       <td>${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
@@ -3790,6 +3799,28 @@
       .some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
   };
 
+  const qveDisplayFieldsPresent = (entry) => {
+    // Display proof can come from the full QVE/ensemble layer OR the existing
+    // 4-engine agreement payload already written to value_bets.json.  Keep this
+    // separate from qveFieldsPresent() so old consensus rows do not become
+    // strict Must Win QVE rows by accident.
+    return [
+      "agreement_count_5", "quantum_label", "ensemble_odds", "ensemble_edge_pts",
+      "win_quality", "qve_must_win", "agreement_count", "agreement_label",
+      "agreement_note", "model_edge_pts", "raw_edge_pts", "kelly_pct"
+    ].some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
+  };
+
+  const qveDisplayCountFor = (entry) => {
+    const five = qveNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, NaN);
+    if (Number.isFinite(five)) return { count: five, outOf: 5 };
+    const four = qveNum(entry?.agreement_count, NaN);
+    if (Number.isFinite(four)) return { count: four, outOf: 4 };
+    const label = String(entry?.quantum_label ?? entry?.agreement_label ?? entry?.QVE ?? '').trim();
+    const m = label.match(/(\d+)\s*\/\s*(\d+)/);
+    return m ? { count: Number(m[1]), outOf: Number(m[2]) } : { count: 0, outOf: 5 };
+  };
+
   const legacyWinValueFallback = (entry) => {
     // Temporary safety net for rows created before QVE fields were written into value_bets.json.
     // These display as Win Value, not Must Win. Once QVE fields exist, eliteMustWinQVE controls Must Win.
@@ -3814,32 +3845,40 @@
 
 
   const qveCellHTML = (entry) => {
-    // Only show a QVE badge when central QVE/ensemble fields actually exist.
-    // Older/pre-QVE rows can have place_profile, but that is not QVE proof and
-    // must not render as misleading "0/5".
-    if (!qveFieldsPresent(entry)) {
-      return '<span class="no-ep-badge" title="Pre-QVE row: no ensemble/QVE proof written for this runner">—</span>';
+    // Show central QVE/ensemble proof when present, otherwise fall back to the
+    // existing 4-engine agreement diagnostics (M/R/X/L) already saved by gitmodel.
+    if (!qveDisplayFieldsPresent(entry)) {
+      return '<span class="no-ep-badge" title="No QVE/consensus proof written for this runner">—</span>';
     }
 
-    const count = qveCountFor(entry);
+    const display = qveDisplayCountFor(entry);
+    const count = Number(display.count || 0);
+    const outOf = Number(display.outOf || 5);
     const ensEdge = qveEdgeFor(entry);
+    const modelEdge = qveNum(entry?.model_edge_pts, 0);
+    const rawEdge = qveNum(entry?.raw_edge_pts, 0);
+    const kelly = qveNum(entry?.kelly_pct, 0);
     const winQ = qveWinQFor(entry);
     const placePct = qvePlaceFor(entry);
-    const label = String(entry?.quantum_label || (count ? `${count}/5 QVE` : '')).trim();
-    const note = String(entry?.quantum_note || '').trim();
+    const label = String(entry?.quantum_label || entry?.agreement_label || (count ? `${count}/${outOf} QVE` : '')).trim();
+    const note = String(entry?.quantum_note || entry?.agreement_note || '').trim();
 
-    if (!count && !label && !ensEdge && !winQ && !placePct) {
+    if (!count && !label && !ensEdge && !modelEdge && !rawEdge && !kelly && !winQ && !placePct) {
       return '<span class="no-ep-badge" title="QVE data not available">—</span>';
     }
 
-    const klass = count >= 4 ? 'qve-badge' : (count >= 3 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
+    const ratio = outOf ? (count / outOf) : 0;
+    const klass = ratio >= 0.80 ? 'qve-badge' : (ratio >= 0.60 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
     const edgeTxt = Number.isFinite(ensEdge) && ensEdge !== 0 ? `E${ensEdge > 0 ? '+' : ''}${ensEdge.toFixed(1)}` : '';
+    const modelTxt = !edgeTxt && Number.isFinite(modelEdge) && modelEdge !== 0 ? `M${modelEdge > 0 ? '+' : ''}${modelEdge.toFixed(1)}` : '';
+    const rawTxt = Number.isFinite(rawEdge) && rawEdge !== 0 ? `R${rawEdge > 0 ? '+' : ''}${rawEdge.toFixed(1)}` : '';
+    const kellyTxt = Number.isFinite(kelly) && kelly > 0 ? `K${kelly.toFixed(0)}` : '';
     const winTxt = winQ ? `W${Number(winQ).toFixed(0)}` : '';
     const placeTxt = placePct ? `P${Number(placePct).toFixed(0)}%` : '';
-    const sub = [edgeTxt, winTxt, placeTxt].filter(Boolean).join(' • ');
+    const sub = [edgeTxt, modelTxt, rawTxt, kellyTxt, winTxt, placeTxt].filter(Boolean).slice(0, 3).join(' • ');
     const title = note || [label, sub].filter(Boolean).join(' | ');
 
-    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/5`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
+    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/${outOf}`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
   };
 
   const getFieldSize = (entry) => {
@@ -4620,7 +4659,7 @@
   setBody('#race-shape-table', raceShapeHtml, 6);
   setBody('#pick7-table', pick7Html, 7);
 
-  setBody('#shortlist-table', shortlist, 11);
+  setBody('#shortlist-table', shortlist, 12);
   setBody('#live-intel-table', liveIntel, 11);
   setBody('#wasvalue-table', wasValueHtml, 6);
   setBody('#multitag-table',  multi, 5);
@@ -4848,6 +4887,28 @@
       .some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
   };
 
+  const qveDisplayFieldsPresent = (entry) => {
+    // Display proof can come from the full QVE/ensemble layer OR the existing
+    // 4-engine agreement payload already written to value_bets.json.  Keep this
+    // separate from qveFieldsPresent() so old consensus rows do not become
+    // strict Must Win QVE rows by accident.
+    return [
+      "agreement_count_5", "quantum_label", "ensemble_odds", "ensemble_edge_pts",
+      "win_quality", "qve_must_win", "agreement_count", "agreement_label",
+      "agreement_note", "model_edge_pts", "raw_edge_pts", "kelly_pct"
+    ].some(k => entry && entry[k] !== undefined && entry[k] !== null && String(entry[k]).trim() !== "");
+  };
+
+  const qveDisplayCountFor = (entry) => {
+    const five = qveNum(entry?.agreement_count_5 ?? entry?.qve_count ?? entry?.QVE_Count, NaN);
+    if (Number.isFinite(five)) return { count: five, outOf: 5 };
+    const four = qveNum(entry?.agreement_count, NaN);
+    if (Number.isFinite(four)) return { count: four, outOf: 4 };
+    const label = String(entry?.quantum_label ?? entry?.agreement_label ?? entry?.QVE ?? '').trim();
+    const m = label.match(/(\d+)\s*\/\s*(\d+)/);
+    return m ? { count: Number(m[1]), outOf: Number(m[2]) } : { count: 0, outOf: 5 };
+  };
+
   const legacyWinValueFallback = (entry) => {
     // Temporary safety net for rows created before QVE fields were written into value_bets.json.
     // These display as Win Value, not Must Win. Once QVE fields exist, eliteMustWinQVE controls Must Win.
@@ -4872,32 +4933,40 @@
 
 
   const qveCellHTML = (entry) => {
-    // Only show a QVE badge when central QVE/ensemble fields actually exist.
-    // Older/pre-QVE rows can have place_profile, but that is not QVE proof and
-    // must not render as misleading "0/5".
-    if (!qveFieldsPresent(entry)) {
-      return '<span class="no-ep-badge" title="Pre-QVE row: no ensemble/QVE proof written for this runner">—</span>';
+    // Show central QVE/ensemble proof when present, otherwise fall back to the
+    // existing 4-engine agreement diagnostics (M/R/X/L) already saved by gitmodel.
+    if (!qveDisplayFieldsPresent(entry)) {
+      return '<span class="no-ep-badge" title="No QVE/consensus proof written for this runner">—</span>';
     }
 
-    const count = qveCountFor(entry);
+    const display = qveDisplayCountFor(entry);
+    const count = Number(display.count || 0);
+    const outOf = Number(display.outOf || 5);
     const ensEdge = qveEdgeFor(entry);
+    const modelEdge = qveNum(entry?.model_edge_pts, 0);
+    const rawEdge = qveNum(entry?.raw_edge_pts, 0);
+    const kelly = qveNum(entry?.kelly_pct, 0);
     const winQ = qveWinQFor(entry);
     const placePct = qvePlaceFor(entry);
-    const label = String(entry?.quantum_label || (count ? `${count}/5 QVE` : '')).trim();
-    const note = String(entry?.quantum_note || '').trim();
+    const label = String(entry?.quantum_label || entry?.agreement_label || (count ? `${count}/${outOf} QVE` : '')).trim();
+    const note = String(entry?.quantum_note || entry?.agreement_note || '').trim();
 
-    if (!count && !label && !ensEdge && !winQ && !placePct) {
+    if (!count && !label && !ensEdge && !modelEdge && !rawEdge && !kelly && !winQ && !placePct) {
       return '<span class="no-ep-badge" title="QVE data not available">—</span>';
     }
 
-    const klass = count >= 4 ? 'qve-badge' : (count >= 3 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
+    const ratio = outOf ? (count / outOf) : 0;
+    const klass = ratio >= 0.80 ? 'qve-badge' : (ratio >= 0.60 ? 'qve-badge qve-mid' : 'qve-badge qve-low');
     const edgeTxt = Number.isFinite(ensEdge) && ensEdge !== 0 ? `E${ensEdge > 0 ? '+' : ''}${ensEdge.toFixed(1)}` : '';
+    const modelTxt = !edgeTxt && Number.isFinite(modelEdge) && modelEdge !== 0 ? `M${modelEdge > 0 ? '+' : ''}${modelEdge.toFixed(1)}` : '';
+    const rawTxt = Number.isFinite(rawEdge) && rawEdge !== 0 ? `R${rawEdge > 0 ? '+' : ''}${rawEdge.toFixed(1)}` : '';
+    const kellyTxt = Number.isFinite(kelly) && kelly > 0 ? `K${kelly.toFixed(0)}` : '';
     const winTxt = winQ ? `W${Number(winQ).toFixed(0)}` : '';
     const placeTxt = placePct ? `P${Number(placePct).toFixed(0)}%` : '';
-    const sub = [edgeTxt, winTxt, placeTxt].filter(Boolean).join(' • ');
+    const sub = [edgeTxt, modelTxt, rawTxt, kellyTxt, winTxt, placeTxt].filter(Boolean).slice(0, 3).join(' • ');
     const title = note || [label, sub].filter(Boolean).join(' | ');
 
-    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/5`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
+    return `<span class="qve-cell" title="${escHTML(title)}"><span class="${klass}">${escHTML(label || `${count}/${outOf}`)}</span>${sub ? `<span class="qve-sub">${escHTML(sub)}</span>` : ''}</span>`;
   };
 
   const getFieldSize = (entry) => {
