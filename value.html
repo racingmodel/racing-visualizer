@@ -1640,6 +1640,85 @@
       margin-bottom: 1rem;
     }
 
+
+
+    .backtest-title {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .backtest-heading-pills {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.38rem;
+      align-items: center;
+      font-size: 0.76rem;
+      vertical-align: middle;
+    }
+
+    .backtest-heading-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.24rem 0.52rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.075);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #dbeafe;
+      font-weight: 950;
+      white-space: nowrap;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    .backtest-heading-pill .pl-pos,
+    .backtest-daily-pill .pl-pos { color: #9cffb0; }
+    .backtest-heading-pill .pl-neg,
+    .backtest-daily-pill .pl-neg { color: #ff9c9c; }
+
+    .backtest-daily-breakdown {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.55rem;
+      padding: 0 1rem 0.85rem 1rem;
+    }
+
+    .backtest-day-card {
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.045);
+      padding: 0.62rem 0.7rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .backtest-day-title {
+      color: #ffef8a;
+      font-size: 0.82rem;
+      font-weight: 950;
+      margin-bottom: 0.45rem;
+    }
+
+    .backtest-day-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .backtest-daily-pill {
+      display: inline-flex;
+      gap: 0.28rem;
+      align-items: center;
+      padding: 0.26rem 0.46rem;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.16);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: #dbeafe;
+      font-size: 0.72rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
     @media (max-width: 900px) {
       body { padding: 0.85rem; }
       .section-body { padding: 0.75rem 0.7rem 0.2rem 0.7rem; }
@@ -2232,7 +2311,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 19:16</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">26 Jun 2026, 17:23</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2245,13 +2324,14 @@
 
     <section id="shortlist-backtest-card" class="backtest-card" aria-live="polite">
       <div class="backtest-head">
-        <div class="backtest-title">📊 Live Shortlist Backtest</div>
+        <div class="backtest-title">📊 Live Shortlist Backtest <span id="backtest-heading-pills" class="backtest-heading-pills"></span></div>
         <div id="backtest-updated" class="backtest-updated">Loading shortlist_backtest.json…</div>
       </div>
       <div id="backtest-summary-grid" class="backtest-summary-grid">
         <div class="backtest-stat"><span>Status</span><strong>Loading…</strong></div>
       </div>
       <div id="backtest-type-row" class="backtest-type-row"></div>
+      <div id="backtest-daily-breakdown" class="backtest-daily-breakdown"></div>
       <details class="backtest-details">
         <summary>📋 Recent tracked shortlist selections</summary>
         <div class="backtest-table-wrap">
@@ -2855,6 +2935,8 @@
     return "backtest-pl-zero";
   };
 
+  const btEsc = (v) => String(v ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+
   const backtestPayload = (raw) => {
     if (raw && !Array.isArray(raw) && typeof raw === "object") {
       return {
@@ -2885,6 +2967,84 @@
     return { updated_at: "", summary: {}, rows: [] };
   };
 
+  const backtestGroupForType = (type) => {
+    const t = String(type || "").trim();
+    if (["Each Way", "Big E/W - EP", "BT E/W"].includes(t)) return "EW";
+    if (t === "Must Lay") return "Lay";
+    if (["Must Win", "Win Value"].includes(t)) return "Win";
+    return "Other";
+  };
+
+  const emptyBacktestGroup = () => ({ selections: 0, settled: 0, open: 0, stake: 0, pl: 0, roi_pct: 0 });
+
+  const summariseBacktestGroups = (rows) => {
+    const groups = { Win: emptyBacktestGroup(), EW: emptyBacktestGroup(), Lay: emptyBacktestGroup() };
+    rows.forEach(r => {
+      const g = backtestGroupForType(r?.type);
+      if (!groups[g]) return;
+      groups[g].selections += 1;
+      if (r?.settled) {
+        groups[g].settled += 1;
+        groups[g].stake += Number(r.settled_stake || 0);
+        groups[g].pl += Number(r.pl || 0);
+      }
+    });
+    Object.values(groups).forEach(g => {
+      g.open = Math.max(0, g.selections - g.settled);
+      g.stake = Number(g.stake.toFixed(2));
+      g.pl = Number(g.pl.toFixed(2));
+      g.roi_pct = g.stake > 0 ? Number(((g.pl / g.stake) * 100).toFixed(1)) : 0;
+    });
+    return groups;
+  };
+
+  const dateKeyFromRaceDT = (dt) => {
+    const txt = String(dt || "").trim();
+    const m = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (!m) return txt.slice(0, 10) || "Unknown date";
+    const yyyy = m[3].length === 2 ? `20${m[3]}` : m[3];
+    return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${yyyy}`;
+  };
+
+  const summariseBacktestByDay = (rows) => {
+    const out = new Map();
+    rows.forEach(r => {
+      const day = dateKeyFromRaceDT(r?.race_datetime);
+      if (!out.has(day)) out.set(day, { date: day, rows: [], groups: { Win: emptyBacktestGroup(), EW: emptyBacktestGroup(), Lay: emptyBacktestGroup() } });
+      const item = out.get(day);
+      item.rows.push(r);
+      const gName = backtestGroupForType(r?.type);
+      const g = item.groups[gName];
+      if (!g) return;
+      g.selections += 1;
+      if (r?.settled) {
+        g.settled += 1;
+        g.stake += Number(r.settled_stake || 0);
+        g.pl += Number(r.pl || 0);
+      }
+    });
+    [...out.values()].forEach(day => {
+      Object.values(day.groups).forEach(g => {
+        g.open = Math.max(0, g.selections - g.settled);
+        g.stake = Number(g.stake.toFixed(2));
+        g.pl = Number(g.pl.toFixed(2));
+        g.roi_pct = g.stake > 0 ? Number(((g.pl / g.stake) * 100).toFixed(1)) : 0;
+      });
+      const settledRows = day.rows.filter(r => r?.settled);
+      day.selections = day.rows.length;
+      day.settled = settledRows.length;
+      day.open = day.rows.length - settledRows.length;
+      day.stake = Number(settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0).toFixed(2));
+      day.pl = Number(settledRows.reduce((a,r) => a + Number(r.pl || 0), 0).toFixed(2));
+    });
+    return [...out.values()].sort((a,b) => a.date.localeCompare(b.date));
+  };
+
+  const backtestPillHTML = (label, group) => {
+    const pl = Number(group?.pl || 0);
+    return `<span class="backtest-heading-pill"><b>${btEsc(label)}</b> ${Number(group?.settled || 0)}/${Number(group?.selections || 0)} · <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`;
+  };
+
   const renderShortlistBacktest = (raw) => {
     const payload = backtestPayload(raw);
     const summary = payload.summary || {};
@@ -2892,59 +3052,74 @@
     const updatedEl = document.getElementById("backtest-updated");
     const gridEl = document.getElementById("backtest-summary-grid");
     const typeEl = document.getElementById("backtest-type-row");
+    const headingPillsEl = document.getElementById("backtest-heading-pills");
+    const dailyEl = document.getElementById("backtest-daily-breakdown");
     const tbody = document.querySelector("#backtest-table tbody");
     if (!gridEl || !tbody) return;
 
     if (!rows.length) {
       if (updatedEl) updatedEl.textContent = "No tracked shortlist selections yet. Run shortlist_backtest_update.py after the model.";
+      if (headingPillsEl) headingPillsEl.innerHTML = "";
       gridEl.innerHTML = `<div class="backtest-stat"><span>Status</span><strong>No ledger yet</strong></div>`;
       if (typeEl) typeEl.innerHTML = "";
+      if (dailyEl) dailyEl.innerHTML = "";
       tbody.innerHTML = `<tr><td colspan="8">No backtest entries found.</td></tr>`;
       return;
     }
 
-    const pl = Number(summary.pl || 0);
+    const settledRows = rows.filter(r => r && r.settled);
+    const fallbackStake = settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0);
+    const fallbackPl = settledRows.reduce((a,r) => a + Number(r.pl || 0), 0);
+    const pl = Number((summary.pl ?? fallbackPl) || 0);
+    const settledStake = Number((summary.settled_stake ?? fallbackStake) || 0);
+    const roi = Number(summary.roi_pct ?? (settledStake > 0 ? (pl / settledStake * 100) : 0));
     const sinceTxt = summary.since && summary.to && summary.since !== summary.to ? `${summary.since} → ${summary.to}` : (summary.since || "Current ledger");
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
+    const groups = summariseBacktestGroups(rows);
+    if (headingPillsEl) headingPillsEl.innerHTML = [backtestPillHTML("Win", groups.Win), backtestPillHTML("EW", groups.EW), backtestPillHTML("Lay", groups.Lay)].join("");
+
     gridEl.innerHTML = `
       <div class="backtest-stat"><span>Selections</span><strong>${Number(summary.selections || rows.length)}</strong></div>
-      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || 0)}</strong></div>
-      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open || 0)}</strong></div>
-      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(summary.settled_stake || 0)}</strong></div>
+      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || settledRows.length)}</strong></div>
+      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open ?? (rows.length - settledRows.length))}</strong></div>
+      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(settledStake)}</strong></div>
       <div class="backtest-stat"><span>P/L</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${moneyFmt(pl)}</strong></div>
-      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(summary.roi_pct || 0)}</strong></div>
+      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(roi)}</strong></div>
     `;
 
-    const byType = summary.by_type || {};
-    const typeOrder = ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"];
-    if (typeEl) {
-      typeEl.innerHTML = typeOrder
-        .filter(t => byType[t] && Number(byType[t].selections || 0) > 0)
-        .map(t => {
-          const info = byType[t] || {};
-          const tPl = Number(info.pl || 0);
-          return `<span class="backtest-type-pill"><b>${escHTML(t)}</b> ${Number(info.settled || 0)}/${Number(info.selections || 0)} · <span class="${tPl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(tPl)}</span></span>`;
-        })
-        .join("");
+    if (typeEl) typeEl.innerHTML = [backtestPillHTML("Win", groups.Win), backtestPillHTML("EW", groups.EW), backtestPillHTML("Lay", groups.Lay)].join("");
+
+    if (dailyEl) {
+      const days = summariseBacktestByDay(rows);
+      dailyEl.innerHTML = days.map(day => {
+        const dpl = Number(day.pl || 0);
+        return `<div class="backtest-day-card">
+          <div class="backtest-day-title">${btEsc(day.date)} · ${day.settled}/${day.selections} settled · <span class="${dpl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(dpl)}</span></div>
+          <div class="backtest-day-pills">
+            <span class="backtest-daily-pill"><b>Win</b> ${day.groups.Win.settled}/${day.groups.Win.selections} · <span class="${day.groups.Win.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.Win.pl)}</span></span>
+            <span class="backtest-daily-pill"><b>EW</b> ${day.groups.EW.settled}/${day.groups.EW.selections} · <span class="${day.groups.EW.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.EW.pl)}</span></span>
+            <span class="backtest-daily-pill"><b>Lay</b> ${day.groups.Lay.settled}/${day.groups.Lay.selections} · <span class="${day.groups.Lay.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.Lay.pl)}</span></span>
+          </div>
+        </div>`;
+      }).join("");
     }
 
-    const recent = [...rows]
-      .sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || "")))
-      .slice(0, 30);
-
+    const recent = [...rows].sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || ""))).slice(0, 40);
     tbody.innerHTML = recent.map(r => {
       const plVal = Number(r.pl || 0);
       const result = r.result || r.bf_result || "Pending";
-      const raceTxt = `${timeFromRaceDT(r.race_datetime)} ${r.course || ""}`.trim();
+      const raceTxt = `${String(r.race_datetime || "").split(" ").slice(-1)[0] || ""} ${r.course || ""}`.trim();
+      const dateTxt = dateKeyFromRaceDT(r.race_datetime);
+      const typeTxt = String(r.type || "-");
       return `<tr>
-        <td>${escHTML(dateFromRaceDT(r.race_datetime) || "-")}</td>
-        <td><span class="type-badge ${typeClass(String(r.type || ""))}">${escHTML(r.type || "-")}</span></td>
-        <td>${racecardRaceLinkHTML(r, escHTML(raceTxt || "-"), "race-racecard-link")}</td>
-        <td>${racecardHorseLinkHTML(r, r.horse || "-", "horse-racecard-link")}</td>
-        <td>${escHTML(r.bookie_odds || r.advised_odds || "-")}</td>
+        <td>${btEsc(dateTxt || "-")}</td>
+        <td><span class="type-badge ${typeof typeClass === "function" ? typeClass(typeTxt) : ""}">${btEsc(typeTxt)}</span></td>
+        <td>${btEsc(raceTxt || "-")}</td>
+        <td>${btEsc(r.horse || "-")}</td>
+        <td>${btEsc(r.bookie_odds || r.advised_odds || "-")}</td>
         <td>${moneyFmt(r.stake || 0)}</td>
-        <td>${escHTML(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${escHTML(r.bf_actual_sp)}</span>` : ""}</td>
+        <td>${btEsc(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${btEsc(r.bf_actual_sp)}</span>` : ""}</td>
         <td class="${plClass(plVal)}">${moneyFmt(plVal)}</td>
       </tr>`;
     }).join("") || `<tr><td colspan="8">No backtest entries found.</td></tr>`;
@@ -4929,127 +5104,8 @@
     el.innerHTML = html || `<tr><td colspan="${cols}">No entries found.</td></tr>`;
   };
 
-  const buildShortlistBacktestPreviewFromValueData = () => {
-    // Emergency frontend fallback: if shortlist_backtest.json is missing from the live site,
-    // build a non-persistent preview from the same value_bets.json rows that feed the visible shortlist.
-    // The real persistent ledger still comes from shortlist_backtest_update.py.
-    try {
-      const source = Array.isArray(entries) ? entries : [];
-      const seen = new Set();
-      const rows = [];
-
-      const isWon = (result) => String(result || "").trim().toLowerCase() === "won";
-      const isTopN = (result) => /^top\s+\d+/i.test(String(result || "").trim());
-      const isNR = (entry, result) => {
-        const r = String(result || "").toLowerCase().replace(/[\s_-]+/g, " ").trim();
-        const st = String(entry?.bf_runner_status || "").toUpperCase();
-        return ["non runner", "nonrunner", "nr"].includes(r) || ["REMOVED", "REMOVED_VACANT"].includes(st);
-      };
-      const isSettledResult = (entry, result) => {
-        if (entry?.bf_settled === true) return true;
-        const r = String(result || "").toLowerCase().trim();
-        return r === "won" || r === "lost" || /^top\s+\d+/.test(r) || isNR(entry, result);
-      };
-      const calcPL = (entry, type, odds, result) => {
-        const ewTypes = new Set(["Each Way", "Big E/W - EP", "BT E/W"]);
-        if (isNR(entry, result)) return { stake: 0, settled_stake: 0, pl: 0, note: "Void / non-runner" };
-        const settled = isSettledResult(entry, result);
-        const stake = ewTypes.has(type) ? 2 : 1;
-        if (!settled || !odds || odds <= 1) return { stake, settled_stake: 0, pl: 0, note: "Pending" };
-        if (type === "Must Lay") {
-          if (isWon(result)) return { stake: 1, settled_stake: Math.max(0, odds - 1), pl: -Math.max(0, odds - 1), note: "£1 lay lost" };
-          return { stake: 1, settled_stake: 1, pl: 1, note: "£1 lay won" };
-        }
-        if (ewTypes.has(type)) {
-          const placeProfit = (odds / 5) - 1;
-          if (isWon(result)) return { stake: 2, settled_stake: 2, pl: (odds - 1) + placeProfit, note: "EW won" };
-          if (isTopN(result)) return { stake: 2, settled_stake: 2, pl: -1 + placeProfit, note: "EW placed" };
-          return { stake: 2, settled_stake: 2, pl: -2, note: "EW lost" };
-        }
-        if (isWon(result)) return { stake: 1, settled_stake: 1, pl: odds - 1, note: "£1 win won" };
-        return { stake: 1, settled_stake: 1, pl: -1, note: "£1 win lost" };
-      };
-
-      source
-        .filter(filterValid)
-        .filter(isLiveEntry)
-        .forEach(entry => {
-          const type = getShortlistType(entry);
-          if (!type) return;
-          const key = `${normDT(entry?.race_datetime)}|${normCourseBase(entry?.course)}|${normHorseName(entry?.horse)}`;
-          if (seen.has(key)) return;
-          seen.add(key);
-          const odds = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-          const result = String(entry?.bf_result || entry?.result || "Pending").trim() || "Pending";
-          const settled = isSettledResult(entry, result);
-          const plInfo = calcPL(entry, type, odds, result);
-          rows.push({
-            race_datetime: entry?.race_datetime || "",
-            course: entry?.course || "",
-            horse: entry?.horse || "",
-            type,
-            advised_odds: Number.isFinite(odds) ? odds : 0,
-            bookie_odds: entry?.bookie_odds ?? entry?.real_odds ?? "",
-            model_odds: entry?.model_odds || "",
-            raw_odds: entry?.raw_odds || "",
-            first_seen: entry?.first_seen || entry?.last_live_seen || entry?.last_checked || "",
-            result,
-            settled,
-            stake: plInfo.stake,
-            settled_stake: plInfo.settled_stake,
-            pl: Number((plInfo.pl || 0).toFixed(2)),
-            pl_note: plInfo.note,
-            bf_actual_sp: entry?.bf_actual_sp || "",
-            source: "Frontend preview from value_bets.json"
-          });
-        });
-
-      rows.sort((a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
-      const settledRows = rows.filter(r => r.settled);
-      const settledStake = settledRows.reduce((a, r) => a + Number(r.settled_stake || 0), 0);
-      const pl = settledRows.reduce((a, r) => a + Number(r.pl || 0), 0);
-      const by_type = {};
-      ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"].forEach(t => {
-        const tr = rows.filter(r => r.type === t);
-        const ts = tr.filter(r => r.settled);
-        const tStake = ts.reduce((a, r) => a + Number(r.settled_stake || 0), 0);
-        const tPl = ts.reduce((a, r) => a + Number(r.pl || 0), 0);
-        by_type[t] = {
-          selections: tr.length,
-          settled: ts.length,
-          open: tr.length - ts.length,
-          stake: Number(tStake.toFixed(2)),
-          pl: Number(tPl.toFixed(2)),
-          roi_pct: tStake > 0 ? Number(((tPl / tStake) * 100).toFixed(1)) : 0
-        };
-      });
-
-      return {
-        version: "preview",
-        updated_at: "Preview from value_bets.json — shortlist_backtest.json not loaded",
-        summary: {
-          selections: rows.length,
-          settled: settledRows.length,
-          open: rows.length - settledRows.length,
-          settled_stake: Number(settledStake.toFixed(2)),
-          pl: Number(pl.toFixed(2)),
-          roi_pct: settledStake > 0 ? Number(((pl / settledStake) * 100).toFixed(1)) : 0,
-          since: rows[0]?.race_datetime ? String(rows[0].race_datetime).split(" ")[0] : "",
-          to: rows[rows.length - 1]?.race_datetime ? String(rows[rows.length - 1].race_datetime).split(" ")[0] : "",
-          by_type
-        },
-        rows
-      };
-    } catch (e) {
-      console.warn("⚠️ Shortlist backtest preview failed:", e);
-      return { updated_at: "", summary: {}, rows: [] };
-    }
-  };
-
   try {
-    const ledgerPayload = backtestPayload(shortlistBacktestData);
-    const backtestSource = ledgerPayload.rows.length ? shortlistBacktestData : buildShortlistBacktestPreviewFromValueData();
-    renderShortlistBacktest(backtestSource);
+    renderShortlistBacktest(shortlistBacktestData);
   } catch (e) {
     console.error("⚠️ Shortlist backtest render failed but value sections will continue:", e);
   }
@@ -5190,6 +5246,8 @@
     return "backtest-pl-zero";
   };
 
+  const btEsc = (v) => String(v ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+
   const backtestPayload = (raw) => {
     if (raw && !Array.isArray(raw) && typeof raw === "object") {
       return {
@@ -5220,6 +5278,84 @@
     return { updated_at: "", summary: {}, rows: [] };
   };
 
+  const backtestGroupForType = (type) => {
+    const t = String(type || "").trim();
+    if (["Each Way", "Big E/W - EP", "BT E/W"].includes(t)) return "EW";
+    if (t === "Must Lay") return "Lay";
+    if (["Must Win", "Win Value"].includes(t)) return "Win";
+    return "Other";
+  };
+
+  const emptyBacktestGroup = () => ({ selections: 0, settled: 0, open: 0, stake: 0, pl: 0, roi_pct: 0 });
+
+  const summariseBacktestGroups = (rows) => {
+    const groups = { Win: emptyBacktestGroup(), EW: emptyBacktestGroup(), Lay: emptyBacktestGroup() };
+    rows.forEach(r => {
+      const g = backtestGroupForType(r?.type);
+      if (!groups[g]) return;
+      groups[g].selections += 1;
+      if (r?.settled) {
+        groups[g].settled += 1;
+        groups[g].stake += Number(r.settled_stake || 0);
+        groups[g].pl += Number(r.pl || 0);
+      }
+    });
+    Object.values(groups).forEach(g => {
+      g.open = Math.max(0, g.selections - g.settled);
+      g.stake = Number(g.stake.toFixed(2));
+      g.pl = Number(g.pl.toFixed(2));
+      g.roi_pct = g.stake > 0 ? Number(((g.pl / g.stake) * 100).toFixed(1)) : 0;
+    });
+    return groups;
+  };
+
+  const dateKeyFromRaceDT = (dt) => {
+    const txt = String(dt || "").trim();
+    const m = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (!m) return txt.slice(0, 10) || "Unknown date";
+    const yyyy = m[3].length === 2 ? `20${m[3]}` : m[3];
+    return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${yyyy}`;
+  };
+
+  const summariseBacktestByDay = (rows) => {
+    const out = new Map();
+    rows.forEach(r => {
+      const day = dateKeyFromRaceDT(r?.race_datetime);
+      if (!out.has(day)) out.set(day, { date: day, rows: [], groups: { Win: emptyBacktestGroup(), EW: emptyBacktestGroup(), Lay: emptyBacktestGroup() } });
+      const item = out.get(day);
+      item.rows.push(r);
+      const gName = backtestGroupForType(r?.type);
+      const g = item.groups[gName];
+      if (!g) return;
+      g.selections += 1;
+      if (r?.settled) {
+        g.settled += 1;
+        g.stake += Number(r.settled_stake || 0);
+        g.pl += Number(r.pl || 0);
+      }
+    });
+    [...out.values()].forEach(day => {
+      Object.values(day.groups).forEach(g => {
+        g.open = Math.max(0, g.selections - g.settled);
+        g.stake = Number(g.stake.toFixed(2));
+        g.pl = Number(g.pl.toFixed(2));
+        g.roi_pct = g.stake > 0 ? Number(((g.pl / g.stake) * 100).toFixed(1)) : 0;
+      });
+      const settledRows = day.rows.filter(r => r?.settled);
+      day.selections = day.rows.length;
+      day.settled = settledRows.length;
+      day.open = day.rows.length - settledRows.length;
+      day.stake = Number(settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0).toFixed(2));
+      day.pl = Number(settledRows.reduce((a,r) => a + Number(r.pl || 0), 0).toFixed(2));
+    });
+    return [...out.values()].sort((a,b) => a.date.localeCompare(b.date));
+  };
+
+  const backtestPillHTML = (label, group) => {
+    const pl = Number(group?.pl || 0);
+    return `<span class="backtest-heading-pill"><b>${btEsc(label)}</b> ${Number(group?.settled || 0)}/${Number(group?.selections || 0)} · <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`;
+  };
+
   const renderShortlistBacktest = (raw) => {
     const payload = backtestPayload(raw);
     const summary = payload.summary || {};
@@ -5227,59 +5363,74 @@
     const updatedEl = document.getElementById("backtest-updated");
     const gridEl = document.getElementById("backtest-summary-grid");
     const typeEl = document.getElementById("backtest-type-row");
+    const headingPillsEl = document.getElementById("backtest-heading-pills");
+    const dailyEl = document.getElementById("backtest-daily-breakdown");
     const tbody = document.querySelector("#backtest-table tbody");
     if (!gridEl || !tbody) return;
 
     if (!rows.length) {
       if (updatedEl) updatedEl.textContent = "No tracked shortlist selections yet. Run shortlist_backtest_update.py after the model.";
+      if (headingPillsEl) headingPillsEl.innerHTML = "";
       gridEl.innerHTML = `<div class="backtest-stat"><span>Status</span><strong>No ledger yet</strong></div>`;
       if (typeEl) typeEl.innerHTML = "";
+      if (dailyEl) dailyEl.innerHTML = "";
       tbody.innerHTML = `<tr><td colspan="8">No backtest entries found.</td></tr>`;
       return;
     }
 
-    const pl = Number(summary.pl || 0);
+    const settledRows = rows.filter(r => r && r.settled);
+    const fallbackStake = settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0);
+    const fallbackPl = settledRows.reduce((a,r) => a + Number(r.pl || 0), 0);
+    const pl = Number((summary.pl ?? fallbackPl) || 0);
+    const settledStake = Number((summary.settled_stake ?? fallbackStake) || 0);
+    const roi = Number(summary.roi_pct ?? (settledStake > 0 ? (pl / settledStake * 100) : 0));
     const sinceTxt = summary.since && summary.to && summary.since !== summary.to ? `${summary.since} → ${summary.to}` : (summary.since || "Current ledger");
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
+    const groups = summariseBacktestGroups(rows);
+    if (headingPillsEl) headingPillsEl.innerHTML = [backtestPillHTML("Win", groups.Win), backtestPillHTML("EW", groups.EW), backtestPillHTML("Lay", groups.Lay)].join("");
+
     gridEl.innerHTML = `
       <div class="backtest-stat"><span>Selections</span><strong>${Number(summary.selections || rows.length)}</strong></div>
-      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || 0)}</strong></div>
-      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open || 0)}</strong></div>
-      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(summary.settled_stake || 0)}</strong></div>
+      <div class="backtest-stat"><span>Settled</span><strong>${Number(summary.settled || settledRows.length)}</strong></div>
+      <div class="backtest-stat"><span>Open</span><strong>${Number(summary.open ?? (rows.length - settledRows.length))}</strong></div>
+      <div class="backtest-stat"><span>Settled Stake</span><strong>${moneyFmt(settledStake)}</strong></div>
       <div class="backtest-stat"><span>P/L</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${moneyFmt(pl)}</strong></div>
-      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(summary.roi_pct || 0)}</strong></div>
+      <div class="backtest-stat"><span>ROI</span><strong class="${pl > 0 ? "is-profit" : pl < 0 ? "is-loss" : ""}">${pctFmt(roi)}</strong></div>
     `;
 
-    const byType = summary.by_type || {};
-    const typeOrder = ["Must Win", "Win Value", "Each Way", "Big E/W - EP", "BT E/W", "Must Lay"];
-    if (typeEl) {
-      typeEl.innerHTML = typeOrder
-        .filter(t => byType[t] && Number(byType[t].selections || 0) > 0)
-        .map(t => {
-          const info = byType[t] || {};
-          const tPl = Number(info.pl || 0);
-          return `<span class="backtest-type-pill"><b>${escHTML(t)}</b> ${Number(info.settled || 0)}/${Number(info.selections || 0)} · <span class="${tPl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(tPl)}</span></span>`;
-        })
-        .join("");
+    if (typeEl) typeEl.innerHTML = [backtestPillHTML("Win", groups.Win), backtestPillHTML("EW", groups.EW), backtestPillHTML("Lay", groups.Lay)].join("");
+
+    if (dailyEl) {
+      const days = summariseBacktestByDay(rows);
+      dailyEl.innerHTML = days.map(day => {
+        const dpl = Number(day.pl || 0);
+        return `<div class="backtest-day-card">
+          <div class="backtest-day-title">${btEsc(day.date)} · ${day.settled}/${day.selections} settled · <span class="${dpl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(dpl)}</span></div>
+          <div class="backtest-day-pills">
+            <span class="backtest-daily-pill"><b>Win</b> ${day.groups.Win.settled}/${day.groups.Win.selections} · <span class="${day.groups.Win.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.Win.pl)}</span></span>
+            <span class="backtest-daily-pill"><b>EW</b> ${day.groups.EW.settled}/${day.groups.EW.selections} · <span class="${day.groups.EW.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.EW.pl)}</span></span>
+            <span class="backtest-daily-pill"><b>Lay</b> ${day.groups.Lay.settled}/${day.groups.Lay.selections} · <span class="${day.groups.Lay.pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(day.groups.Lay.pl)}</span></span>
+          </div>
+        </div>`;
+      }).join("");
     }
 
-    const recent = [...rows]
-      .sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || "")))
-      .slice(0, 30);
-
+    const recent = [...rows].sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || ""))).slice(0, 40);
     tbody.innerHTML = recent.map(r => {
       const plVal = Number(r.pl || 0);
       const result = r.result || r.bf_result || "Pending";
-      const raceTxt = `${timeFromRaceDT(r.race_datetime)} ${r.course || ""}`.trim();
+      const raceTxt = `${String(r.race_datetime || "").split(" ").slice(-1)[0] || ""} ${r.course || ""}`.trim();
+      const dateTxt = dateKeyFromRaceDT(r.race_datetime);
+      const typeTxt = String(r.type || "-");
       return `<tr>
-        <td>${escHTML(dateFromRaceDT(r.race_datetime) || "-")}</td>
-        <td><span class="type-badge ${typeClass(String(r.type || ""))}">${escHTML(r.type || "-")}</span></td>
-        <td>${racecardRaceLinkHTML(r, escHTML(raceTxt || "-"), "race-racecard-link")}</td>
-        <td>${racecardHorseLinkHTML(r, r.horse || "-", "horse-racecard-link")}</td>
-        <td>${escHTML(r.bookie_odds || r.advised_odds || "-")}</td>
+        <td>${btEsc(dateTxt || "-")}</td>
+        <td><span class="type-badge ${typeof typeClass === "function" ? typeClass(typeTxt) : ""}">${btEsc(typeTxt)}</span></td>
+        <td>${btEsc(raceTxt || "-")}</td>
+        <td>${btEsc(r.horse || "-")}</td>
+        <td>${btEsc(r.bookie_odds || r.advised_odds || "-")}</td>
         <td>${moneyFmt(r.stake || 0)}</td>
-        <td>${escHTML(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${escHTML(r.bf_actual_sp)}</span>` : ""}</td>
+        <td>${btEsc(result)}${r.bf_actual_sp ? `<span class="mybets-sub">BF SP ${btEsc(r.bf_actual_sp)}</span>` : ""}</td>
         <td class="${plClass(plVal)}">${moneyFmt(plVal)}</td>
       </tr>`;
     }).join("") || `<tr><td colspan="8">No backtest entries found.</td></tr>`;
