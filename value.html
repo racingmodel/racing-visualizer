@@ -2447,7 +2447,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, Must Win, Win Value and Must Lay. QVE rows show ensemble/quality proof; pre-QVE rows display as Win Value rather than Must Win.</div>
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, strict Must Win and Must Lay. Generic Win Value rows stay in the Model Value / Raw Value sections unless the backend marks them as Must Win.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -2611,7 +2611,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Strict 5/1 or shorter, clear top-rated, both model prices shorter than market.</div>
+        <div class="section-note">Strict 5/1 or shorter, backend Must Win / AI-back confirmed, both model prices shorter than market, strong leader/place profile.</div>
         <div class="table-wrap">
           <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -4291,6 +4291,48 @@
     );
   };
 
+
+  const strictBackendMustWin = (entry) => {
+    /*
+      Restores the original Must Win behaviour:
+      - backend Must Win / ai-back rows should show as Must Win even when the newer
+        5-part QVE/ensemble fields are not present yet.
+      - generic value rows stay out of Must Win.
+    */
+    const tags = tagSet(entry);
+    if (hasAnyLayTag(tags) || tags.includes("blue") || tags.includes("bt-ew") || tags.includes("monster-ew")) return false;
+
+    const backendType = String(entry?.shortlist_type || "").trim();
+    const backendSaysMustWin = ["Must Win", "Must Win A", "Win Value A"].includes(backendType);
+    const tagSaysMustWin = tags.includes("ai-back") && (
+      tags.includes("top-rated-clear") ||
+      String(entry?.selection_grade || "").trim().toUpperCase() === "A" ||
+      String(entry?.action || "").trim().toLowerCase() === "back"
+    );
+
+    if (!(backendSaysMustWin || tagSaysMustWin)) return false;
+
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
+    if (!(book <= 5.0 && model < book && raw < book)) return false;
+
+    const cov = toNum(entry?.data_coverage, 0);
+    const conf = toNum(entry?.race_data_confidence, 0);
+    const leader = toNum(entry?.leader_profile, 0);
+    const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
+
+    const display = qveDisplayCountFor(entry);
+    const qveOk = !qveDisplayFieldsPresent(entry) || Number(display.count || 0) >= 3;
+
+    return Boolean(
+      qveOk &&
+      cov >= 86.0 && conf >= 86.0 &&
+      leader >= 60.0 && placeProfile >= 58.0
+    );
+  };
+
   const qveFieldsPresent = (entry) => {
     // Central QVE/ensemble fields only.  Older rows may already have place_probability,
     // so place_probability alone must not block the pre-QVE Win Value fallback.
@@ -4597,8 +4639,7 @@
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
-        if (eliteMustWinQVE(entry)) return "Must Win";
-        if (legacyWinValueFallback(entry)) return "Win Value";
+        if (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) return "Must Win";
         return "";
       }
       return backendType;
@@ -4664,17 +4705,16 @@
       dataOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
-      eliteMustWinQVE(entry) &&
+      (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
     ) {
       return "Must Win";
     }
 
-    if (legacyWinValueFallback(entry)) {
-      return "Win Value";
-    }
-
+    // Keep generic win-value rows out of Today's Best Bets.  They remain visible
+    // in the Model Value / Raw Value sections, but only strict Must Win rows are
+    // promoted as win bets in the main shortlist.
     return "";
   };
 
@@ -4833,7 +4873,6 @@
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
-    ...winvalueItems,
     ...rawlayItems
   ];
 
@@ -5953,8 +5992,7 @@
     if (backendTypes.has(backendType)) {
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
-        if (eliteMustWinQVE(entry)) return "Must Win";
-        if (legacyWinValueFallback(entry)) return "Win Value";
+        if (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) return "Must Win";
         return "";
       }
       return backendType;
@@ -6003,17 +6041,16 @@
       dataOk &&
       !hasAnyLayTag(tags) &&
       isMustWinPriced(entry) &&
-      eliteMustWinQVE(entry) &&
+      (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) &&
       !tags.includes("blue") &&
       !tags.includes("bt-ew")
     ) {
       return "Must Win";
     }
 
-    if (legacyWinValueFallback(entry)) {
-      return "Win Value";
-    }
-
+    // Keep generic win-value rows out of Today's Best Bets.  They remain visible
+    // in the Model Value / Raw Value sections, but only strict Must Win rows are
+    // promoted as win bets in the main shortlist.
     return "";
   };
 
