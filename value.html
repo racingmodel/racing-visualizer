@@ -698,6 +698,7 @@
     .tag-chip.tag-blue            { background: linear-gradient(180deg, #4ea7ff, #1668c7); color: #eef7ff; border-color: rgba(78,167,255,0.58); }
     .tag-chip.tag-bt-ew           { background: linear-gradient(180deg, #00d9ff, #075985); color: #eaffff; border-color: rgba(0,217,255,0.66); }
     .tag-chip.tag-monster-ew      { background: linear-gradient(180deg, #ffef8a, #ff6f00); color: #1f1300; border-color: rgba(255,215,0,0.72); }
+    .tag-chip.tag-elite-ew        { background: linear-gradient(180deg, #a7f3d0, #059669); color: #042116; border-color: rgba(45,212,191,0.62); }
     .tag-chip.tag-tony-watch      { background: linear-gradient(180deg, #ffbf5f, #e08300); color: #281700; border-color: rgba(255,191,95,0.60); }
     .tag-chip.tag-raw-value       { background: linear-gradient(180deg, #7fd2ff, #2494d9); color: #071a24; border-color: rgba(127,210,255,0.60); }
     .tag-chip.tag-rank-overlay    { background: linear-gradient(180deg, #4df0b1, #0ea56f); color: #042116; border-color: rgba(77,240,177,0.60); }
@@ -2336,7 +2337,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">30 Jun 2026, 16:54</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">30 Jun 2026, 17:38</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3319,6 +3320,7 @@
     'sleeper': '🌑',
     'value': '💰',
     'blue': '🔵',
+    'elite-ew': '💎',
     'tony-watch': '👀',
     'raw-value': '📉',
     'raw-lay': '❌',
@@ -3468,7 +3470,7 @@
     const s = String(sourceType || "").toLowerCase();
     const tagSetLocal = new Set((tags || []).map(t => String(t).toLowerCase()));
     if (s.includes("lay") || tagSetLocal.has("raw-lay") || tagSetLocal.has("ai-lay") || tagSetLocal.has("product-lay")) return "Lay";
-    if (s.includes("each") || s.includes("e/w") || s.includes("ew") || tagSetLocal.has("blue") || tagSetLocal.has("bt-ew") || tagSetLocal.has("product-ew")) return "Each Way";
+    if (s.includes("each") || s.includes("e/w") || s.includes("ew") || tagSetLocal.has("blue") || tagSetLocal.has("bt-ew") || tagSetLocal.has("elite-ew") || tagSetLocal.has("product-ew")) return "Each Way";
     if (s.includes("placepot") || tagSetLocal.has("placepot")) return "Placepot";
     if (s.includes("watch") || tagSetLocal.has("tony-watch")) return "Watch";
     return "Win";
@@ -4457,7 +4459,7 @@
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     if (isNaN(dec) || dec < 13.0) return false;
     if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
-    if (!placeProfileOk(entry, 60.0)) return false;
+    if (!hasEliteEwOverlay(entry, tags) && !placeProfileOk(entry, 60.0)) return false;
 
     const rankScoreRaw = entry?.ordinal_rank_score ?? entry?.["Ordinal Rank Score"];
     if (rankScoreRaw !== undefined && rankScoreRaw !== null && String(rankScoreRaw).trim() !== "") {
@@ -4509,6 +4511,37 @@
     if (modelRank > 2 || rankDelta < 6) return false;
     if (agreement < 4 || kelly < 8.0 || steps < 6) return false;
     if (((dec / model) - 1.0) < 1.20 || ((dec / raw) - 1.0) < 2.50) return false;
+
+    return true;
+  };
+
+  const hasEliteEwOverlay = (entry, tags) => {
+    const s = new Set(tags || tagSet(entry));
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(dec) || isNaN(model) || isNaN(raw)) return false;
+    if (!(dec >= 13.0 && dec < 34.0 && model < dec && raw < dec)) return false;
+
+    const field = getFieldSize(entry);
+    if (field !== null && !inFieldRange(field, 8, 20)) return false;
+    if (!shortlistDataOk(entry, 90.0)) return false;
+
+    if (!(s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew")))) return false;
+
+    const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
+    const leader = metricNumber(entry, ["leader_profile", "Leader Profile"], 0);
+    const modelRank = metricNumber(entry, ["rank_model", "_model_rank"], 999);
+    const rankDelta = metricNumber(entry, ["rank_delta", "_rank_delta"], 0);
+    const agreement = metricNumber(entry, ["agreement_count", "agreement_count_5", "qve_count"], 4);
+    const kelly = metricNumber(entry, ["kelly_pct", "kelly", "Kelly %"], 8);
+    const steps = metricNumber(entry, ["steps", "x_steps", "value_steps"], 5);
+    const xRuns = metricNumber(entry, ["x_runs", "sim_runs", "simulation_runs"], 5);
+
+    if (place < 45.0 && leader < 65.0) return false;
+    if (modelRank > 2 || rankDelta < 5) return false;
+    if (agreement < 4 || kelly < 8.0 || steps < 5 || xRuns < 5) return false;
+    if (((dec / model) - 1.0) < 0.35 || ((dec / raw) - 1.0) < 0.80) return false;
 
     return true;
   };
@@ -4572,7 +4605,7 @@
 
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     // 34.0+ Monster EW is a separate high-evidence exception, not a looser normal EW gate.
-    if (!hasMonsterEwOverlay(entry, tags) && !placeProfileOk(entry, 58.0)) return false;
+    if (!hasMonsterEwOverlay(entry, tags) && !hasEliteEwOverlay(entry, tags) && !placeProfileOk(entry, 58.0)) return false;
 
     // Dangerous 13-34 band: require either the full premium stack OR a confirmed
     // great-value stack: model value + raw value + ai-back + place profile.
@@ -4631,8 +4664,8 @@
     const backendType = String(entry?.shortlist_type || "").trim();
     const backendTags = tagSet(entry);
     if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && shortlistDataOk(entry, 86.0) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
-      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
-      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
+      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags))) return "Big E/W - EP";
+      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags))) return "BT E/W";
       if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
     }
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
@@ -4655,7 +4688,8 @@
     }
 
     const monsterEw = !hasAnyLayTag(tags) && backOk && hasMonsterEwOverlay(entry, tags);
-    if (monsterEw) {
+    const eliteEw = !hasAnyLayTag(tags) && backOk && dataOk && hasEliteEwOverlay(entry, tags);
+    if (monsterEw || eliteEw) {
       if (extra && isBigEwEpField(entry)) return "Big E/W - EP";
       if (extra && isBtEwField(entry)) return "BT E/W";
       return "Each Way";
@@ -4670,7 +4704,7 @@
       isBigEwEpField(entry) &&
       tags.includes("blue") &&
       tags.includes("ai-back") &&
-      placeProfileOk(entry, 58.0)
+      (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags))
     ) {
       return "Big E/W - EP";
     }
@@ -4684,7 +4718,7 @@
       isBtEwField(entry) &&
       tags.includes("bt-ew") &&
       tags.includes("ai-back") &&
-      placeProfileOk(entry, 58.0)
+      (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags))
     ) {
       return "BT E/W";
     }
@@ -4849,7 +4883,9 @@
     const tags = tagSet(entry);
     const shortlistType = getShortlistType(entry);
 
-    const ewDisplayEntry = hasMonsterEwOverlay(entry, tags) ? withTag(entry, 'monster-ew') : entry;
+    const ewDisplayEntry = hasMonsterEwOverlay(entry, tags)
+      ? withTag(entry, 'monster-ew')
+      : (hasEliteEwOverlay(entry, tags) ? withTag(entry, 'elite-ew') : entry);
     if (shortlistType === 'Big E/W - EP') multiItems.push({ ...ewDisplayEntry, shortlist_type: 'Big E/W - EP' });
     if (shortlistType === 'Each Way')     ewnotepItems.push({ ...ewDisplayEntry, shortlist_type: 'Each Way' });
     if (shortlistType === 'BT E/W')       btewItems.push({ ...withTag(ewDisplayEntry, 'bt-ew'), shortlist_type: 'BT E/W' });
@@ -4876,14 +4912,23 @@
     ...rawlayItems
   ];
 
+  const shortlistRunnerKey = (e) => [
+    String(e?.race_datetime || "").trim().toLowerCase(),
+    String(e?.course || "").trim().toLowerCase(),
+    String(e?.horse || "").trim().toLowerCase()
+  ].join("|");
+
   const intelShortlistType = (type) => {
     const clean = String(type || "").trim();
     if (!clean) return "Intel Win";
     return clean.replace(/^Product\s+/i, "Intel ");
   };
 
+  const normalShortlistKeys = new Set(normalShortlistItems.map(shortlistRunnerKey));
+
   const liveIntelItems = productItems("todays_product_shortlist", "items")
     .filter(e => e)
+    .filter(e => !normalShortlistKeys.has(shortlistRunnerKey(e)))
     .map(e => ({
       ...e,
       tags: Array.isArray(e.tags) && e.tags.length ? e.tags : ["product-pick"],
@@ -4892,7 +4937,10 @@
     }))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlistItems = normalShortlistItems
+  const shortlistItems = [
+      ...normalShortlistItems,
+      ...liveIntelItems
+    ]
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
@@ -5808,7 +5856,7 @@
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     if (isNaN(dec) || dec < 13.0) return false;
     if (!s.has("value") || !s.has("raw-value") || !s.has("ai-back")) return false;
-    if (!placeProfileOk(entry, 60.0)) return false;
+    if (!hasEliteEwOverlay(entry, tags) && !placeProfileOk(entry, 60.0)) return false;
 
     const rankScoreRaw = entry?.ordinal_rank_score ?? entry?.["Ordinal Rank Score"];
     if (rankScoreRaw !== undefined && rankScoreRaw !== null && String(rankScoreRaw).trim() !== "") {
@@ -5864,6 +5912,37 @@
     return true;
   };
 
+  const hasEliteEwOverlay = (entry, tags) => {
+    const s = new Set(tags || tagSet(entry));
+    const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    const raw = parseOdds(entry?.raw_odds);
+    if (isNaN(dec) || isNaN(model) || isNaN(raw)) return false;
+    if (!(dec >= 13.0 && dec < 34.0 && model < dec && raw < dec)) return false;
+
+    const field = getFieldSize(entry);
+    if (field !== null && !inFieldRange(field, 8, 20)) return false;
+    if (!shortlistDataOk(entry, 90.0)) return false;
+
+    if (!(s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew")))) return false;
+
+    const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
+    const leader = metricNumber(entry, ["leader_profile", "Leader Profile"], 0);
+    const modelRank = metricNumber(entry, ["rank_model", "_model_rank"], 999);
+    const rankDelta = metricNumber(entry, ["rank_delta", "_rank_delta"], 0);
+    const agreement = metricNumber(entry, ["agreement_count", "agreement_count_5", "qve_count"], 4);
+    const kelly = metricNumber(entry, ["kelly_pct", "kelly", "Kelly %"], 8);
+    const steps = metricNumber(entry, ["steps", "x_steps", "value_steps"], 5);
+    const xRuns = metricNumber(entry, ["x_runs", "sim_runs", "simulation_runs"], 5);
+
+    if (place < 45.0 && leader < 65.0) return false;
+    if (modelRank > 2 || rankDelta < 5) return false;
+    if (agreement < 4 || kelly < 8.0 || steps < 5 || xRuns < 5) return false;
+    if (((dec / model) - 1.0) < 0.35 || ((dec / raw) - 1.0) < 0.80) return false;
+
+    return true;
+  };
+
   const hasOptimisedNormalEwShape = (entry, tags) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     if (isNaN(dec) || dec < 13.0) return false;
@@ -5876,7 +5955,7 @@
 
     // EW now needs a credible place/survival profile. Missing profile does not block older rows.
     // 34.0+ Monster EW is a separate high-evidence exception, not a looser normal EW gate.
-    if (!hasMonsterEwOverlay(entry, tags) && !placeProfileOk(entry, 58.0)) return false;
+    if (!hasMonsterEwOverlay(entry, tags) && !hasEliteEwOverlay(entry, tags) && !placeProfileOk(entry, 58.0)) return false;
 
     // Dangerous 13-34 band: require either the full premium stack OR a confirmed
     // great-value stack: model value + raw value + ai-back + place profile.
@@ -5984,8 +6063,8 @@
     const backendType = String(entry?.shortlist_type || "").trim();
     const backendTags = tagSet(entry);
     if ((backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") && backOddsConfirmed(entry) && shortlistDataOk(entry, 86.0) && backendTags.includes("blue") && backendTags.includes("ai-back")) {
-      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) return "Big E/W - EP";
-      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) return "BT E/W";
+      if (backendType === "Big E/W - EP" && isBigEwEpPriced(entry) && isBigEwEpField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags))) return "Big E/W - EP";
+      if (backendType === "BT E/W" && isBigEwEpPriced(entry) && isBtEwField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags))) return "BT E/W";
       if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) return "Each Way";
     }
     const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
@@ -6009,17 +6088,18 @@
     }
 
     const monsterEw = !hasAnyLayTag(tags) && backOk && hasMonsterEwOverlay(entry, tags);
-    if (monsterEw) {
+    const eliteEw = !hasAnyLayTag(tags) && backOk && dataOk && hasEliteEwOverlay(entry, tags);
+    if (monsterEw || eliteEw) {
       if (isExtraPlaceRace && isBigEwEpField(entry)) return "Big E/W - EP";
       if (isExtraPlaceRace && isBtEwField(entry)) return "BT E/W";
       return "Each Way";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("blue") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBigEwEpField(entry) && placeProfileOk(entry, 58.0)) {
+    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("blue") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBigEwEpField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags))) {
       return "Big E/W - EP";
     }
 
-    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("bt-ew") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBtEwField(entry) && placeProfileOk(entry, 58.0)) {
+    if (!hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace && tags.includes("bt-ew") && tags.includes("ai-back") && isBigEwEpPriced(entry) && isBtEwField(entry) && (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags))) {
       return "BT E/W";
     }
 
