@@ -2337,7 +2337,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Jul 2026, 20:56</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Jul 2026, 20:33</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4926,6 +4926,27 @@
 
   const normalShortlistKeys = new Set(normalShortlistItems.map(shortlistRunnerKey));
 
+  const isIntelEwShortlistType = (entry) => {
+    /*
+      Live Intel is allowed to surface standalone EW bets in Today's shortlist,
+      but standalone Intel Win must stay in the Live Intel section only.
+
+      Important: if the backend/main model has already promoted the same horse
+      into normalShortlistItems as Must Win, Must Lay, Big E/W, BT E/W or Each Way,
+      it will still show via that proper model-backed route.
+    */
+    const rawType = String(entry?.suggested_type || entry?.shortlist_type || entry?.bet_type || "").trim().toLowerCase();
+    const renderedType = intelShortlistType(entry?.suggested_type).toLowerCase();
+    return (
+      rawType.includes("ew") ||
+      rawType.includes("e/w") ||
+      rawType.includes("each way") ||
+      renderedType.includes("ew") ||
+      renderedType.includes("e/w") ||
+      renderedType.includes("each way")
+    );
+  };
+
   const liveIntelItems = productItems("todays_product_shortlist", "items")
     .filter(e => e)
     .filter(e => !normalShortlistKeys.has(shortlistRunnerKey(e)))
@@ -4937,9 +4958,12 @@
     }))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
+  const liveIntelShortlistItems = liveIntelItems
+    .filter(isIntelEwShortlistType);
+
   const shortlistItems = [
       ...normalShortlistItems,
-      ...liveIntelItems
+      ...liveIntelShortlistItems
     ]
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
