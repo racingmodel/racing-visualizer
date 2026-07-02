@@ -4465,6 +4465,16 @@ const inFieldRange = (fieldSize, lo, hi) => {
     return fallback;
   };
 
+  const placeProfileOk = (entry, min = 58.0) => {
+    /*
+      Small helper restored for EW shortlist gates.
+      The previous EW paste-over called placeProfileOk(), but this helper was
+      missing, which stopped the whole value page render before setBody().
+    */
+    const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
+    return Number.isFinite(place) && place >= Number(min || 0);
+  };
+
   const ewPlacesFor = (entry) => {
     const vals = [
       entry?.bf_top_finish_best_n,
@@ -5946,6 +5956,16 @@ const inFieldRange = (fieldSize, lo, hi) => {
       if (Number.isFinite(n)) return n;
     }
     return fallback;
+  };
+
+  const placeProfileOk = (entry, min = 58.0) => {
+    /*
+      Small helper restored for EW shortlist gates.
+      The previous EW paste-over called placeProfileOk(), but this helper was
+      missing, which stopped the whole value page render before setBody().
+    */
+    const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
+    return Number.isFinite(place) && place >= Number(min || 0);
   };
 
   const ewPlacesFor = (entry) => {
