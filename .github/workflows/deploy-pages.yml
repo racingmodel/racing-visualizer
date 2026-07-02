@@ -18,7 +18,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 65
+    timeout-minutes: 20
 
     environment:
       name: github-pages
@@ -28,14 +28,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug site files
+      - name: Build clean Pages artifact
         run: |
-          echo "Checking Racing Visualizer files"
-          ls -lh value.html || true
-          ls -lh value_bets.json || true
-          ls -lh xg_value_bets.json || true
-          find . -maxdepth 1 -name "*.html" | wc -l
-          du -sh . || true
+          mkdir -p _site
+
+          echo "Copying live racing visualizer files..."
+
+          # Main frontend files
+          cp -f *.html _site/ 2>/dev/null || true
+          cp -f *.json _site/ 2>/dev/null || true
+          cp -f *.csv _site/ 2>/dev/null || true
+
+          # Optional static folders if they exist
+          cp -rf css _site/css 2>/dev/null || true
+          cp -rf js _site/js 2>/dev/null || true
+          cp -rf assets _site/assets 2>/dev/null || true
+          cp -rf images _site/images 2>/dev/null || true
+          cp -rf docs _site/docs 2>/dev/null || true
+
+          echo "Site artifact contents:"
+          ls -lh _site | head -50
+          echo "HTML count:"
+          find _site -name "*.html" | wc -l
+          echo "Total artifact size:"
+          du -sh _site
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -43,11 +59,11 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
         with:
-          timeout: 3600000
           reporting_interval: 10000
+          timeout: 600000
