@@ -32,7 +32,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     environment:
       name: github-pages
@@ -54,27 +54,22 @@ jobs:
 
           echo "Copying live racing visualizer files..."
 
-          # Main frontend files
           cp -f value.html _site/ 2>/dev/null || true
           cp -f index.html _site/ 2>/dev/null || true
           cp -f AtoZ.html _site/ 2>/dev/null || true
           cp -f extra_places.txt _site/ 2>/dev/null || true
 
-          # Race pages
           cp -f 2026-*.html _site/ 2>/dev/null || true
 
-          # Data files used by the frontend
           cp -f *.json _site/ 2>/dev/null || true
           cp -f *.csv _site/ 2>/dev/null || true
 
-          # Optional static folders if they exist
           cp -rf css _site/css 2>/dev/null || true
           cp -rf js _site/js 2>/dev/null || true
           cp -rf assets _site/assets 2>/dev/null || true
           cp -rf images _site/images 2>/dev/null || true
           cp -rf docs _site/docs 2>/dev/null || true
 
-          # Keep GitHub Pages from applying Jekyll processing
           touch _site/.nojekyll
 
           echo "Site artifact contents, first 80 files:"
@@ -100,9 +95,46 @@ jobs:
         with:
           path: _site
 
-      - name: Deploy to GitHub Pages
-        id: deployment
+      - name: Deploy to GitHub Pages attempt 1
+        id: deployment_attempt_1
+        continue-on-error: true
         uses: actions/deploy-pages@v5
         with:
           reporting_interval: 10000
           timeout: 600000
+
+      - name: Wait before retry 2
+        if: steps.deployment_attempt_1.outcome == 'failure'
+        run: |
+          echo "GitHub Pages deploy failed on attempt 1. Waiting 60 seconds before retry..."
+          sleep 60
+
+      - name: Deploy to GitHub Pages attempt 2
+        id: deployment_attempt_2
+        if: steps.deployment_attempt_1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+        with:
+          reporting_interval: 10000
+          timeout: 600000
+
+      - name: Wait before retry 3
+        if: steps.deployment_attempt_1.outcome == 'failure' && steps.deployment_attempt_2.outcome == 'failure'
+        run: |
+          echo "GitHub Pages deploy failed on attempt 2. Waiting 120 seconds before retry..."
+          sleep 120
+
+      - name: Deploy to GitHub Pages attempt 3
+        id: deployment_attempt_3
+        if: steps.deployment_attempt_1.outcome == 'failure' && steps.deployment_attempt_2.outcome == 'failure'
+        uses: actions/deploy-pages@v5
+        with:
+          reporting_interval: 10000
+          timeout: 600000
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "Attempt 1: ${{ steps.deployment_attempt_1.outcome }}"
+          echo "Attempt 2: ${{ steps.deployment_attempt_2.outcome }}"
+          echo "Attempt 3: ${{ steps.deployment_attempt_3.outcome }}"
