@@ -1,10 +1,24 @@
 name: Deploy Pages
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:
+    paths:
+      - 'value.html'
+      - 'index.html'
+      - 'AtoZ.html'
+      - '2026-*.html'
+      - '*.json'
+      - '*.csv'
+      - 'extra_places.txt'
+      - 'css/**'
+      - 'js/**'
+      - 'assets/**'
+      - 'images/**'
+      - 'docs/**'
+      - '.github/workflows/deploy-pages.yml'
 
 permissions:
   contents: read
@@ -25,17 +39,31 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Settle rapid model pushes
+        run: |
+          echo "Waiting 90 seconds so rapid model file commits can finish..."
+          sleep 90
+
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Build clean Pages artifact
         run: |
+          rm -rf _site
           mkdir -p _site
 
           echo "Copying live racing visualizer files..."
 
           # Main frontend files
-          cp -f *.html _site/ 2>/dev/null || true
+          cp -f value.html _site/ 2>/dev/null || true
+          cp -f index.html _site/ 2>/dev/null || true
+          cp -f AtoZ.html _site/ 2>/dev/null || true
+          cp -f extra_places.txt _site/ 2>/dev/null || true
+
+          # Race pages
+          cp -f 2026-*.html _site/ 2>/dev/null || true
+
+          # Data files used by the frontend
           cp -f *.json _site/ 2>/dev/null || true
           cp -f *.csv _site/ 2>/dev/null || true
 
@@ -46,10 +74,21 @@ jobs:
           cp -rf images _site/images 2>/dev/null || true
           cp -rf docs _site/docs 2>/dev/null || true
 
-          echo "Site artifact contents:"
-          ls -lh _site | head -50
+          # Keep GitHub Pages from applying Jekyll processing
+          touch _site/.nojekyll
+
+          echo "Site artifact contents, first 80 files:"
+          find _site -maxdepth 2 -type f | sort | sed -n '1,80p'
+
           echo "HTML count:"
           find _site -name "*.html" | wc -l
+
+          echo "JSON count:"
+          find _site -name "*.json" | wc -l
+
+          echo "CSV count:"
+          find _site -name "*.csv" | wc -l
+
           echo "Total artifact size:"
           du -sh _site
 
