@@ -2337,7 +2337,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 Jul 2026, 19:55</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 Jul 2026, 20:33</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2473,7 +2473,7 @@
       </div>
     </details>
 
-    <details class="section-card section-placepot" open>
+    <details class="section-card section-placepot">
       <summary class="section-title">
         <span class="section-title-left">🧩 Placepot Picker</span>
         <span class="section-chevron">▶</span>
@@ -2486,36 +2486,6 @@
       </div>
     </details>
 
-
-    <details class="section-card section-intel" open>
-      <summary class="section-title">
-        <span class="section-title-left">🧠 Live Intel</span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="section-note">Standalone 75%+ data Intel selections from the Market Intelligence / Consensus / Pace / Pick 7 engine. These are no longer mixed into Todays Bet & Lay Shortlist.</div>
-        <div class="table-wrap">
-          <table id="live-intel-table" class="shortlist-premium-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Race</th>
-                <th>Horse</th>
-                <th>Odds</th>
-                <th>Raw Odds</th>
-                <th>Model 100%</th>
-                <th>BF Exchange</th>
-                <th>EP Places</th>
-                <th>QVE</th>
-                <th>Tags</th>
-                <th>My List</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </details>
 
     <details class="section-card">
       <summary class="section-title">
@@ -2689,6 +2659,38 @@
       <summary class="section-title"><span class="section-title-left">🥇 Top Rated Clear</span><span class="section-chevron">▶</span></summary>
       <div class="section-body"><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
     </details>
+
+
+    <details class="section-card section-intel">
+      <summary class="section-title">
+        <span class="section-title-left">🧠 Live Intel</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">Standalone 75%+ data Intel selections from the Market Intelligence / Consensus / Pace / Pick 7 engine. Standalone Intel EW can enter Todays Bet & Lay Shortlist only when it is 15.0+ and has not already qualified through the main model shortlist. Intel Win/Lay stay here only.</div>
+        <div class="table-wrap">
+          <table id="live-intel-table" class="shortlist-premium-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Odds</th>
+                <th>Raw Odds</th>
+                <th>Model 100%</th>
+                <th>BF Exchange</th>
+                <th>EP Places</th>
+                <th>QVE</th>
+                <th>Tags</th>
+                <th>My List</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
 
 
     <details class="section-card section-product-market">
@@ -4914,7 +4916,8 @@ const getShortlistType = (entry) => {
         e?.status === "was_value" ||
         e?.currently_live === false ||
         isNonRunner(e) ||
-        raceHasStarted(e)
+        raceHasStarted(e) ||
+        !getShortlistType(e)
       )
     )
     .filter(e => !isSameRunWasValueArtifact(e))
@@ -5000,18 +5003,18 @@ const getShortlistType = (entry) => {
 
   const normalShortlistKeys = new Set(normalShortlistItems.map(shortlistRunnerKey));
 
+  const INTEL_EW_SHORTLIST_MIN_ODDS = 15.0;
+
   const isIntelEwShortlistType = (entry) => {
     /*
-      Live Intel is allowed to surface standalone EW bets in Today's shortlist,
-      but standalone Intel Win must stay in the Live Intel section only.
-
-      Important: if the backend/main model has already promoted the same horse
-      into normalShortlistItems as Must Win, Must Lay, Big E/W, BT E/W or Each Way,
-      it will still show via that proper model-backed route.
+      Live Intel can only surface standalone EW bets into Today's shortlist.
+      Intel Win and Intel Lay remain in the Live Intel section unless the main
+      model has independently qualified the same runner through normal gates.
+      New safety gate: Intel EW must be decimal 15.0+ (14/1+) at display time.
     */
     const rawType = String(entry?.suggested_type || entry?.shortlist_type || entry?.bet_type || "").trim().toLowerCase();
     const renderedType = intelShortlistType(entry?.suggested_type).toLowerCase();
-    return (
+    const isEw = (
       rawType.includes("ew") ||
       rawType.includes("e/w") ||
       rawType.includes("each way") ||
@@ -5019,6 +5022,10 @@ const getShortlistType = (entry) => {
       renderedType.includes("e/w") ||
       renderedType.includes("each way")
     );
+    if (!isEw) return false;
+
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds ?? entry?.latest_odds ?? entry?.odds);
+    return !Number.isNaN(book) && book >= INTEL_EW_SHORTLIST_MIN_ODDS;
   };
 
   const liveIntelItems = productItems("todays_product_shortlist", "items")
