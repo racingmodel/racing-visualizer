@@ -710,6 +710,7 @@
 
 
     .tag-chip.tag-raw-lay,
+    .tag-chip.tag-place-lay,
     .tag-chip.tag-ai-lay {
       background: linear-gradient(180deg, #ff6565, #d91515);
       color: #fff;
@@ -2337,7 +2338,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">04 Jul 2026, 10:58</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">04 Jul 2026, 11:48</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2448,7 +2449,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, strict Must Win and Must Lay. Generic Win Value rows stay in the Model Value / Raw Value sections unless the backend marks them as Must Win.</div>
+        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, strict Must Win, Must Lay and Place Lay. Generic Win Value rows stay in the Model Value / Raw Value sections unless the backend marks them as Must Win.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -2559,6 +2560,19 @@
         <div class="section-note">Lay-only runners with no supporting non-lay angle.</div>
         <div class="table-wrap">
           <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </details>
+
+    <details class="section-card section-lay">
+      <summary class="section-title">
+        <span class="section-title-left">🟣 Place Lay</span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">Short-priced runners under 2/1 that the model rates as vulnerable to missing the places, using field-size place rules and inferred place odds from the win price.</div>
+        <div class="table-wrap">
+          <table id="placelays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
       </div>
     </details>
@@ -3303,7 +3317,7 @@
   const isLayOnly = (tags) => {
     const isOverlayTag = t => t.startsWith("overlay+");
     const core = (tags || []).filter(t => !isOverlayTag(t));
-    const layTags = new Set(["raw-lay", "ai-lay"]);
+    const layTags = new Set(["raw-lay", "ai-lay", "place-lay"]);
     const hasLay = core.some(t => layTags.has(t));
     if (!hasLay) return false;
     const nonLay = core.filter(t => !layTags.has(t));
@@ -3313,7 +3327,7 @@
   const hasAnyLayTag = (tags) => {
     const isOverlayTag = t => t.startsWith("overlay+");
     const core = (tags || []).filter(t => !isOverlayTag(t));
-    const layTags = new Set(["raw-lay", "ai-lay"]);
+    const layTags = new Set(["raw-lay", "ai-lay", "place-lay"]);
     return core.some(t => layTags.has(t));
   };
 
@@ -3328,6 +3342,7 @@
     'raw-lay': '❌',
     'ai-back': '🟢',
     'ai-lay': '❌',
+    'place-lay': '🟣',
     'rank-overlay': '📊',
     'product-pick': '⭐',
     'product-win': '🏆',
@@ -3829,6 +3844,7 @@
     if (type === 'Must Win' || type === 'Must Win A') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Win Value A') return `<span class="type-badge type-win">Win Value A</span>`;
     if (type === 'Win Value') return `<span class="type-badge type-win">Win Value</span>`;
+    if (type === 'Place Lay' || type === 'Place Lay A') return `<span class="type-badge type-lay">PLACE LAY</span>`;
     if (type === 'Must Lay' || type === 'Must Lay A') return `<span class="type-badge type-lay">MUST LAY</span>`;
     if (type === 'Lay Watch') return `<span class="type-badge type-lay">LAY WATCH</span>`;
     if (type === 'Product Win' || type === 'Intel Win') return `<span class="type-badge type-win">Intel Win</span>`;
@@ -3909,6 +3925,9 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
 
+    if (type === "Place Lay") {
+      return "Place Lay angle: the win price is short, but the model's place profile is weak versus the inferred market place chance, so the horse is vulnerable to missing the frame.";
+    }
     if (type === "Must Lay") {
       return "Lay angle: the market looks too short, with the model pricing this horse weaker than the current odds and suggesting vulnerability against the field.";
     }
@@ -4773,8 +4792,9 @@ const getShortlistType = (entry) => {
       }
     }
 
-    const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
+    const backendTypes = new Set(["Place Lay", "Place Lay A", "Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
+      if (backendType === "Place Lay A") return "Place Lay";
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
         if (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) return "Must Win";
@@ -4787,6 +4807,7 @@ const getShortlistType = (entry) => {
     const backOk = backOddsConfirmed(entry);
     const dataOk = shortlistDataOk(entry, 86.0);
 
+    if (tags.includes("place-lay")) return "Place Lay";
     if (isLayOnly(tags)) return "Must Lay";
 
     const monsterEw = !hasAnyLayTag(tags) && backOk && hasMonsterEwOverlay(entry, tags);
@@ -4945,6 +4966,7 @@ const getShortlistType = (entry) => {
 
   let multiItems = [];
   let rawlayItems = [];
+  let placelayItems = [];
   let ewnotepItems = [];
   let btewItems = [];
   let mustwinItems = [];
@@ -4969,6 +4991,7 @@ const getShortlistType = (entry) => {
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
     if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
+    if (shortlistType === 'Place Lay')    placelayItems.push({ ...entry, shortlist_type: 'Place Lay' });
 
     if (tags.includes("raw-value")) rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
@@ -4986,7 +5009,8 @@ const getShortlistType = (entry) => {
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
-    ...rawlayItems
+    ...rawlayItems,
+    ...placelayItems
   ];
 
   const shortlistRunnerKey = (e) => [
@@ -5054,6 +5078,7 @@ const getShortlistType = (entry) => {
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row", "Must Lay"), 5);
+  const placelays = buildGroupedRows(placelayItems, e => twoLineRow(e, tagSet(e), "rawlay-row", "Place Lay"), 5);
   const ewnotep = buildGroupedRows(ewnotepItems, e => twoLineRow(e, tagSet(e), "ewnotep-row", "Each Way"), 5);
   const mustwin = buildGroupedRows(mustwinItems, e => twoLineRow(e, tagSet(e), "mustwin-row", "Must Win"), 5);
   const rawv = buildGroupedRows(rawvItems, e => twoLineRow(e, tagSet(e), "rawvalue-row", "Raw Value"), 5);
@@ -5416,6 +5441,7 @@ const getShortlistType = (entry) => {
   setBody('#multitag-table',  multi, 5);
   setBody('#btew-table',      btew, 5);
   setBody('#rawlays-table',   rawlays, 5);
+  setBody('#placelays-table', placelays, 5);
   setBody('#ewnotep-table',   ewnotep, 5);
   setBody('#mustwin-table',   mustwin, 5);
   setBody('#fc-table',        fcHtml, 3);
@@ -6221,12 +6247,12 @@ const inFieldRange = (fieldSize, lo, hi) => {
 
   const hasAnyLayTag = (tags) => {
     const core = (tags || []).filter(t => !String(t).startsWith("overlay+"));
-    return core.some(t => t === "raw-lay" || t === "ai-lay");
+    return core.some(t => t === "raw-lay" || t === "ai-lay" || t === "place-lay");
   };
 
   const isLayOnly = (tags) => {
     const core = (tags || []).filter(t => !String(t).startsWith("overlay+"));
-    const layTags = new Set(["raw-lay", "ai-lay"]);
+    const layTags = new Set(["raw-lay", "ai-lay", "place-lay"]);
     const hasLay = core.some(t => layTags.has(t));
     if (!hasLay) return false;
     return core.filter(t => !layTags.has(t)).length === 0;
@@ -6333,8 +6359,9 @@ const getShortlistType = (entry, extraPlacesArg) => {
       }
     }
 
-    const backendTypes = new Set(["Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
+    const backendTypes = new Set(["Place Lay", "Place Lay A", "Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
+      if (backendType === "Place Lay A") return "Place Lay";
       if (backendType === "Must Lay A") return "Must Lay";
       if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
         if (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) return "Must Win";
@@ -6347,6 +6374,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
     const backOk = backOddsConfirmed(entry);
     const dataOk = shortlistDataOk(entry, 86.0);
 
+    if (tags.includes("place-lay")) return "Place Lay";
     if (isLayOnly(tags)) return "Must Lay";
 
     const monsterEw = !hasAnyLayTag(tags) && backOk && hasMonsterEwOverlay(entry, tags);
