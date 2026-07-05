@@ -4557,6 +4557,21 @@ const inFieldRange = (fieldSize, lo, hi) => {
     return maxRank;
   };
 
+
+  const rawValueToleranceOk = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const raw = parseOdds(entry?.raw_odds);
+    if (Number.isNaN(book) || Number.isNaN(raw)) return false;
+    return raw < book;
+  };
+
+  const modelValueToleranceOk = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    if (Number.isNaN(book) || Number.isNaN(model)) return false;
+    return model < book;
+  };
+
   const hasGreatEwValueStack = (entry, tags) => {
     const s = new Set(tags || []);
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
@@ -6094,6 +6109,21 @@ const inFieldRange = (fieldSize, lo, hi) => {
     }
 
     return maxRank;
+  };
+
+
+  const rawValueToleranceOk = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const raw = parseOdds(entry?.raw_odds);
+    if (Number.isNaN(book) || Number.isNaN(raw)) return false;
+    return raw < book;
+  };
+
+  const modelValueToleranceOk = (entry) => {
+    const book = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
+    const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
+    if (Number.isNaN(book) || Number.isNaN(model)) return false;
+    return model < book;
   };
 
   const hasGreatEwValueStack = (entry, tags) => {
