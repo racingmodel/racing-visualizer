@@ -4670,6 +4670,14 @@ const inFieldRange = (fieldSize, lo, hi) => {
     /*
       Safety net for big-priced EW/extra-place horses ranked 3rd-5th that are
       strong value, without letting in weak/no-chance outsiders.
+
+      2026-07-05 fix:
+      Keep the visible Today's Bet & Lay shortlist aligned with
+      shortlist_backtest_update.py. A horse can now qualify through the same
+      raw/rank safety-net as Hale End:
+        raw-value + rank-overlay + 13.0+ odds + model/raw value + rank_score >= 62.
+      It no longer needs the separate generic "value" tag when the raw/rank
+      evidence is strong enough.
     */
     const s = new Set(tags || tagSet(entry));
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
@@ -4684,11 +4692,16 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const field = getFieldSize(entry);
     if (field !== null && field < 8) return false;
 
-    const supportStack =
-      (s.has("value") && s.has("raw-value")) &&
+    const hasFullValueStack =
+      s.has("value") &&
+      s.has("raw-value") &&
       (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew") || s.has("blue") || s.has("bt-ew"));
 
-    if (!supportStack) return false;
+    const hasRawRankSafetyStack =
+      s.has("raw-value") &&
+      s.has("rank-overlay");
+
+    if (!hasFullValueStack && !hasRawRankSafetyStack) return false;
 
     const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
     const leader = metricNumber(entry, ["leader_profile", "Leader Profile"], 0);
@@ -6189,6 +6202,14 @@ const inFieldRange = (fieldSize, lo, hi) => {
     /*
       Safety net for big-priced EW/extra-place horses ranked 3rd-5th that are
       strong value, without letting in weak/no-chance outsiders.
+
+      2026-07-05 fix:
+      Keep the visible Today's Bet & Lay shortlist aligned with
+      shortlist_backtest_update.py. A horse can now qualify through the same
+      raw/rank safety-net as Hale End:
+        raw-value + rank-overlay + 13.0+ odds + model/raw value + rank_score >= 62.
+      It no longer needs the separate generic "value" tag when the raw/rank
+      evidence is strong enough.
     */
     const s = new Set(tags || tagSet(entry));
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
@@ -6203,11 +6224,16 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const field = getFieldSize(entry);
     if (field !== null && field < 8) return false;
 
-    const supportStack =
-      (s.has("value") && s.has("raw-value")) &&
+    const hasFullValueStack =
+      s.has("value") &&
+      s.has("raw-value") &&
       (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew") || s.has("blue") || s.has("bt-ew"));
 
-    if (!supportStack) return false;
+    const hasRawRankSafetyStack =
+      s.has("raw-value") &&
+      s.has("rank-overlay");
+
+    if (!hasFullValueStack && !hasRawRankSafetyStack) return false;
 
     const place = metricNumber(entry, ["place_profile", "Place Profile", "place_probability"], 0);
     const leader = metricNumber(entry, ["leader_profile", "Leader Profile"], 0);
