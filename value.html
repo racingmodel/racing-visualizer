@@ -2338,7 +2338,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">05 Jul 2026, 09:52</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">05 Jul 2026, 10:21</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3018,9 +3018,9 @@
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["Each Way", "Big E/W - EP", "BT E/W"].includes(t)) return "EW";
-    if (t === "Must Lay") return "Lay";
-    if (["Must Win", "Win Value"].includes(t)) return "Win";
+    if (["Each Way", "Big E/W - EP", "BT E/W", "Intel EW"].includes(t)) return "EW";
+    if (["Must Lay", "Place Lay"].includes(t)) return "Lay";
+    if (t === "Must Win") return "Win";
     return "Other";
   };
 
@@ -3055,6 +3055,18 @@
     return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${yyyy}`;
   };
 
+  const backtestDateSortKey = (dt) => {
+    const txt = String(dt || "").trim();
+    let m = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
+    if (m) {
+      const yyyy = m[3].length === 2 ? `20${m[3]}` : m[3];
+      return `${yyyy}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}T${String(m[4] || "00").padStart(2,"0")}:${String(m[5] || "00").padStart(2,"0")}`;
+    }
+    m = txt.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}T${String(m[4]).padStart(2,"0")}:${m[5]}`;
+    return txt;
+  };
+
   const summariseBacktestByDay = (rows) => {
     const out = new Map();
     rows.forEach(r => {
@@ -3086,7 +3098,7 @@
       day.stake = Number(settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0).toFixed(2));
       day.pl = Number(settledRows.reduce((a,r) => a + Number(r.pl || 0), 0).toFixed(2));
     });
-    return [...out.values()].sort((a,b) => a.date.localeCompare(b.date));
+    return [...out.values()].sort((a,b) => backtestDateSortKey(a.date).localeCompare(backtestDateSortKey(b.date)));
   };
 
   const backtestPillHTML = (label, group) => {
@@ -3154,7 +3166,7 @@
       }).join("");
     }
 
-    const recent = [...rows].sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || ""))).slice(0, 40);
+    const recent = [...rows].sort((a,b) => backtestDateSortKey(b.race_datetime).localeCompare(backtestDateSortKey(a.race_datetime))).slice(0, 40);
     tbody.innerHTML = recent.map(r => {
       const plVal = Number(r.pl || 0);
       const result = r.result || r.bf_result || "Pending";
@@ -5587,9 +5599,9 @@ const getShortlistType = (entry) => {
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["Each Way", "Big E/W - EP", "BT E/W"].includes(t)) return "EW";
-    if (t === "Must Lay") return "Lay";
-    if (["Must Win", "Win Value"].includes(t)) return "Win";
+    if (["Each Way", "Big E/W - EP", "BT E/W", "Intel EW"].includes(t)) return "EW";
+    if (["Must Lay", "Place Lay"].includes(t)) return "Lay";
+    if (t === "Must Win") return "Win";
     return "Other";
   };
 
@@ -5624,6 +5636,18 @@ const getShortlistType = (entry) => {
     return `${m[1].padStart(2,"0")}/${m[2].padStart(2,"0")}/${yyyy}`;
   };
 
+  const backtestDateSortKey = (dt) => {
+    const txt = String(dt || "").trim();
+    let m = txt.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:\s+(\d{1,2}):(\d{2}))?/);
+    if (m) {
+      const yyyy = m[3].length === 2 ? `20${m[3]}` : m[3];
+      return `${yyyy}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}T${String(m[4] || "00").padStart(2,"0")}:${String(m[5] || "00").padStart(2,"0")}`;
+    }
+    m = txt.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}T${String(m[4]).padStart(2,"0")}:${m[5]}`;
+    return txt;
+  };
+
   const summariseBacktestByDay = (rows) => {
     const out = new Map();
     rows.forEach(r => {
@@ -5655,7 +5679,7 @@ const getShortlistType = (entry) => {
       day.stake = Number(settledRows.reduce((a,r) => a + Number(r.settled_stake || 0), 0).toFixed(2));
       day.pl = Number(settledRows.reduce((a,r) => a + Number(r.pl || 0), 0).toFixed(2));
     });
-    return [...out.values()].sort((a,b) => a.date.localeCompare(b.date));
+    return [...out.values()].sort((a,b) => backtestDateSortKey(a.date).localeCompare(backtestDateSortKey(b.date)));
   };
 
   const backtestPillHTML = (label, group) => {
@@ -5723,7 +5747,7 @@ const getShortlistType = (entry) => {
       }).join("");
     }
 
-    const recent = [...rows].sort((a,b) => String(b.race_datetime || "").localeCompare(String(a.race_datetime || ""))).slice(0, 40);
+    const recent = [...rows].sort((a,b) => backtestDateSortKey(b.race_datetime).localeCompare(backtestDateSortKey(a.race_datetime))).slice(0, 40);
     tbody.innerHTML = recent.map(r => {
       const plVal = Number(r.pl || 0);
       const result = r.result || r.bf_result || "Pending";
