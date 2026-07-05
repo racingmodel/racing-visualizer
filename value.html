@@ -4569,7 +4569,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const hasStack =
       (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear"))) ||
       (s.has("value") && s.has("raw-value") && s.has("elite-ew")) ||
-      (s.has("value") && s.has("raw-value") && s.has("ai-back"));
+      (s.has("value") && s.has("raw-value") && s.has("ai-back")) ||
+      // Option 2: let strong raw/rank overlays through without needing the generic value tag.
+      (s.has("raw-value") && s.has("rank-overlay"));
 
     if (!hasStack) return false;
 
@@ -4638,7 +4640,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     if (!shortlistDataOk(entry, 86.0)) return false;
 
     const supportStack =
-      (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew")));
+      (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew"))) ||
+      // Option 2: raw/rank safety-net runners do not need the generic value tag.
+      (s.has("raw-value") && s.has("rank-overlay"));
 
     if (!supportStack) return false;
 
@@ -4692,6 +4696,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const field = getFieldSize(entry);
     if (field !== null && field < 8) return false;
 
+    // Option 2 alignment with shortlist_backtest_update.py:
+    // Old page logic required the generic "value" tag, which hid Hale End-style
+    // runners that are strong raw/rank overlays but do not carry "value".
     const hasFullValueStack =
       s.has("value") &&
       s.has("raw-value") &&
@@ -6101,7 +6108,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const hasStack =
       (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear"))) ||
       (s.has("value") && s.has("raw-value") && s.has("elite-ew")) ||
-      (s.has("value") && s.has("raw-value") && s.has("ai-back"));
+      (s.has("value") && s.has("raw-value") && s.has("ai-back")) ||
+      // Option 2: let strong raw/rank overlays through without needing the generic value tag.
+      (s.has("raw-value") && s.has("rank-overlay"));
 
     if (!hasStack) return false;
 
@@ -6170,7 +6179,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     if (!shortlistDataOk(entry, 86.0)) return false;
 
     const supportStack =
-      (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew")));
+      (s.has("value") && s.has("raw-value") && (s.has("rank-overlay") || s.has("top-rated-clear") || s.has("elite-ew"))) ||
+      // Option 2: raw/rank safety-net runners do not need the generic value tag.
+      (s.has("raw-value") && s.has("rank-overlay"));
 
     if (!supportStack) return false;
 
@@ -6224,6 +6235,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
     const field = getFieldSize(entry);
     if (field !== null && field < 8) return false;
 
+    // Option 2 alignment with shortlist_backtest_update.py:
+    // Old page logic required the generic "value" tag, which hid Hale End-style
+    // runners that are strong raw/rank overlays but do not carry "value".
     const hasFullValueStack =
       s.has("value") &&
       s.has("raw-value") &&
