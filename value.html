@@ -2338,7 +2338,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">11 Jul 2026, 16:46</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">11 Jul 2026, 17:52</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4802,9 +4802,29 @@ const inFieldRange = (fieldSize, lo, hi) => {
 
   
 const getShortlistType = (entry) => {
-    const backendType = String(entry?.shortlist_type || "").trim();
-    const backendTags = tagSet(entry);
+    // The backend is the single authority for a current model run.  The
+    // browser only remaps a generic EW label into the appropriate extra-place
+    // display bucket; it must not independently reject an advised selection.
+    const backendRaw = String(entry?.shortlist_type || entry?.type || "").trim();
+    const backendAlias = new Map([
+      ["Must Win A", "Must Win"],
+      ["Must Lay A", "Must Lay"], ["Place Lay A", "Place Lay"],
+      ["Big EW - EP", "Big E/W - EP"], ["BT EW", "BT E/W"]
+    ]);
+    const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
+    if (["Must Win", "Must Lay", "Place Lay", "Intel EW", "Big E/W - EP", "BT E/W"].includes(backendType)) {
+      return backendType;
+    }
+    if (backendType === "Each Way") {
+      if (extra && isBtEwField(entry)) return "BT E/W";
+      if (extra) return "Big E/W - EP";
+      return "Each Way";
+    }
+    if (backendRaw && ["Lay Watch", "Win Value", "Win Value A", "Raw Value"].includes(backendRaw)) return "";
+
+    // Legacy fallback only for older JSON rows that pre-date backend policy.
+    const backendTags = tagSet(entry);
 
     if (
       (backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") &&
@@ -6414,101 +6434,35 @@ const inFieldRange = (fieldSize, lo, hi) => {
 
   
 const getShortlistType = (entry, extraPlacesArg) => {
+    // Signature/notification logic consumes the same authoritative backend
+    // classification as the visible shortlist.  This avoids a second rule
+    // engine and removes cross-IIFE references to helpers that are out of scope.
     const epMap = extraPlacesArg || extraPlaces || new Map();
-    const backendType = String(entry?.shortlist_type || "").trim();
-    const backendTags = tagSet(entry);
+    const raw = String(entry?.shortlist_type || entry?.type || "").trim();
+    const alias = new Map([
+      ["Must Win A", "Must Win"],
+      ["Must Lay A", "Must Lay"], ["Place Lay A", "Place Lay"],
+      ["Big EW - EP", "Big E/W - EP"], ["BT EW", "BT E/W"]
+    ]);
+    const type = alias.get(raw) || raw;
     const bfTopFinishN = Number(entry?.bf_top_finish_best_n || entry?.bf_top_finish_n || 0);
-    const isExtraPlaceRace = epMap.has(raceKey(entry.race_datetime, entry.course)) || (Number.isFinite(bfTopFinishN) && bfTopFinishN > 0);
+    const isExtra = epMap.has(raceKey(entry.race_datetime, entry.course)) ||
+      (Number.isFinite(bfTopFinishN) && bfTopFinishN > 0);
 
-    if (
-      (backendType === "Each Way" || backendType === "Big E/W - EP" || backendType === "BT E/W") &&
-      backOddsConfirmed(entry) &&
-      shortlistDataOk(entry, 86.0) &&
-      !hasAnyLayTag(backendTags) &&
-      (
-        (backendTags.includes("blue") && backendTags.includes("ai-back")) ||
-        hasEliteEwOverlay(entry, backendTags) ||
-        hasMonsterEwOverlay(entry, backendTags) ||
-        hasEwSafetyNetOverlay(entry, backendTags)
-      )
-    ) {
-      if (
-        backendType === "Big E/W - EP" &&
-        isBigEwEpPriced(entry) &&
-        isBigEwEpField(entry) &&
-        (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags) || hasEwSafetyNetOverlay(entry, backendTags))
-      ) return "Big E/W - EP";
-
-      if (
-        backendType === "BT E/W" &&
-        isBigEwEpPriced(entry) &&
-        isBtEwField(entry) &&
-        (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, backendTags) || hasMonsterEwOverlay(entry, backendTags) || hasEwSafetyNetOverlay(entry, backendTags))
-      ) return "BT E/W";
-
-      if (isNormalEachWayPriced(entry) && hasOptimisedNormalEwShape(entry, backendTags)) {
-        if (isExtraPlaceRace && isBigEwEpField(entry)) return "Big E/W - EP";
-        if (isExtraPlaceRace && isBtEwField(entry)) return "BT E/W";
-        return "Each Way";
-      }
-    }
-
-    const backendTypes = new Set(["Place Lay", "Place Lay A", "Must Lay", "Must Lay A", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
-    if (backendTypes.has(backendType)) {
-      if (backendType === "Place Lay A") return "Place Lay";
-      if (backendType === "Must Lay A") return "Must Lay";
-      if (backendType === "Must Win" || backendType === "Must Win A" || backendType === "Win Value A") {
-        if (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) return "Must Win";
-        return "";
-      }
-      return backendType;
-    }
-
-    const tags = tagSet(entry);
-    const backOk = backOddsConfirmed(entry);
-    const dataOk = shortlistDataOk(entry, 86.0);
-
-    if (tags.includes("place-lay")) return "Place Lay";
-    if (isLayOnly(tags)) return "Must Lay";
-
-    const monsterEw = !hasAnyLayTag(tags) && backOk && hasMonsterEwOverlay(entry, tags);
-    const eliteEw = !hasAnyLayTag(tags) && backOk && dataOk && hasEliteEwOverlay(entry, tags);
-    const safetyEw = !hasAnyLayTag(tags) && backOk && dataOk && hasEwSafetyNetOverlay(entry, tags);
-
-    if (monsterEw || eliteEw || safetyEw) {
-      if (isExtraPlaceRace && isBigEwEpField(entry)) return "Big E/W - EP";
-      if (isExtraPlaceRace && isBtEwField(entry)) return "BT E/W";
+    if (type === "Each Way") {
+      if (isExtra && getFieldSize(entry) >= 16) return "BT E/W";
+      if (isExtra) return "Big E/W - EP";
       return "Each Way";
     }
+    if (["Must Win", "Must Lay", "Place Lay", "Intel EW", "Big E/W - EP", "BT E/W"].includes(type)) {
+      return type;
+    }
+    if (raw) return "";
 
-    if (
-      !hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace &&
-      tags.includes("blue") && tags.includes("ai-back") &&
-      isBigEwEpPriced(entry) && isBigEwEpField(entry) &&
-      (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags) || hasEwSafetyNetOverlay(entry, tags))
-    ) return "Big E/W - EP";
-
-    if (
-      !hasAnyLayTag(tags) && backOk && dataOk && isExtraPlaceRace &&
-      tags.includes("bt-ew") && tags.includes("ai-back") &&
-      isBigEwEpPriced(entry) && isBtEwField(entry) &&
-      (placeProfileOk(entry, 58.0) || hasEliteEwOverlay(entry, tags) || hasMonsterEwOverlay(entry, tags) || hasEwSafetyNetOverlay(entry, tags))
-    ) return "BT E/W";
-
-    if (
-      backOk && dataOk && !hasAnyLayTag(tags) &&
-      tags.includes("blue") && tags.includes("ai-back") &&
-      isNormalEachWayPriced(entry) && !isExtraPlaceRace &&
-      hasOptimisedNormalEwShape(entry, tags)
-    ) return "Each Way";
-
-    if (
-      backOk && dataOk && !hasAnyLayTag(tags) &&
-      isMustWinPriced(entry) &&
-      (eliteMustWinQVE(entry) || strictBackendMustWin(entry)) &&
-      !tags.includes("blue") && !tags.includes("bt-ew")
-    ) return "Must Win";
-
+    // Minimal compatibility fallback for old entries with no shortlist_type.
+    const tags = tagSet(entry);
+    if (tags.includes("place-lay")) return "Place Lay";
+    if (tags.includes("raw-lay") || tags.includes("ai-lay")) return "Must Lay";
     return "";
   };
 
