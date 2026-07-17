@@ -2330,6 +2330,50 @@
       .backtest-head { align-items: flex-start; }
     }
 
+    .rp-backtest-shell {
+      margin: 16px;
+      padding: 14px;
+      border: 1px solid rgba(103, 174, 255, 0.35);
+      border-radius: 12px;
+      background: rgba(7, 19, 38, 0.72);
+    }
+    .rp-backtest-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 7px;
+    }
+    .rp-backtest-heading strong { color: #bfe0ff; font-size: 1.02rem; }
+    .rp-backtest-heading span, .rp-backtest-note { color: #9fb3cc; font-size: 0.82rem; }
+    .rp-backtest-note { margin-bottom: 12px; line-height: 1.45; }
+    .rp-backtest-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .rp-product-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(131, 164, 204, 0.28);
+      border-radius: 10px;
+      background: rgba(16, 36, 64, 0.8);
+    }
+    .rp-product-card h3 { margin: 0 0 8px; color: #fff; font-size: 0.98rem; }
+    .rp-product-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .rp-product-stat { padding: 7px; border-radius: 7px; background: rgba(255,255,255,0.055); }
+    .rp-product-stat span { display: block; color: #9fb3cc; font-size: 0.70rem; }
+    .rp-product-stat b { display: block; margin-top: 2px; color: #f3f8ff; }
+    .rp-product-recent { margin: 9px 0 0; padding: 0; list-style: none; }
+    .rp-product-recent li { padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.76rem; line-height: 1.35; }
+    .rp-status-win { color: #75ef9a; }
+    .rp-status-loss { color: #ff8c8c; }
+    .rp-status-open { color: #ffd96a; }
+    @media (max-width: 850px) {
+      .rp-backtest-grid { grid-template-columns: 1fr; }
+      .rp-backtest-shell { margin: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -2338,7 +2382,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 14:57</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 16:00</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2379,6 +2423,20 @@
           </table>
         </div>
       </details>
+      <div class="rp-backtest-shell">
+        <div class="rp-backtest-heading">
+          <strong>🧩 Separate Racing Products Backtest</strong>
+          <span id="rp-backtest-updated">Loading racing_products_backtest.json…</span>
+        </div>
+        <div class="rp-backtest-note">
+          Placepot, Forecast and Tricast are shadow-tracked independently. Their costs, hit rates and open results never enter the main Win/EW/Lay totals. Pool P/L remains blank unless an actual dividend is available.
+        </div>
+        <div id="rp-backtest-grid" class="rp-backtest-grid">
+          <section class="rp-product-card"><h3>Placepot</h3><p>Loading…</p></section>
+          <section class="rp-product-card"><h3>Forecast</h3><p>Loading…</p></section>
+          <section class="rp-product-card"><h3>Tricast</h3><p>Loading…</p></section>
+        </div>
+      </div>
     </details>
 
 
@@ -2605,7 +2663,7 @@
 
     <details class="section-card">
       <summary class="section-title">
-        <span class="section-title-left">🔗 Forecasts (Top 2 clear)</span>
+        <span class="section-title-left">🔗 Forecasts (Ordered probability model)</span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
@@ -2617,7 +2675,7 @@
 
     <details class="section-card">
       <summary class="section-title">
-        <span class="section-title-left">🔗 Tricasts (Top 3 clear)</span>
+        <span class="section-title-left">🔗 Tricasts (Ordered probability model)</span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
@@ -6659,6 +6717,69 @@ const getShortlistType = (entry, extraPlacesArg) => {
     checkForShortlistChange();
     setInterval(checkForShortlistChange, CHECK_EVERY_MS);
   });
+})();
+</script>
+
+<script>
+(() => {
+  "use strict";
+  const rpEsc = (value) => String(value ?? "").replace(/[&<>'"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[ch]));
+  const rpNum = (value, fallback = 0) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  };
+  const rpStatusClass = (status) => {
+    const text = String(status || "").toLowerCase();
+    if (text.includes("won") || text.includes("landed")) return "rp-status-win";
+    if (text.includes("lost") || text.includes("knocked")) return "rp-status-loss";
+    return "rp-status-open";
+  };
+  const rpRowsFor = (data, product) => {
+    if (product === "Placepot") return Array.isArray(data?.placepot_rows) ? data.placepot_rows : [];
+    const rows = Array.isArray(data?.ordered_rows) ? data.ordered_rows : [];
+    return rows.filter(row => String(row?.product_type || "") === product);
+  };
+  const rpRecentLabel = (row, product) => {
+    if (product === "Placepot") {
+      return `${rpEsc(row.date || "")} ${rpEsc(row.course || "")} · ${rpNum(row.lines)} lines`;
+    }
+    const combo = Array.isArray(row.combo) ? row.combo.join(" » ") : "";
+    return `${rpEsc(row.race_datetime || "")} ${rpEsc(row.course || "")} · ${rpEsc(row.bet_structure || "")} · ${rpEsc(combo)}`;
+  };
+  const rpCard = (data, product) => {
+    const summary = data?.summary?.[product] || {};
+    const rows = rpRowsFor(data, product).slice(0, 4);
+    const recent = rows.length
+      ? `<ul class="rp-product-recent">${rows.map(row => `<li>${rpRecentLabel(row, product)}<br><span class="${rpStatusClass(row.status)}">${rpEsc(row.status || "Pending")}</span></li>`).join("")}</ul>`
+      : `<ul class="rp-product-recent"><li>No v2 selections tracked yet.</li></ul>`;
+    return `<section class="rp-product-card">
+      <h3>${product === "Placepot" ? "🧩" : product === "Forecast" ? "🔗" : "🔺"} ${rpEsc(product)}</h3>
+      <div class="rp-product-stats">
+        <div class="rp-product-stat"><span>Settled</span><b>${rpNum(summary.settled)}/${rpNum(summary.selections)}</b></div>
+        <div class="rp-product-stat"><span>Won/Landed</span><b>${rpNum(summary.won)}</b></div>
+        <div class="rp-product-stat"><span>Strike rate</span><b>${rpNum(summary.strike_rate_pct).toFixed(1)}%</b></div>
+        <div class="rp-product-stat"><span>Open</span><b>${rpNum(summary.open)}</b></div>
+        <div class="rp-product-stat"><span>Tracked lines</span><b>${rpNum(summary.tracked_lines)}</b></div>
+        <div class="rp-product-stat"><span>Tracked cost</span><b>£${rpNum(summary.tracked_cost).toFixed(2)}</b></div>
+      </div>${recent}
+    </section>`;
+  };
+  const renderRacingProductsBacktest = async () => {
+    const grid = document.getElementById("rp-backtest-grid");
+    const updated = document.getElementById("rp-backtest-updated");
+    if (!grid) return;
+    try {
+      const response = await fetch(`racing_products_backtest.json?v=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      grid.innerHTML = ["Placepot", "Forecast", "Tricast"].map(name => rpCard(data, name)).join("");
+      if (updated) updated.textContent = `Updated ${data.updated_at || "-"} · excluded from main totals`;
+    } catch (error) {
+      grid.innerHTML = ["Placepot", "Forecast", "Tricast"].map(name => `<section class="rp-product-card"><h3>${rpEsc(name)}</h3><p>No separate product ledger yet. It will appear after the next model/tracker run.</p></section>`).join("");
+      if (updated) updated.textContent = "Waiting for racing_products_backtest.json";
+    }
+  };
+  document.addEventListener("DOMContentLoaded", renderRacingProductsBacktest);
 })();
 </script>
 
