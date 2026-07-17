@@ -2681,7 +2681,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 21:57</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 23:12</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2816,7 +2816,7 @@
       </summary>
       <div class="section-body">
         <div class="section-note">
-          Meeting-level six-leg Placepot perms. Survival-first: model score, market safety and realistic place chance before pure value. Click a course header for detail.
+          Meeting-level six-leg Placepot perms. “Model” measures average leg quality; “Survival” is the stricter probability of clearing all six legs. Danger is reserved for genuinely thin data or sub-68% simulated leg coverage.
         </div>
         <div id="placepot-cards" class="placepot-grid"></div>
       </div>
@@ -2892,7 +2892,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Exceptional lays only: 2.10 or shorter, 95/95 data, outside the model top two, strongly opposed by both model prices and carrying a weak R3/R4 or leader/place profile.</div>
+        <div class="section-note">Exceptional lays only: 2.50 or shorter, at least 95% runner coverage and 92% race confidence, strongly opposed by both price engines, and never model rank 1. Rank 2 needs an exceptional weak-place profile; lower ranks still need clear profile weakness.</div>
         <div class="table-wrap">
           <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2944,6 +2944,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
+        <div class="section-note">Ordered-race products are tracked separately and excluded from main totals in the Win/EW/Lay shortlist record.</div>
         <div class="table-wrap">
           <table id="fc-table"><thead><tr><th>Race</th><th>Combo</th><th>Why</th></tr></thead><tbody></tbody></table>
         </div>
@@ -5837,7 +5838,8 @@ const getShortlistType = (entry) => {
                 ${racecardRaceLinkHTML({ race_datetime: leg.race_datetime, course: leg.course || leg.meeting_course || "" }, `<span>Leg ${escHTML(leg.leg)} — ${timeFromRaceDT(leg.race_datetime)} — ${escHTML(leg.place_terms)} — ${escHTML(leg.field_size)} runners</span>`, "placepot-race-link")}
               </span>
               <span class="placepot-leg-head-meta">
-                <span class="placepot-leg-conf ${riskClassName(legRisk)}">Conf ${Number(leg.leg_confidence || leg.race_confidence || 0).toFixed(0)}%</span>
+                <span class="placepot-leg-conf ${riskClassName(legRisk)}">Coverage ${Number(leg.leg_coverage_probability || leg.coverage_probability || leg.leg_confidence || 0).toFixed(0)}%</span>
+                <span class="placepot-leg-conf">Data ${Number(leg.race_confidence || 0).toFixed(0)}%</span>
                 ${isTrueDangerLeg(leg) ? `<span class="placepot-leg-conf risk-high">⚠️ Danger${leg.danger_reason ? `: ${escHTML(leg.danger_reason)}` : ""}</span>` : ""}
                 ${placepotResultBadgeHTML(legStatus, leg.leg_result_label || ppStatusLabel(legStatus))}
               </span>
@@ -5852,6 +5854,8 @@ const getShortlistType = (entry) => {
       const ticketStatus = String(p.result_status || "pending");
       const dangerCount = legs.filter(isTrueDangerLeg).length;
       const favVulnCount = legs.filter(l => l.vulnerable_favourite && l.vulnerable_favourite.is_vulnerable).length;
+      const modelConfidence = Number(p.model_confidence ?? p.confidence ?? 0);
+      const survivalProbability = Number(p.ticket_survival_probability ?? 0);
 
       return `
         <details class="placepot-card">
@@ -5861,7 +5865,8 @@ const getShortlistType = (entry) => {
               <div class="placepot-meta">
                 ${placepotStartPillHTML(startRaceDT)}
                 <span class="placepot-pill">${escHTML(p.lines || 0)} lines</span>
-                <span class="placepot-pill">Conf ${Number(p.confidence || 0).toFixed(0)}%</span>
+                <span class="placepot-pill">Model ${modelConfidence.toFixed(0)}%</span>
+                <span class="placepot-pill">Survival ${survivalProbability.toFixed(0)}%</span>
                 ${dangerCount ? `<span class="placepot-pill placepot-danger-pill">⚠️ ${dangerCount} danger</span>` : ""}
                 ${favVulnCount ? `<span class="placepot-pill placepot-opportunity-pill">💎 ${favVulnCount} fav vulnerable</span>` : ""}
                 ${ticketStatus !== "pending" ? placepotResultBadgeHTML(ticketStatus, p.result_label || ppStatusLabel(ticketStatus)) : ""}
