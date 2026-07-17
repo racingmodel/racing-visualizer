@@ -2338,7 +2338,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 11:04</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 13:04</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2432,8 +2432,8 @@
         <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
         <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
         <div class="meta-pill">✅ Must Win = strict A-grade, usually 8/1 or shorter</div>
-        <div class="meta-pill">🎯 EW = 13.0+ normal non-EP</div>
-        <div class="meta-pill">🧪 BT E/W = 12/1+ in 16+ runner EP fields</div>
+        <div class="meta-pill">🎯 EW = 16/1+ normal non-EP</div>
+        <div class="meta-pill">🧪 BT E/W = 14/1+ in 16+ runner EP fields</div>
         <div class="meta-pill">❌ Lay tags now highlighted harder</div>
         <div class="meta-pill">📱 Mobile swipe tables</div>
         <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
@@ -2531,7 +2531,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">16/1+ runners in extra-place races with fewer than 16 runners and multiple model-support tags.</div>
+        <div class="section-note">14/1+ runners in extra-place races with fewer than 16 runners and multiple model-support tags.</div>
         <div class="table-wrap">
           <table id="multitag-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2544,7 +2544,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Backend-test each-way runners: same great-value EP support shape as Big E/W - EP, but 12/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
+        <div class="section-note">Backend-test each-way runners: same great-value EP support shape as Big E/W - EP, but 14/1+ in 16+ runner fields. Marked with the BT E/W tag.</div>
         <div class="table-wrap">
           <table id="btew-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2583,7 +2583,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Normal non-extra-place EW only: 13.0+ decimal and passing the tightened great-value model/raw/place-profile shape.</div>
+        <div class="section-note">Normal non-extra-place EW only: 16/1+ (decimal 17.0+) and passing the tightened great-value model/raw/place-profile shape.</div>
         <div class="table-wrap">
           <table id="ewnotep-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2596,7 +2596,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Strict 5/1 or shorter, backend Must Win / AI-back confirmed, both model prices shorter than market, strong leader/place profile.</div>
+        <div class="section-note">Strict 8/1 or shorter, backend Must Win / AI-back confirmed, both model prices shorter than market, strong leader/place profile.</div>
         <div class="table-wrap">
           <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -4246,23 +4246,23 @@
     return Number.isFinite(cov) && Number.isFinite(conf) && cov >= minVal && conf >= minVal;
   };
 
-  // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
+  // Legacy fallback only: Big E/W - Extra Places and BT E/W use decimal 15.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    return !isNaN(dec) && dec >= 15.0;
   };
 
-  // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
+  // Legacy fallback only: normal Each Way uses decimal 17.0+
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    return !isNaN(dec) && dec >= 17.0;
   };
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    // Controlled extension: backend Must Win A / ai-back + top-rated-clear rows
-    // can display up to decimal 10.0 when strictBackendMustWin() also passes.
-    return !isNaN(dec) && dec <= 10.0;
+    // Shared compatibility cap: backend Must Win A / ai-back +
+    // top-rated-clear rows display up to decimal 9.0 (8/1).
+    return !isNaN(dec) && dec <= 9.0;
   };
 
   const qveNum = (v, fallback = NaN) => {
@@ -4300,7 +4300,7 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 10.0 && model < book && raw < book)) return false;
+    if (!(book <= 9.0 && model < book && raw < book)) return false;
 
     const qveCount = qveCountFor(entry);
     const ensOdds = qveOddsFor(entry);
@@ -4353,7 +4353,7 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 10.0 && model < book && raw < book)) return false;
+    if (!(book <= 9.0 && model < book && raw < book)) return false;
 
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
@@ -4409,7 +4409,7 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 10.0 && model < book && raw < book)) return false;
+    if (!(book <= 9.0 && model < book && raw < book)) return false;
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
     const leader = toNum(entry?.leader_profile, 0);
@@ -5862,23 +5862,23 @@ const getShortlistType = (entry) => {
     );
   };
 
-  // Big E/W - Extra Places and BT E/W: 12/1+ decimal 13.0+
+  // Legacy fallback only: Big E/W - Extra Places and BT E/W use decimal 15.0+
   const isBigEwEpPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    return !isNaN(dec) && dec >= 15.0;
   };
 
-  // Normal Each Way, no extra places: decimal 13.0+ with model/raw/place gates
+  // Legacy fallback only: normal Each Way uses decimal 17.0+
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 13.0;
+    return !isNaN(dec) && dec >= 17.0;
   };
 
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    // Controlled extension: backend Must Win A / ai-back + top-rated-clear rows
-    // can display up to decimal 10.0 when strictBackendMustWin() also passes.
-    return !isNaN(dec) && dec <= 10.0;
+    // Shared compatibility cap: backend Must Win A / ai-back +
+    // top-rated-clear rows display up to decimal 9.0 (8/1).
+    return !isNaN(dec) && dec <= 9.0;
   };
 
   const qveNum = (v, fallback = NaN) => {
@@ -5916,7 +5916,7 @@ const getShortlistType = (entry) => {
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 10.0 && model < book && raw < book)) return false;
+    if (!(book <= 9.0 && model < book && raw < book)) return false;
 
     const qveCount = qveCountFor(entry);
     const ensOdds = qveOddsFor(entry);
@@ -5983,7 +5983,7 @@ const getShortlistType = (entry) => {
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 10.0 && model < book && raw < book)) return false;
+    if (!(book <= 9.0 && model < book && raw < book)) return false;
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
     const leader = toNum(entry?.leader_profile, 0);
