@@ -2338,7 +2338,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 13:04</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 14:03</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2651,7 +2651,10 @@
 
     <details class="section-card">
       <summary class="section-title"><span class="section-title-left">🌑 Sleepers</span><span class="section-chevron">▶</span></summary>
-      <div class="section-body"><div class="table-wrap"><table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="section-body">
+        <div class="section-note">Returning-conditions watchlist: a strong historic run matched today's going/distance/class profile, followed by poorer runs under materially different conditions. “Possible Plot Watch” is a cautious pattern label, not proof of trainer/owner intent and never an automatic bet.</div>
+        <div class="table-wrap"><table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Score / Evidence</th><th>Why Flagged</th><th>My List</th></tr></thead><tbody></tbody></table></div>
+      </div>
     </details>
 
     <details class="section-card">
@@ -3927,6 +3930,22 @@
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+  const sleeperRow = (entry) => {
+    const scoreNum = Number(entry?.sleeper_score ?? 0);
+    const score = Number.isFinite(scoreNum) ? scoreNum.toFixed(1) : "-";
+    const confidence = String(entry?.sleeper_confidence || "Low");
+    const plotWatch = entry?.sleeper_plot_watch === true || String(entry?.sleeper_plot_watch || "").toLowerCase() === "true";
+    const reason = String(entry?.sleeper_reason || entry?.reason || "Returning-conditions pattern detected.");
+    return `<tr class="sleeper-row">
+      <td>${raceCellHTML(entry)}</td>
+      <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div></td>
+      <td><div>${escHTML(entry?.bookie_odds ?? "-")}</div><div>${escHTML(entry?.raw_odds ?? "-")}</div></td>
+      <td><b>${score}/100</b><br><small>${escHTML(confidence)} confidence</small><br>${plotWatch ? `<span class="tag-chip tag-sleeper">🕵️ Possible Plot Watch</span>` : iconsOnly(tagSet(entry))}</td>
+      <td><small class="reason">${escHTML(reason)}</small></td>
+      <td>${myBetButtonHTML(entry, "Sleeper Watch", "Watch")}</td>
+    </tr>`;
+  };
+
   const plainRacingReason = (entry) => {
     const supplied = String(entry?.racing_reason || "").trim();
     if (supplied) return supplied;
@@ -4481,7 +4500,7 @@ const inFieldRange = (fieldSize, lo, hi) => {
   };
 
   const ewSupportCount = (tags) => {
-    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear", "sleeper"]);
+    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear"]);
     return (tags || []).filter(t => supportTags.has(t)).length;
   };
 
@@ -5150,7 +5169,7 @@ const getShortlistType = (entry) => {
   const mustwin = buildGroupedRows(mustwinItems, e => twoLineRow(e, tagSet(e), "mustwin-row", "Must Win"), 5);
   const rawv = buildGroupedRows(rawvItems, e => twoLineRow(e, tagSet(e), "rawvalue-row", "Raw Value"), 5);
   const tony = buildGroupedRows(tonyItems, e => twoLineRow(e, tagSet(e), "tonywatch-row", "Tony Watch"), 5);
-  const sleepers = buildGroupedRows(sleeperItems, e => twoLineRow(e, tagSet(e), "sleeper-row", "Sleeper"), 5);
+  const sleepers = buildGroupedRows(sleeperItems, sleeperRow, 6);
   const value = buildGroupedRows(valueItems, e => twoLineRow(e, tagSet(e), "value-row", "Model Value"), 5);
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row", "Big E/W Odds"), 5);
   const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear"), 5);
@@ -5516,7 +5535,7 @@ const getShortlistType = (entry) => {
   setBody('#aibets-table',    aihtml, 6);
   setBody('#rawvalue-table',  rawv, 5);
   setBody('#tonywatch-table', tony, 5);
-  setBody('#sleepers-table',  sleepers, 5);
+  setBody('#sleepers-table',  sleepers, 6);
   setBody('#value-table',     value, 5);
   setBody('#overlay-table',   overlay, 6);
   setBody('#blue-table',      blue, 5);
@@ -6055,7 +6074,7 @@ const inFieldRange = (fieldSize, lo, hi) => {
   };
 
   const ewSupportCount = (tags) => {
-    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear", "sleeper"]);
+    const supportTags = new Set(["value", "rank-overlay", "raw-value", "top-rated-clear"]);
     return (tags || []).filter(t => supportTags.has(t)).length;
   };
 
