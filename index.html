@@ -1,349 +1,481 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Race Visualizer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Race Visualizer · Daily Model Hub</title>
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1e1e2f; color: #f5f5f5; display: flex; flex-direction: column; align-items: center; }
-    header { background: linear-gradient(135deg, #222 40%, #444); width: 100%; padding: 2rem 1rem; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6); }
-    header h1 { margin: 0; font-size: 2.5rem; color: #ffd700; letter-spacing: 1px; }
-    .container { width: 100%; max-width: 1200px; padding: 2rem; }
-    .container h2 { width: 100%; text-align: left; margin: 2rem 0 0.4rem; color: #ffd700; border-bottom: 1px solid #444; padding-bottom: 0.3rem; }
-    .day-label { color: #cfcfcf; margin: 0 0 1rem; font-size: 1rem; }
-    .course-group { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
-    .card { background: #2c2c3e; border-radius: 12px; padding: 1.5rem; text-align: center; width: 220px; transition: transform 0.2s ease, box-shadow 0.3s ease; box-shadow: 0 0 10px rgba(255, 255, 255, 0.05); }
-    .card:hover { transform: translateY(-6px); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
-    .card a { text-decoration: none; color: #ffd700; font-weight: bold; font-size: 1.05rem; display: inline-block; }
-
-    .meta-row { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; }
-    .badge {
-      font-size: 0.78rem;
-      padding: 0.2rem 0.5rem;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #ddd;
-      line-height: 1.2;
-      white-space: nowrap;
-    }
-    .badge-ep { background: rgba(0, 200, 255, 0.14); border-color: rgba(0, 200, 255, 0.25); color: #bfefff; }
-    .badge-hi { background: rgba(60, 220, 120, 0.14); border-color: rgba(60, 220, 120, 0.25); color: #c8ffd8; }
-    .badge-lo { background: rgba(255, 120, 120, 0.14); border-color: rgba(255, 120, 120, 0.25); color: #ffd1d1; }
-    .badge-mid { background: rgba(180, 180, 180, 0.14); border-color: rgba(180, 180, 180, 0.25); color: #e6e6e6; }
-
-    footer { margin-top: 3rem; font-size: 0.9rem; color: #888; text-align: center; padding-bottom: 2rem; }
-    @media (max-width: 600px) { .card { width: 90%; } header h1 { font-size: 1.8rem; } }
+    :root { --navy:#10243f; --navy2:#203d62; --ink:#17243a; --muted:#66758b; --line:#dfe6ee; --panel:#fff;
+      --gold:#d3a20a; --green:#087747; --amber:#916300; --red:#a52c25; --soft:#f4f7fa; --shadow:0 16px 40px rgba(16,36,63,.11); }
+    * { box-sizing:border-box; } html { scroll-behavior:smooth; } body { margin:0; color:var(--ink); background:linear-gradient(180deg,#eaf0f5 0,#f8fafc 420px);
+      font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:inherit; } .shell { width:min(1180px,calc(100% - 28px)); margin:0 auto; padding-bottom:48px; }
+    .hero { margin-top:14px; padding:clamp(24px,5vw,52px); border-radius:24px; color:#fff; overflow:hidden;
+      background:radial-gradient(circle at 84% 8%,rgba(255,218,72,.27),transparent 28%),linear-gradient(135deg,var(--navy),var(--navy2)); box-shadow:var(--shadow); }
+    .eyebrow { margin:0 0 9px; color:#f6d76c; font-size:.76rem; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:0; max-width:720px; font-size:clamp(2rem,5vw,3.8rem); line-height:1.02; letter-spacing:-.035em; }
+    .hero-copy { max-width:680px; margin:14px 0 0; color:#dbe7f5; font-size:clamp(.95rem,2vw,1.08rem); line-height:1.58; }
+    .quick-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; } .quick-links a { min-height:42px; padding:10px 14px; border:1px solid rgba(255,255,255,.2);
+      border-radius:999px; background:rgba(255,255,255,.1); color:#fff; font-weight:850; text-decoration:none; } .quick-links a:first-child { color:var(--navy); background:#f7d35c; border-color:#f7d35c; }
+    .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0; } .stat { padding:15px 16px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.92); box-shadow:0 7px 22px rgba(16,36,63,.06); }
+    .stat span { display:block; color:var(--muted); font-size:.71rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; } .stat strong { display:block; margin-top:4px; font-size:1.45rem; }
+    .toolbar { position:sticky; top:8px; z-index:20; display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:18px 0 10px; padding:10px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.94); box-shadow:0 10px 28px rgba(16,36,63,.09); backdrop-filter:blur(12px); }
+    .toolbar input { flex:1 1 220px; min-height:43px; padding:10px 13px; border:1px solid #cbd6e1; border-radius:11px; color:var(--ink); background:#fff; font:inherit; }
+    .filter { min-height:41px; padding:9px 13px; border:1px solid #cbd6e1; border-radius:999px; color:var(--navy); background:#fff; font-weight:850; cursor:pointer; } .filter.active { color:#fff; background:var(--navy); border-color:var(--navy); }
+    .result-count { color:var(--muted); font-size:.82rem; font-weight:800; } .meeting { margin-top:25px; } .meeting-head { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .meeting-head p { margin:0 0 3px; color:var(--muted); font-size:.76rem; font-weight:850; text-transform:uppercase; letter-spacing:.045em; } .meeting-head h2 { margin:0; font-size:clamp(1.25rem,3vw,1.8rem); } .meeting-head>span { color:var(--muted); font-weight:800; white-space:nowrap; }
+    .race-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; } .race-card { display:flex; flex-direction:column; min-height:218px; padding:18px; border:1px solid var(--line); border-radius:18px; background:var(--panel); box-shadow:0 8px 24px rgba(16,36,63,.07); text-decoration:none; transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease; }
+    .race-card:hover { transform:translateY(-3px); border-color:#b7c7d8; box-shadow:0 15px 32px rgba(16,36,63,.13); } .race-card:focus-visible { outline:3px solid #efbd22; outline-offset:3px; }
+    .race-time { color:var(--green); font-size:1.55rem; font-weight:950; letter-spacing:-.03em; } .race-name { margin-top:3px; font-size:1.06rem; font-weight:900; } .race-meta { margin-top:5px; color:var(--muted); font-size:.84rem; }
+    .badge-row { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; } .badge { display:inline-flex; padding:5px 8px; border-radius:999px; font-size:.72rem; font-weight:900; }
+    .badge-high { color:#08633d; background:#d9f3e5; } .badge-good { color:#715300; background:#fff0bd; } .badge-thin { color:#92241e; background:#ffe1dd; } .badge-missing { color:#526076; background:#e9eef3; } .badge-ep { color:#085b82; background:#dff3ff; }
+    .open-race { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:16px; color:var(--navy); font-size:.84rem; font-weight:900; } .open-race b { font-size:1.15rem; }
+    .empty { display:none; margin:30px 0; padding:22px; border:1px dashed #bdc9d6; border-radius:16px; color:var(--muted); text-align:center; background:#fff; }
+    footer { margin-top:38px; color:var(--muted); text-align:center; font-size:.78rem; }
+    [hidden] { display:none!important; }
+    @media(max-width:820px) { .race-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .stats { grid-template-columns:repeat(2,1fr); } }
+    @media(max-width:540px) { .shell { width:min(100% - 18px,1180px); } .hero { margin-top:9px; border-radius:18px; } .race-grid { grid-template-columns:1fr; } .race-card { min-height:190px; } .toolbar { top:4px; } }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } .race-card { transition:none; } }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🏇 Race Visualizer Index</h1>
-  </header>
-
-  <div class="container">
-    <h2>🏁 Cartmel</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_14-00_Cartmel.html">14:00 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_14-35_Cartmel.html">14:35 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_15-10_Cartmel.html">15:10 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_15-47_Cartmel.html">15:47 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_16-21_Cartmel.html">16:21 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_16-57_Cartmel.html">16:57 Cartmel</a></div>
-      <div class="card"><a href="2026-07-18_17-30_Cartmel.html">17:30 Cartmel</a></div>
-    </div>
-
-    <h2>🏁 Curragh</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_13-10_Curragh.html">13:10 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_13-40_Curragh.html">13:40 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_14-15_Curragh.html">14:15 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_14-50_Curragh.html">14:50 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_15-25_Curragh.html">15:25 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_16-00_Curragh.html">16:00 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_16-35_Curragh.html">16:35 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_17-10_Curragh.html">17:10 Curragh</a></div>
-      <div class="card"><a href="2026-07-18_17-45_Curragh.html">17:45 Curragh</a></div>
-    </div>
-
-    <h2>🏁 Doncaster</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_17-40_Doncaster.html">17:40 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_18-15_Doncaster.html">18:15 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_18-45_Doncaster.html">18:45 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_19-15_Doncaster.html">19:15 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_19-50_Doncaster.html">19:50 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_20-25_Doncaster.html">20:25 Doncaster</a></div>
-      <div class="card"><a href="2026-07-18_21-00_Doncaster.html">21:00 Doncaster</a></div>
-    </div>
-
-    <h2>🏁 Market_Rasen</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_13-35_Market_Rasen.html">13:35 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_14-10_Market_Rasen.html">14:10 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_14-45_Market_Rasen.html">14:45 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_15-20_Market_Rasen.html">15:20 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_16-05_Market_Rasen.html">16:05 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_16-40_Market_Rasen.html">16:40 Market_Rasen</a></div>
-      <div class="card"><a href="2026-07-18_17-15_Market_Rasen.html">17:15 Market_Rasen</a></div>
-    </div>
-
-    <h2>🏁 Newbury</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_13-55_Newbury.html">13:55 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_14-25_Newbury.html">14:25 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_15-02_Newbury.html">15:02 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_15-37_Newbury.html">15:37 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_16-12_Newbury.html">16:12 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_16-47_Newbury.html">16:47 Newbury</a></div>
-      <div class="card"><a href="2026-07-18_17-20_Newbury.html">17:20 Newbury</a></div>
-    </div>
-
-    <h2>🏁 Newmarket</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_14-30_Newmarket.html">14:30 Newmarket</a></div>
-      <div class="card"><a href="2026-07-18_15-05_Newmarket.html">15:05 Newmarket</a></div>
-      <div class="card"><a href="2026-07-18_15-42_Newmarket.html">15:42 Newmarket</a></div>
-      <div class="card"><a href="2026-07-18_16-17_Newmarket.html">16:17 Newmarket</a></div>
-      <div class="card"><a href="2026-07-18_16-52_Newmarket.html">16:52 Newmarket</a></div>
-      <div class="card"><a href="2026-07-18_17-25_Newmarket.html">17:25 Newmarket</a></div>
-    </div>
-
-    <h2>🏁 Nottingham</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_17-55_Nottingham.html">17:55 Nottingham</a></div>
-      <div class="card"><a href="2026-07-18_18-30_Nottingham.html">18:30 Nottingham</a></div>
-      <div class="card"><a href="2026-07-18_19-00_Nottingham.html">19:00 Nottingham</a></div>
-      <div class="card"><a href="2026-07-18_19-33_Nottingham.html">19:33 Nottingham</a></div>
-      <div class="card"><a href="2026-07-18_20-08_Nottingham.html">20:08 Nottingham</a></div>
-      <div class="card"><a href="2026-07-18_20-43_Nottingham.html">20:43 Nottingham</a></div>
-    </div>
-
-    <h2>🏁 Ripon</h2>
-    <div class="day-label">Saturday 18 July 2026</div>
-    <div class="course-group">
-      <div class="card"><a href="2026-07-18_14-05_Ripon.html">14:05 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_14-40_Ripon.html">14:40 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_15-15_Ripon.html">15:15 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_15-53_Ripon.html">15:53 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_16-25_Ripon.html">16:25 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_17-03_Ripon.html">17:03 Ripon</a></div>
-      <div class="card"><a href="2026-07-18_17-35_Ripon.html">17:35 Ripon</a></div>
-    </div>
-
-
-    <h2>🏁 best_bets</h2>
-    <div class="course-group">
-      <div class="card"><a href="ai_best_bets.html">ai best_bets</a></div>
-      <div class="card"><a href="xg_best_bets.html">xg best_bets</a></div>
-      <div class="card"><a href="AtoZ.html">A to Z horses</a></div>
-    </div>
-  </div>
-
-  <footer>
-    &copy; 2025 ScottyMelloty Racing Visualizer • All rights reserved
-  </footer>
-
+  <main class="shell">
+    <header class="hero"><p class="eyebrow">Daily race intelligence</p><h1>Race Visualizer</h1><p class="hero-copy">Every race, ranked and quality-checked. Confidence is published directly from the model run so thin-data races are visible before you open a card.</p><nav class="quick-links" aria-label="Model tools"><a href="value.html">Today’s Bet & Lay Shortlist</a><a href="AtoZ.html">A–Z Runner Index</a><a href="ai_best_bets.html">AI Best Bets</a><a href="xg_best_bets.html">XG Best Bets</a></nav></header>
+    <section class="stats" aria-label="Daily model summary"><div class="stat"><span>Races</span><strong>56</strong></div><div class="stat"><span>Runners</span><strong>476</strong></div><div class="stat"><span>Avg confidence</span><strong>89.8%</strong></div><div class="stat"><span>Strong races</span><strong>42</strong></div></section>
+    <div class="toolbar"><input id="race-search" type="search" placeholder="Search course or time…" aria-label="Search races"><button class="filter active" data-filter="all" type="button">All races</button><button class="filter" data-filter="strong" type="button">90%+ confidence</button><span class="result-count" id="result-count">56 shown</span></div>
+    <div id="meetings">
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Cartmel</h2></div><span>7 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_14-00_Cartmel.html" data-confidence="75.0" data-search="cartmel 14:00">
+                <span class="race-time">14:00</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-good">Good · 75.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-35_Cartmel.html" data-confidence="100.0" data-search="cartmel 14:35">
+                <span class="race-time">14:35</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-10_Cartmel.html" data-confidence="98.9" data-search="cartmel 15:10">
+                <span class="race-time">15:10</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">11 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 98.9%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-47_Cartmel.html" data-confidence="100.0" data-search="cartmel 15:47">
+                <span class="race-time">15:47</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">13 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-21_Cartmel.html" data-confidence="100.0" data-search="cartmel 16:21">
+                <span class="race-time">16:21</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">10 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-57_Cartmel.html" data-confidence="100.0" data-search="cartmel 16:57">
+                <span class="race-time">16:57</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-30_Cartmel.html" data-confidence="100.0" data-search="cartmel 17:30">
+                <span class="race-time">17:30</span>
+                <span class="race-name">Cartmel</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Curragh</h2></div><span>9 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_13-10_Curragh.html" data-confidence="50.0" data-search="curragh 13:10">
+                <span class="race-time">13:10</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 50.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_13-40_Curragh.html" data-confidence="62.5" data-search="curragh 13:40">
+                <span class="race-time">13:40</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">12 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 62.5%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-15_Curragh.html" data-confidence="96.9" data-search="curragh 14:15">
+                <span class="race-time">14:15</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 96.9%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-50_Curragh.html" data-confidence="98.8" data-search="curragh 14:50">
+                <span class="race-time">14:50</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">21 runners · 6 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 98.8%</span><span class="badge badge-ep">B365 × 5</span><span class="badge badge-ep">SBG × 6</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-25_Curragh.html" data-confidence="100.0" data-search="curragh 15:25">
+                <span class="race-time">15:25</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">10 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-00_Curragh.html" data-confidence="76.8" data-search="curragh 16:00">
+                <span class="race-time">16:00</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">7 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-good">Good · 76.8%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-35_Curragh.html" data-confidence="92.0" data-search="curragh 16:35">
+                <span class="race-time">16:35</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">11 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 92.0%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-10_Curragh.html" data-confidence="85.4" data-search="curragh 17:10">
+                <span class="race-time">17:10</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-good">Good · 85.4%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-45_Curragh.html" data-confidence="100.0" data-search="curragh 17:45">
+                <span class="race-time">17:45</span>
+                <span class="race-name">Curragh</span>
+                <span class="race-meta">18 runners · 5 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">B365 × 5</span><span class="badge badge-ep">SBG × 5</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Doncaster</h2></div><span>7 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_17-40_Doncaster.html" data-confidence="100.0" data-search="doncaster 17:40">
+                <span class="race-time">17:40</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_18-15_Doncaster.html" data-confidence="53.8" data-search="doncaster 18:15">
+                <span class="race-time">18:15</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">10 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 53.8%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_18-45_Doncaster.html" data-confidence="100.0" data-search="doncaster 18:45">
+                <span class="race-time">18:45</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">9 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_19-15_Doncaster.html" data-confidence="100.0" data-search="doncaster 19:15">
+                <span class="race-time">19:15</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_19-50_Doncaster.html" data-confidence="97.9" data-search="doncaster 19:50">
+                <span class="race-time">19:50</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 97.9%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_20-25_Doncaster.html" data-confidence="100.0" data-search="doncaster 20:25">
+                <span class="race-time">20:25</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">11 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_21-00_Doncaster.html" data-confidence="100.0" data-search="doncaster 21:00">
+                <span class="race-time">21:00</span>
+                <span class="race-name">Doncaster</span>
+                <span class="race-meta">4 runners · 1 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Market Rasen</h2></div><span>7 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_13-35_Market_Rasen.html" data-confidence="97.9" data-search="market rasen 13:35">
+                <span class="race-time">13:35</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 97.9%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-10_Market_Rasen.html" data-confidence="98.1" data-search="market rasen 14:10">
+                <span class="race-time">14:10</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">13 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 98.1%</span><span class="badge badge-ep">B365 × 4</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-45_Market_Rasen.html" data-confidence="100.0" data-search="market rasen 14:45">
+                <span class="race-time">14:45</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">13 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">B365 × 4</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-20_Market_Rasen.html" data-confidence="100.0" data-search="market rasen 15:20">
+                <span class="race-time">15:20</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-05_Market_Rasen.html" data-confidence="100.0" data-search="market rasen 16:05">
+                <span class="race-time">16:05</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-40_Market_Rasen.html" data-confidence="96.4" data-search="market rasen 16:40">
+                <span class="race-time">16:40</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">7 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 96.4%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-15_Market_Rasen.html" data-confidence="100.0" data-search="market rasen 17:15">
+                <span class="race-time">17:15</span>
+                <span class="race-name">Market Rasen</span>
+                <span class="race-meta">12 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">B365 × 4</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Newbury</h2></div><span>7 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_13-55_Newbury.html" data-confidence="100.0" data-search="newbury 13:55">
+                <span class="race-time">13:55</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-25_Newbury.html" data-confidence="100.0" data-search="newbury 14:25">
+                <span class="race-time">14:25</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">7 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 3</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-02_Newbury.html" data-confidence="100.0" data-search="newbury 15:02">
+                <span class="race-time">15:02</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">7 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">B365 × 3</span><span class="badge badge-ep">SBG × 3</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-37_Newbury.html" data-confidence="75.5" data-search="newbury 15:37">
+                <span class="race-time">15:37</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">25 runners · 5 places</span>
+                <span class="badge-row"><span class="badge badge-good">Good · 75.5%</span><span class="badge badge-ep">B365 × 4</span><span class="badge badge-ep">SBG × 5</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-12_Newbury.html" data-confidence="55.0" data-search="newbury 16:12">
+                <span class="race-time">16:12</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 55.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-47_Newbury.html" data-confidence="50.0" data-search="newbury 16:47">
+                <span class="race-time">16:47</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">10 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 50.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-20_Newbury.html" data-confidence="95.8" data-search="newbury 17:20">
+                <span class="race-time">17:20</span>
+                <span class="race-name">Newbury</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 95.8%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Newmarket</h2></div><span>6 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_14-30_Newmarket.html" data-confidence="51.2" data-search="newmarket 14:30">
+                <span class="race-time">14:30</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">10 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 51.2%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-05_Newmarket.html" data-confidence="90.3" data-search="newmarket 15:05">
+                <span class="race-time">15:05</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">9 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 90.3%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-42_Newmarket.html" data-confidence="100.0" data-search="newmarket 15:42">
+                <span class="race-time">15:42</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">7 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 3</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-17_Newmarket.html" data-confidence="100.0" data-search="newmarket 16:17">
+                <span class="race-time">16:17</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-52_Newmarket.html" data-confidence="91.7" data-search="newmarket 16:52">
+                <span class="race-time">16:52</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 91.7%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-25_Newmarket.html" data-confidence="100.0" data-search="newmarket 17:25">
+                <span class="race-time">17:25</span>
+                <span class="race-name">Newmarket</span>
+                <span class="race-meta">7 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Nottingham</h2></div><span>6 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_17-55_Nottingham.html" data-confidence="100.0" data-search="nottingham 17:55">
+                <span class="race-time">17:55</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_18-30_Nottingham.html" data-confidence="55.0" data-search="nottingham 18:30">
+                <span class="race-time">18:30</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 55.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_19-00_Nottingham.html" data-confidence="100.0" data-search="nottingham 19:00">
+                <span class="race-time">19:00</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">7 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 3</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_19-33_Nottingham.html" data-confidence="93.8" data-search="nottingham 19:33">
+                <span class="race-time">19:33</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">4 runners · 1 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 93.8%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_20-08_Nottingham.html" data-confidence="67.5" data-search="nottingham 20:08">
+                <span class="race-time">20:08</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 67.5%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_20-43_Nottingham.html" data-confidence="97.9" data-search="nottingham 20:43">
+                <span class="race-time">20:43</span>
+                <span class="race-name">Nottingham</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 97.9%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section>
+          <section class="meeting" data-meeting>
+            <div class="meeting-head"><div><p>Saturday 18 July 2026</p><h2>Ripon</h2></div><span>7 races</span></div>
+            <div class="race-grid">
+              <a class="race-card" href="2026-07-18_14-05_Ripon.html" data-confidence="52.5" data-search="ripon 14:05">
+                <span class="race-time">14:05</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-thin">Thin · 52.5%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_14-40_Ripon.html" data-confidence="82.5" data-search="ripon 14:40">
+                <span class="race-time">14:40</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">5 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-good">Good · 82.5%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-15_Ripon.html" data-confidence="98.4" data-search="ripon 15:15">
+                <span class="race-time">15:15</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">8 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 98.4%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_15-53_Ripon.html" data-confidence="95.8" data-search="ripon 15:53">
+                <span class="race-time">15:53</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">6 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 95.8%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_16-25_Ripon.html" data-confidence="100.0" data-search="ripon 16:25">
+                <span class="race-time">16:25</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">7 runners · 2 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-03_Ripon.html" data-confidence="97.2" data-search="ripon 17:03">
+                <span class="race-time">17:03</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">9 runners · 3 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 97.2%</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a>
+              <a class="race-card" href="2026-07-18_17-35_Ripon.html" data-confidence="100.0" data-search="ripon 17:35">
+                <span class="race-time">17:35</span>
+                <span class="race-name">Ripon</span>
+                <span class="race-meta">11 runners · 4 places</span>
+                <span class="badge-row"><span class="badge badge-high">Strong · 100.0%</span><span class="badge badge-ep">SBG × 4</span></span>
+                <span class="open-race">Open racecard <b aria-hidden="true">→</b></span>
+              </a></div>
+          </section></div><p class="empty" id="empty-state">No races match that search and confidence filter.</p>
+    <footer>Model hub updated 17 Jul 2026 · 23:12 · Confidence describes input completeness, not certainty of outcome.</footer>
+  </main>
   <script>
-    (function () {
-      const isRaceLink = (href) => /^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}_.+\.html$/i.test(href || "");
-
-      const badge = (text, cls) => {
-        const s = document.createElement("span");
-        s.className = "badge" + (cls ? " " + cls : "");
-        s.textContent = text;
-        return s;
-      };
-
-      const pad2 = (n) => String(n).padStart(2, "0");
-
-      const normCourse = (s) =>
-        String(s || "")
-          .toLowerCase()
-          .replace(/[_-]+/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-
-      const toIsoDate = (s) => {
-        const raw = String(s || "").trim();
-        if (!raw) return "";
-
-        let m = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-
-        m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (m) return raw;
-
-        return "";
-      };
-
-      const extractRaceMetaFromHref = (a) => {
-        const href = String(a.getAttribute("href") || "").trim();
-        const m = href.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})_(.+)\.html$/i);
-        if (!m) return null;
-
-        const isoDate = m[1];
-        const hhmm = `${m[2]}:${m[3]}`;
-        const course = String(m[4] || "").trim();
-
-        if (!course) return null;
-        return { isoDate, hhmm, course };
-      };
-
-      let EP_MAP = new Map();
-      let EP_LOADED = false;
-
-      async function loadExtraPlacesOnce() {
-        if (EP_LOADED) return;
-        EP_LOADED = true;
-
-        const urls = [
-          "extra_places.txt",
-          "https://raw.githubusercontent.com/racingmodel/racing-visualizer/main/extra_places.txt"
-        ];
-
-        let txt = null;
-        for (const url of urls) {
-          try {
-            const res = await fetch(url, { cache: "no-store" });
-            if (!res.ok) continue;
-            txt = await res.text();
-            if (txt) break;
-          } catch (e) {}
-        }
-        if (!txt) return;
-
-        const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-
-        for (const line of lines) {
-          try {
-            const obj = JSON.parse(line);
-            const dt = String(obj.race_datetime || "").trim();
-            const course = normCourse(obj.course || "");
-            const places = parseInt(obj.places || obj.ew_places || obj.extra_places || 4, 10) || 4;
-            const bookmakerRaw = String(obj.bookmaker || obj.bookie || obj.provider || "EP").trim().toUpperCase().replace(/\s+/g, "");
-            const bookmaker = (["SKYBET", "SKY", "SBG"].includes(bookmakerRaw) ? "SBG" : (["BET365", "365", "B365"].includes(bookmakerRaw) ? "B365" : (bookmakerRaw || "EP")));
-
-            const m = dt.match(/^(\d{2}\/\d{2}\/\d{4})\s+(\d{1,2}):(\d{2})$/);
-            if (!m || !course) continue;
-
-            const isoDate = toIsoDate(m[1]);
-            const hh = pad2(m[2]);
-            const mm = pad2(m[3]);
-            const hhmm = `${hh}:${mm}`;
-
-            if (!isoDate) continue;
-
-            const key = `${course}|${isoDate}|${hhmm}`;
-            if (!EP_MAP.has(key)) EP_MAP.set(key, []);
-            const arr = EP_MAP.get(key);
-            const existing = arr.find(x => x.bookmaker === bookmaker);
-            if (existing) {
-              existing.places = Math.max(Number(existing.places || 0), places);
-            } else {
-              arr.push({ bookmaker, places });
-            }
-            arr.sort((a, b) => ({ SBG: 1, B365: 2, EP: 99 }[a.bookmaker] || 50) - ({ SBG: 1, B365: 2, EP: 99 }[b.bookmaker] || 50));
-          } catch (e) {}
-        }
-      }
-
-      function epPlacesForAnchor(a) {
-        const meta = extractRaceMetaFromHref(a);
-        if (!meta) return null;
-
-        const key = `${normCourse(meta.course)}|${meta.isoDate}|${meta.hhmm}`;
-        return EP_MAP.get(key) ?? null;
-      }
-
-      function extractMetaFromDoc(doc) {
-        let runners = null;
-        try {
-          const trs = doc.querySelectorAll("table tbody tr");
-          if (trs && trs.length) runners = trs.length;
-        } catch (e) {}
-
-        let conf = null;
-        try {
-          const allDivs = Array.from(doc.querySelectorAll("div"));
-          const confDiv = allDivs.find(d => (d.textContent || "").includes("Data Confidence (Race):"));
-          if (confDiv) {
-            const sp = confDiv.querySelector("span");
-            const raw = (sp?.textContent || confDiv.textContent || "")
-              .replace("Data Confidence (Race):", "")
-              .trim();
-            const m = raw.match(/(\d+(\.\d+)?)/);
-            if (m) conf = m[1];
-          }
-        } catch (e) {}
-
-        return { runners, conf };
-      }
-
-      async function enrichCard(a) {
-        const href = a.getAttribute("href");
-        if (!isRaceLink(href)) return;
-
-        const card = a.closest(".card");
-        if (!card) return;
-        if (card.querySelector(".meta-row")) return;
-
-        const row = document.createElement("div");
-        row.className = "meta-row";
-        row.appendChild(badge("⏳ Loading…"));
-        card.appendChild(row);
-
-        try {
-          await loadExtraPlacesOnce();
-
-          const res = await fetch(href, { cache: "no-store" });
-          if (!res.ok) throw new Error("fetch failed: " + res.status);
-
-          const html = await res.text();
-          const doc = new DOMParser().parseFromString(html, "text/html");
-          const meta = extractMetaFromDoc(doc);
-          const epPlaces = epPlacesForAnchor(a);
-
-          row.innerHTML = "";
-
-          row.appendChild(badge(meta.runners ? `${meta.runners} runners` : "runners ?"));
-
-          if (meta.conf) {
-            const c = parseFloat(meta.conf);
-            if (isFinite(c) && c >= 90) {
-              row.appendChild(badge(`✅ ${meta.conf}%`, "badge-hi"));
-            } else if (isFinite(c)) {
-              const cls = (c < 70) ? "badge-lo" : "badge-mid";
-              row.appendChild(badge(`⛔ ${meta.conf}%`, cls));
-            } else {
-              row.appendChild(badge("⛔ conf ?", "badge-mid"));
-            }
-          } else {
-            row.appendChild(badge("⛔ conf ?", "badge-mid"));
-          }
-
-          if (Array.isArray(epPlaces) && epPlaces.length) {
-            epPlaces.forEach(ep => row.appendChild(badge(`⭐ ${ep.bookmaker}×${ep.places}`, "badge-ep")));
-          } else if (epPlaces != null) {
-            row.appendChild(badge(`⭐ EP×${epPlaces}`, "badge-ep"));
-          }
-
-        } catch (e) {
-          row.innerHTML = "";
-          row.appendChild(badge("⚠ meta unavailable"));
-        }
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        document.querySelectorAll(".card a").forEach(enrichCard);
-      });
+    (() => {
+      const search = document.getElementById("race-search"); const buttons = [...document.querySelectorAll("[data-filter]")]; const cards = [...document.querySelectorAll(".race-card")]; const count = document.getElementById("result-count"); const empty = document.getElementById("empty-state"); let mode = "all";
+      function apply() { const term = String(search.value || "").trim().toLowerCase(); let visible = 0; cards.forEach(card => { const conf = Number(card.dataset.confidence); const strong = Number.isFinite(conf) && conf >= 90; const show = (!term || card.dataset.search.includes(term)) && (mode !== "strong" || strong); card.hidden = !show; if (show) visible += 1; }); document.querySelectorAll("[data-meeting]").forEach(section => section.hidden = !section.querySelector(".race-card:not([hidden])")); count.textContent = `${visible} shown`; empty.style.display = visible ? "none" : "block"; }
+      search.addEventListener("input", apply); buttons.forEach(button => button.addEventListener("click", () => { mode = button.dataset.filter; buttons.forEach(item => item.classList.toggle("active", item === button)); apply(); })); apply();
     })();
   </script>
 </body>
