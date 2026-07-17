@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Value Bets</title>
+  <title>Today's Racing Model</title>
   <style>
     :root {
       --bg: #171722;
@@ -2374,15 +2374,422 @@
       .rp-backtest-grid { grid-template-columns: 1fr; }
       .rp-backtest-shell { margin: 10px; }
     }
+
+    /* === 2026 public dashboard and responsive card view === */
+    .page-shell {
+      width: min(96vw, 1540px) !important;
+      max-width: 1540px !important;
+    }
+
+    .page-jump-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.45rem;
+      margin: 0 0 0.85rem;
+      padding: 0.55rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      background: rgba(23,23,34,0.91);
+      box-shadow: 0 9px 28px rgba(0,0,0,0.28);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .page-jump-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.32rem;
+      min-height: 40px;
+      padding: 0.52rem 0.76rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      color: #eef5ff;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .page-jump-nav a:hover,
+    .page-jump-nav a:focus-visible {
+      color: #111;
+      background: linear-gradient(90deg,#ffd700,#ffef8a);
+      outline: none;
+    }
+
+    .nav-count,
+    .section-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.55rem;
+      height: 1.55rem;
+      padding: 0 0.38rem;
+      border-radius: 999px;
+      background: #ffd700;
+      color: #111;
+      font-size: 0.72rem;
+      font-weight: 950;
+    }
+
+    .today-overview {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(0,1fr));
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+    }
+
+    .overview-card {
+      min-width: 0;
+      padding: 0.78rem 0.9rem;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      background: linear-gradient(180deg,rgba(255,255,255,0.075),rgba(255,255,255,0.035));
+      box-shadow: 0 8px 22px rgba(0,0,0,0.17);
+    }
+
+    .overview-card span {
+      display: block;
+      color: #aebbd5;
+      font-size: 0.68rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .overview-card strong {
+      display: block;
+      margin-top: 0.18rem;
+      color: #fff;
+      font-size: 1rem;
+      line-height: 1.22;
+      white-space: normal;
+    }
+
+    #shortlist-backtest-card,
+    #my-bets-section,
+    #todays-shortlist,
+    #race-products-section,
+    #watchlist-section { scroll-margin-top: 76px; }
+
+    .backtest-card {
+      border-color: rgba(255,215,0,0.34) !important;
+    }
+
+    .backtest-heading-pill:first-child {
+      border-color: rgba(255,215,0,0.42);
+      background: rgba(255,215,0,0.12);
+    }
+
+    #shortlist-table.shortlist-premium-table,
+    #live-intel-table.shortlist-premium-table {
+      width: 100% !important;
+      min-width: 0 !important;
+      table-layout: fixed !important;
+    }
+
+    #shortlist-table th,
+    #shortlist-table td,
+    #live-intel-table th,
+    #live-intel-table td {
+      padding: 0.76rem 0.58rem !important;
+      white-space: normal !important;
+      overflow-wrap: break-word !important;
+      word-break: normal !important;
+    }
+
+    #shortlist-table th:nth-child(1), #shortlist-table td:nth-child(1),
+    #live-intel-table th:nth-child(1), #live-intel-table td:nth-child(1) { width: 9.5%; }
+    #shortlist-table th:nth-child(2), #shortlist-table td:nth-child(2),
+    #live-intel-table th:nth-child(2), #live-intel-table td:nth-child(2) { width: 10%; }
+    #shortlist-table th:nth-child(3), #shortlist-table td:nth-child(3),
+    #live-intel-table th:nth-child(3), #live-intel-table td:nth-child(3) { width: 13%; }
+    #shortlist-table th:nth-child(4), #shortlist-table td:nth-child(4),
+    #live-intel-table th:nth-child(4), #live-intel-table td:nth-child(4) { width: 15%; }
+    #shortlist-table th:nth-child(5), #shortlist-table td:nth-child(5),
+    #live-intel-table th:nth-child(5), #live-intel-table td:nth-child(5) { width: 36%; }
+    #shortlist-table th:nth-child(6), #shortlist-table td:nth-child(6),
+    #live-intel-table th:nth-child(6), #live-intel-table td:nth-child(6) { width: 8%; }
+    #shortlist-table th:nth-child(7), #shortlist-table td:nth-child(7),
+    #live-intel-table th:nth-child(7), #live-intel-table td:nth-child(7) { width: 8.5%; }
+
+    .shortlist-price-compare {
+      display: grid;
+      grid-template-columns: repeat(2,minmax(0,1fr));
+      gap: 0.34rem;
+      min-width: 0;
+    }
+
+    .shortlist-price-box {
+      min-width: 0;
+      padding: 0.36rem 0.28rem;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      background: rgba(0,0,0,0.16);
+    }
+
+    .shortlist-price-box span {
+      display: block;
+      color: #aebbd5;
+      font-size: 0.59rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .shortlist-price-box strong {
+      display: block;
+      margin-top: 0.08rem;
+      font-size: 0.96rem;
+      color: #fff8cc;
+    }
+
+    .shortlist-price-box.is-model strong { color: #9cffb0; }
+    .shortlist-price-support {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.28rem;
+      margin-top: 0.36rem;
+      color: #cbd5e1;
+      font-size: 0.67rem;
+      font-weight: 800;
+    }
+
+    .shortlist-price-support .bf-exchange-cell {
+      min-width: 0 !important;
+      width: 100%;
+      grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+    }
+
+    .shortlist-evidence {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      align-items: center;
+      gap: 0.65rem;
+      text-align: left;
+    }
+
+    .shortlist-evidence .shortlist-reason {
+      min-width: 0;
+      max-width: none;
+      font-size: 0.78rem;
+      line-height: 1.38;
+    }
+
+    .shortlist-evidence-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.28rem;
+    }
+
+    .shortlist-race-ep {
+      display: block;
+      margin-top: 0.28rem;
+    }
+
+    #mybets-table {
+      width: 100% !important;
+      min-width: 0 !important;
+      table-layout: fixed;
+    }
+
+    #mybets-table th,
+    #mybets-table td {
+      padding: 0.68rem 0.48rem;
+      white-space: normal;
+      overflow-wrap: break-word;
+    }
+
+    #mybets-table .mybets-note-input {
+      min-width: 0 !important;
+    }
+
+    .mobile-mybets-dock { display: none; }
+
+    @media (max-width: 900px) {
+      .page-shell { width: 100% !important; }
+      .today-overview { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .overview-card:last-child { grid-column: 1 / -1; }
+      .backtest-heading-pills { width: 100%; }
+      .backtest-summary-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      html { overflow-x: hidden; }
+      body {
+        padding: 0.65rem 0.58rem calc(78px + env(safe-area-inset-bottom));
+      }
+
+      h1 { font-size: 1.48rem; line-height: 1.16; }
+      .subtitle { padding: 0 0.35rem; line-height: 1.35; }
+      .top-bar { margin-bottom: 0.75rem; }
+      .page-jump-nav {
+        top: 0;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        border-radius: 13px;
+        scrollbar-width: none;
+      }
+      .page-jump-nav::-webkit-scrollbar { display: none; }
+      .page-jump-nav a { flex: 0 0 auto; min-height: 38px; font-size: 0.78rem; }
+      .today-overview { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0.48rem; }
+      .overview-card { padding: 0.65rem 0.7rem; }
+      .overview-card strong { font-size: 0.88rem; }
+      .overview-card:last-child { grid-column: 1 / -1; }
+      summary.section-title { min-height: 52px; }
+      .section-body { padding: 0.62rem 0.55rem 0.15rem; }
+      .section-note { line-height: 1.4; }
+
+      .mobile-mybets-dock {
+        position: fixed;
+        z-index: 10000;
+        left: max(10px,env(safe-area-inset-left));
+        right: max(10px,env(safe-area-inset-right));
+        bottom: max(10px,env(safe-area-inset-bottom));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.48rem;
+        min-height: 52px;
+        border: 1px solid rgba(92,255,128,0.68);
+        border-radius: 15px;
+        color: #041a0b;
+        background: linear-gradient(90deg,#39d353,#9cffb0);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+        text-decoration: none;
+        font-weight: 950;
+      }
+
+      .mobile-mybets-dock .nav-count { background: #041a0b; color: #9cffb0; }
+
+      .table-wrap,
+      .shortlist-table-wrap,
+      .backtest-table-wrap {
+        overflow: visible !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      table.mobile-card-table,
+      table.mobile-card-table tbody {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+        background: transparent;
+      }
+
+      table.mobile-card-table thead { display: none; }
+
+      table.mobile-card-table tbody tr:not(.date-divider) {
+        display: block;
+        width: 100%;
+        margin: 0 0 0.72rem;
+        border: 1px solid rgba(255,255,255,0.11);
+        border-left: 5px solid rgba(255,215,0,0.75);
+        border-radius: 13px;
+        overflow: hidden;
+        box-shadow: 0 7px 20px rgba(0,0,0,0.20);
+      }
+
+      table.mobile-card-table tbody tr:not(.date-divider) td {
+        display: grid !important;
+        grid-template-columns: minmax(102px,36%) minmax(0,1fr);
+        gap: 0.55rem;
+        align-items: center;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 0.62rem 0.7rem !important;
+        border-bottom: 1px solid rgba(255,255,255,0.075);
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
+      }
+
+      table.mobile-card-table tbody tr:not(.date-divider) td::before {
+        content: attr(data-label);
+        color: #aebbd5;
+        font-size: 0.65rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.36px;
+      }
+
+      table.mobile-card-table tbody tr:not(.date-divider) td:last-child { border-bottom: 0; }
+      table.mobile-card-table .date-divider { display: block !important; }
+      table.mobile-card-table .date-divider td {
+        display: block !important;
+        width: 100% !important;
+        padding: 0.54rem !important;
+        text-align: left !important;
+      }
+      table.mobile-card-table .date-divider td::before { display: none; }
+
+      #shortlist-table.shortlist-premium-table,
+      #live-intel-table.shortlist-premium-table,
+      #mybets-table,
+      #backtest-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        table-layout: auto !important;
+      }
+
+      #shortlist-table .shortlist-horse-name,
+      #live-intel-table .shortlist-horse-name {
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0;
+        font-size: 1.02rem;
+      }
+
+      .shortlist-evidence { grid-template-columns: 1fr; }
+      .shortlist-evidence-meta { align-items: flex-start; }
+      .shortlist-evidence .shortlist-tags { margin: 0 !important; }
+      .shortlist-price-compare { max-width: 220px; }
+      .shortlist-price-support { justify-content: flex-start; max-width: 230px; }
+      .shortlist-race-cell { align-items: flex-start; min-width: 0; }
+      .shortlist-race-ep .ep-badge-row { margin-left: 0; justify-content: flex-start; }
+
+      #mybets-table .mybets-note-input,
+      #mybets-table .mybets-select { width: 100% !important; min-width: 0 !important; }
+      #mybets-table .mybets-summary-actions { display: grid; grid-template-columns: repeat(2,1fr); }
+      .mybets-action-btn { width: 100%; }
+
+      .backtest-head { padding: 0.78rem; }
+      .backtest-title { font-size: 0.98rem; }
+      .backtest-heading-pill { font-size: 0.68rem; }
+      .backtest-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)); padding: 0.7rem; }
+      .backtest-type-row, .backtest-daily-breakdown { padding-left: 0.7rem; padding-right: 0.7rem; }
+      .rp-backtest-shell { margin: 0.7rem; }
+    }
+
+    @media (max-width: 390px) {
+      .today-overview { grid-template-columns: 1fr; }
+      .overview-card:last-child { grid-column: auto; }
+      table.mobile-card-table tbody tr:not(.date-divider) td { grid-template-columns: 92px minmax(0,1fr); }
+      .backtest-summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
   <div class="page-shell">
-    <h1>🔥 Automated Best Bet Selections 🔥</h1>
-    <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
+    <h1>🏇 Today's Racing Model</h1>
+    <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 19:45</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 21:10</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2392,6 +2799,20 @@
         <a href="index.html">🔙 Back to Race Visualizer</a>
       </div>
     </div>
+
+    <nav class="page-jump-nav" aria-label="Page sections">
+      <a href="#todays-shortlist">⭐ Best Bets <span id="nav-shortlist-count" class="nav-count">0</span></a>
+      <a href="#my-bets-section">📝 My Bets <span id="nav-mybets-count" class="nav-count">0</span></a>
+      <a href="#shortlist-backtest-card">📊 Live Record</a>
+      <a href="#race-products-section">🧩 Race Products</a>
+      <a href="#watchlist-section">🌑 Watchlist</a>
+    </nav>
+
+    <section class="today-overview" aria-label="Today's overview">
+      <div class="overview-card"><span>Active shortlist</span><strong id="dashboard-shortlist-count">Loading…</strong></div>
+      <div class="overview-card"><span>My Bets on this device</span><strong id="dashboard-mybets-count">0 saved</strong></div>
+      <div class="overview-card"><span>Next model selection</span><strong id="dashboard-next-selection">Loading…</strong></div>
+    </section>
 
     <details id="shortlist-backtest-card" class="backtest-card" aria-live="polite">
       <summary class="backtest-head">
@@ -2440,9 +2861,9 @@
     </details>
 
 
-<details class="section-card section-mybets" open>
+<details id="my-bets-section" class="section-card section-mybets" open>
       <summary class="section-title">
-        <span class="section-title-left">📝 My Bets Today</span>
+        <span class="section-title-left">📝 My Bets Today <span id="mybets-section-count" class="section-count">0</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
@@ -2493,21 +2914,22 @@
         <div class="meta-pill">🎯 EW = 16/1+ normal non-EP</div>
         <div class="meta-pill">🧪 BT E/W = 14/1+ in 16+ runner EP fields</div>
         <div class="meta-pill">❌ Lay tags now highlighted harder</div>
-        <div class="meta-pill">📱 Mobile swipe tables</div>
+        <div class="meta-pill">📱 Mobile-friendly selection cards</div>
         <div class="meta-pill">🕘 Was Value = dropped or shortlist race started</div>
         <div class="meta-pill">🔔 Alerts = notify when shortlist changes while page is open</div>
+        <div class="meta-pill">💡 Market odds vs Model odds = quick value comparison</div>
         <div class="meta-pill">🔁 BF Exchange = Back price / Lay price</div>
         <div class="meta-pill">🧩 Placepot = first six legs, 1-3 picks per leg</div>
       </div>
     </details>
 
-<details class="section-card section-shortlist" open>
+<details id="todays-shortlist" class="section-card section-shortlist" open>
       <summary class="section-title">
-        <span class="section-title-left">⭐ Todays Bet & Lay Shortlist</span>
+        <span class="section-title-left">⭐ Today's Best Bets &amp; Lays <span id="shortlist-section-count" class="section-count">0</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Combined shortlist from Big E/W - EP, BT E/W, Each Way, strict Must Win, Must Lay and Place Lay. Generic Win Value rows stay in the Model Value / Raw Value sections unless the backend marks them as Must Win.</div>
+        <div class="section-note">The active, actionable model shortlist. Market odds are the available price; shorter model odds can indicate value. Win Lay and Place Lay are clearly labelled and use different settlement rules.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -2515,15 +2937,10 @@
                 <th>Type</th>
                 <th>Race</th>
                 <th>Horse</th>
-                <th>Odds</th>
-                <th>Raw Odds</th>
-                <th>Model 100%</th>
-                <th>BF Exchange</th>
-                <th>EP Places</th>
-                <th>Result</th>
-                <th>QVE</th>
-                <th>Tags</th>
-                <th>My List</th>
+                <th>Market vs Model</th>
+                <th>Why</th>
+                <th>Status / Result</th>
+                <th>My Bets</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -2532,7 +2949,7 @@
       </div>
     </details>
 
-    <details class="section-card section-placepot">
+    <details id="race-products-section" class="section-card section-placepot">
       <summary class="section-title">
         <span class="section-title-left">🧩 Placepot Picker</span>
         <span class="section-chevron">▶</span>
@@ -2698,7 +3115,7 @@
     </details>
 
     <details class="section-card">
-      <summary class="section-title"><span class="section-title-left">📉 Raw Value</span><span class="section-chevron">▶</span></summary>
+      <summary class="section-title"><span class="section-title-left">📉 Early Value Watch</span><span class="section-chevron">▶</span></summary>
       <div class="section-body"><div class="table-wrap"><table id="rawvalue-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
@@ -2707,8 +3124,8 @@
       <div class="section-body"><div class="table-wrap"><table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
     </details>
 
-    <details class="section-card">
-      <summary class="section-title"><span class="section-title-left">🌑 Sleepers</span><span class="section-chevron">▶</span></summary>
+    <details id="watchlist-section" class="section-card">
+      <summary class="section-title"><span class="section-title-left">🌑 Sleeper &amp; Plot Watch</span><span class="section-chevron">▶</span></summary>
       <div class="section-body">
         <div class="section-note">Returning-conditions watchlist: a strong historic run matched today's going/distance/class profile, followed by poorer runs under materially different conditions. “Possible Plot Watch” is a cautious pattern label, not proof of trainer/owner intent and never an automatic bet.</div>
         <div class="table-wrap"><table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Score / Evidence</th><th>Why Flagged</th><th>My List</th></tr></thead><tbody></tbody></table></div>
@@ -2750,14 +3167,10 @@
                 <th>Type</th>
                 <th>Race</th>
                 <th>Horse</th>
-                <th>Odds</th>
-                <th>Raw Odds</th>
-                <th>Model 100%</th>
-                <th>BF Exchange</th>
-                <th>EP Places</th>
-                <th>QVE</th>
-                <th>Tags</th>
-                <th>My List</th>
+                <th>Market vs Model</th>
+                <th>Why</th>
+                <th>Status / Result</th>
+                <th>My Bets</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -2876,6 +3289,10 @@
       </div>
     </details>
   </div>
+
+  <a class="mobile-mybets-dock" href="#my-bets-section" aria-label="Open My Bets Today">
+    ⭐ My Bets <span id="mobile-mybets-count" class="nav-count">0</span>
+  </a>
 
 <script>
 (async () => {
@@ -3199,7 +3616,13 @@
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    if (headingPillsEl) headingPillsEl.innerHTML = [backtestPillHTML("Win", groups.Win), backtestPillHTML("EW", groups.EW), backtestPillHTML("Lay", groups.Lay)].join("");
+    if (headingPillsEl) headingPillsEl.innerHTML = [
+      `<span class="backtest-heading-pill"><b>Overall P/L</b> <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`,
+      `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
+      backtestPillHTML("Win", groups.Win),
+      backtestPillHTML("EW", groups.EW),
+      backtestPillHTML("Lay", groups.Lay)
+    ].join("");
 
     gridEl.innerHTML = `
       <div class="backtest-stat"><span>Selections</span><strong>${Number(summary.selections || rows.length)}</strong></div>
@@ -3740,6 +4163,30 @@
     return "";
   };
 
+  const syncMyBetsCounts = (count) => {
+    const safeCount = Number(count || 0);
+    ["nav-mybets-count", "mybets-section-count", "mobile-mybets-count"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = String(safeCount);
+    });
+    const dashboard = document.getElementById("dashboard-mybets-count");
+    if (dashboard) dashboard.textContent = `${safeCount} saved`;
+  };
+
+  const refreshResponsiveTableLabels = () => {
+    document.querySelectorAll("table").forEach(table => {
+      const labels = Array.from(table.querySelectorAll("thead th")).map(cell => (cell.textContent || "").trim());
+      if (!labels.length) return;
+      table.classList.add("mobile-card-table");
+      table.querySelectorAll("tbody tr").forEach(row => {
+        if (row.classList.contains("date-divider")) return;
+        Array.from(row.children).forEach((cell, index) => {
+          if (!cell.hasAttribute("data-label")) cell.setAttribute("data-label", labels[index] || "");
+        });
+      });
+    });
+  };
+
   const renderMyBets = () => {
     const tableBody = document.querySelector("#mybets-table tbody");
     const empty = document.getElementById("mybets-empty");
@@ -3749,35 +4196,37 @@
     const items = readMyBets().sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
     if (summary) summary.innerHTML = myBetsSummaryHTML(items);
     if (empty) empty.style.display = items.length ? "none" : "block";
+    syncMyBetsCounts(items.length);
 
     tableBody.innerHTML = items.map(item => {
       const tags = Array.isArray(item.tags) ? item.tags : [];
       return `<tr class="mybets-row" data-mybets-row="${myBetsEsc(item.id)}">
-        <td class="mybets-race-cell">${racecardRaceLinkHTML(item, `<b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span>`, "mybets-race-link")}</td>
-        <td class="mybets-horse-cell"><b>${racecardHorseLinkHTML(item, item.horse, "mybets-horse-link")}</b><span class="mybets-sub">${shortlistTagsHTML(tags)}</span></td>
-        <td><span class="mybets-type-pill">${myBetsEsc(item.source_type || item.source || "Selection")}</span></td>
-        <td>
+        <td class="mybets-race-cell" data-label="Race">${racecardRaceLinkHTML(item, `<b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span>`, "mybets-race-link")}</td>
+        <td class="mybets-horse-cell" data-label="Horse"><b>${racecardHorseLinkHTML(item, item.horse, "mybets-horse-link")}</b><span class="mybets-sub">${shortlistTagsHTML(tags)}</span></td>
+        <td data-label="Source"><span class="mybets-type-pill">${myBetsEsc(item.source_type || item.source || "Selection")}</span></td>
+        <td data-label="Bet Type">
           <select class="mybets-select" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="bet_type">
             ${["Win","Each Way","Lay","Placepot","Watch"].map(opt => `<option value="${opt}"${String(item.bet_type || "") === opt ? " selected" : ""}>${opt}</option>`).join("")}
           </select>
         </td>
-        <td class="mybets-price-cell">
-          <div>Real <b>${myBetsEsc(item.bookie_odds || "-")}</b></div>
+        <td class="mybets-price-cell" data-label="Prices">
+          <div>Market <b>${myBetsEsc(item.bookie_odds || "-")}</b></div>
           <span class="mybets-sub">Raw ${myBetsEsc(item.raw_odds || "-")} · Model ${myBetsEsc(item.model_odds || "-")}</span>
         </td>
-        <td><input class="mybets-input" inputmode="decimal" placeholder="£" value="${myBetsEsc(item.stake || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="stake"></td>
-        <td class="mybets-return">${myBetsEsc(estimateMyBetReturn(item))}</td>
-        <td>
+        <td data-label="Stake"><input class="mybets-input" inputmode="decimal" placeholder="£" value="${myBetsEsc(item.stake || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="stake"></td>
+        <td class="mybets-return" data-label="Estimate">${myBetsEsc(estimateMyBetReturn(item))}</td>
+        <td data-label="Status">
           <select class="mybets-select" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="user_status">
             ${["Watching","Backed","Laid","Ignored","Settled"].map(opt => `<option value="${opt}"${String(item.user_status || "Watching") === opt ? " selected" : ""}>${opt}</option>`).join("")}
           </select>
         </td>
-        <td class="mybets-result-cell">${myBetsResultHTML(item)}</td>
-        <td><input class="mybets-note-input" placeholder="Add note" value="${myBetsEsc(item.notes || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="notes"></td>
-        <td><button type="button" class="mybets-mini-btn is-remove" data-mybets-remove="${myBetsEsc(item.id)}">Remove</button></td>
+        <td class="mybets-result-cell" data-label="Result">${myBetsResultHTML(item)}</td>
+        <td data-label="Notes"><input class="mybets-note-input" placeholder="Add note" value="${myBetsEsc(item.notes || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="notes"></td>
+        <td data-label="Actions"><button type="button" class="mybets-mini-btn is-remove" data-mybets-remove="${myBetsEsc(item.id)}">Remove</button></td>
       </tr>`;
     }).join("");
 
+    refreshResponsiveTableLabels();
     refreshMyBetButtons();
   };
 
@@ -3936,9 +4385,11 @@
 
 
   const shortlistRaceCellHTML = (entry) => {
+    const badges = extraPlaceBadgesHTML(entry);
     return racecardRaceLinkHTML(entry, `<div class="shortlist-race-cell">
       <div class="shortlist-race-time">${timeFromRaceDT(entry.race_datetime)}</div>
       <div class="shortlist-race-course">${myBetsEsc(entry.course ?? "")}</div>
+      ${badges ? `<div class="shortlist-race-ep"><span class="ep-badge-row">${badges}</span></div>` : ""}
     </div>`, "shortlist-race-link");
   };
 
@@ -4044,26 +4495,41 @@
     return String(entry?.reason || "Model shortlist angle based on price, rank, data confidence and suitability evidence.").trim();
   };
 
+  const shortlistPriceCompareHTML = (entry) => {
+    const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
+    const raw = entry?.raw_odds ?? "";
+    const bfBack = entry?.bf_back_odds ?? "";
+    const bfLay = entry?.bf_lay_odds ?? "";
+    const hasExchange = [bfBack, bfLay].some(v => v !== undefined && v !== null && String(v).trim() && String(v).trim() !== "-");
+    return `<div class="shortlist-price-compare">
+      <div class="shortlist-price-box"><span>Market</span><strong>${escHTML(market)}</strong></div>
+      <div class="shortlist-price-box is-model"><span>Model</span><strong>${escHTML(model)}</strong></div>
+    </div>
+    <div class="shortlist-price-support">
+      ${raw !== undefined && raw !== null && String(raw).trim() ? `<span title="Uncalibrated model price">Raw ${escHTML(raw)}</span>` : ""}
+      ${hasExchange ? bfExchangeHTML(bfBack, bfLay) : ""}
+    </div>`;
+  };
+
+  const shortlistEvidenceHTML = (entry, tags) => {
+    const reason = plainRacingReason(entry);
+    return `<div class="shortlist-evidence">
+      <div class="shortlist-reason">${escHTML(reason)}</div>
+      <div class="shortlist-evidence-meta">${qveCellHTML(entry)}${shortlistTagsHTML(tags)}</div>
+    </div>`;
+  };
+
   const shortlistRow = (entry, rowClass = "") => {
-    const bookie = entry.bookie_odds ?? entry.real_odds ?? "-";
-    const raw = entry.raw_odds ?? "-";
-    const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
-    const bfBack = entry.bf_back_odds ?? "";
-    const bfLay = entry.bf_lay_odds ?? "";
     const tags = tagSet(entry);
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td>${typeBadgeHTML(entry.shortlist_type)}</td>
-      <td>${shortlistRaceCellHTML(entry)}</td>
-      <td>${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</td>
-      <td>${pricePillHTML(bookie, "price-real")}</td>
-      <td>${pricePillHTML(raw, "price-raw")}</td>
-      <td>${pricePillHTML(model, "price-model")}</td>
-      <td>${bfExchangeHTML(bfBack, bfLay)}</td>
-      <td>${epPlacesCellHTML(entry)}</td>
-      <td>${resultBadgeHTML(entry)}</td>
-      <td>${qveCellHTML(entry)}</td>
-      <td>${shortlistTagsHTML(tags)}</td>
-      <td>${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
+      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
+      <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
+      <td data-label="Horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</td>
+      <td data-label="Market vs Model">${shortlistPriceCompareHTML(entry)}</td>
+      <td data-label="Why">${shortlistEvidenceHTML(entry, tags)}</td>
+      <td data-label="Status / Result">${resultBadgeHTML(entry)}</td>
+      <td data-label="My Bets">${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
     </tr>`;
   };
 
@@ -5220,8 +5686,8 @@ const getShortlistType = (entry) => {
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 11);
-  const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 11);
+  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 7);
+  const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
   const rawlays = buildGroupedRows(rawlayItems, e => twoLineRow(e, tagSet(e), "rawlay-row", "Must Lay"), 5);
@@ -5582,8 +6048,8 @@ const getShortlistType = (entry) => {
   setBody('#race-shape-table', raceShapeHtml, 6);
   setBody('#pick7-table', pick7Html, 7);
 
-  setBody('#shortlist-table', shortlist, 12);
-  setBody('#live-intel-table', liveIntel, 11);
+  setBody('#shortlist-table', shortlist, 7);
+  setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
   setBody('#multitag-table',  multi, 5);
   setBody('#btew-table',      btew, 5);
@@ -5601,6 +6067,22 @@ const getShortlistType = (entry) => {
   setBody('#overlay-table',   overlay, 6);
   setBody('#blue-table',      blue, 5);
   setBody('#toprated-table',  top, 5);
+
+  const activeShortlistCount = shortlistItems.length;
+  ["nav-shortlist-count", "shortlist-section-count"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(activeShortlistCount);
+  });
+  const dashboardCount = document.getElementById("dashboard-shortlist-count");
+  if (dashboardCount) dashboardCount.textContent = `${activeShortlistCount} active`;
+  const nextSelection = shortlistItems[0];
+  const dashboardNext = document.getElementById("dashboard-next-selection");
+  if (dashboardNext) {
+    dashboardNext.textContent = nextSelection
+      ? `${timeFromRaceDT(nextSelection.race_datetime)} ${nextSelection.course || ""} — ${nextSelection.horse || ""}`.trim()
+      : "No active selections";
+  }
+
   renderMyBets();
 })();
 </script>
