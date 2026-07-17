@@ -2382,7 +2382,7 @@
     <div class="subtitle">Fast scan view of strongest model angles, value flags, and standout bet types.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 16:40</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 19:01</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -2489,7 +2489,7 @@
       <div class="meta-pill-row">
         <div class="meta-pill">⭐ Shortlist = main actionable runners</div>
         <div class="meta-pill">🏷️ Extra Places show bookmaker-specific SBG/B365 badges</div>
-        <div class="meta-pill">✅ Must Win = strict A-grade, usually 8/1 or shorter</div>
+        <div class="meta-pill">✅ Must Win = exceptional A-grade, 3/1 or shorter with 95/95 data</div>
         <div class="meta-pill">🎯 EW = 16/1+ normal non-EP</div>
         <div class="meta-pill">🧪 BT E/W = 14/1+ in 16+ runner EP fields</div>
         <div class="meta-pill">❌ Lay tags now highlighted harder</div>
@@ -2615,7 +2615,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Lay-only runners with no supporting non-lay angle.</div>
+        <div class="section-note">Exceptional lays only: 2.10 or shorter, 95/95 data, outside the model top two, strongly opposed by both model prices and carrying a weak R3/R4 or leader/place profile.</div>
         <div class="table-wrap">
           <table id="rawlays-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -2654,7 +2654,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Strict 8/1 or shorter, backend Must Win / AI-back confirmed, both model prices shorter than market, strong leader/place profile.</div>
+        <div class="section-note">Strict 3/1 or shorter: 95/95 data, model rank 1/R1, strong leader and place profiles, 100+ score gap, and both model prices materially shorter than market.</div>
         <div class="table-wrap">
           <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -4338,8 +4338,8 @@
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     // Shared compatibility cap: backend Must Win A / ai-back +
-    // top-rated-clear rows display up to decimal 9.0 (8/1).
-    return !isNaN(dec) && dec <= 9.0;
+    // Strict current Must Win ceiling: decimal 4.0 (3/1).
+    return !isNaN(dec) && dec <= 4.0;
   };
 
   const qveNum = (v, fallback = NaN) => {
@@ -4377,7 +4377,7 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 9.0 && model < book && raw < book)) return false;
+    if (!(book <= 4.0 && model < book && raw < book)) return false;
 
     const qveCount = qveCountFor(entry);
     const ensOdds = qveOddsFor(entry);
@@ -4395,13 +4395,13 @@
       !isNaN(ensOdds) && ensOdds < book &&
       ensEdge >= 3.0 &&
       winQ >= 72.0 &&
-      placePct >= 58.0
+      placePct >= 80.0
     );
 
     return Boolean(
       (explicitQVEPass || fieldsQVEPass) &&
-      cov >= 85.0 && conf >= 85.0 &&
-      leader >= 60.0 && placeProfile >= 58.0
+      cov >= 95.0 && conf >= 95.0 &&
+      leader >= 68.0 && placeProfile >= 80.0
     );
   };
 
@@ -4430,7 +4430,7 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 9.0 && model < book && raw < book)) return false;
+    if (!(book <= 4.0 && model < book && raw < book)) return false;
 
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
@@ -4442,8 +4442,8 @@
 
     return Boolean(
       qveOk &&
-      cov >= 86.0 && conf >= 86.0 &&
-      leader >= 60.0 && placeProfile >= 58.0
+      cov >= 95.0 && conf >= 95.0 &&
+      leader >= 68.0 && placeProfile >= 80.0
     );
   };
 
@@ -4486,14 +4486,14 @@
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 9.0 && model < book && raw < book)) return false;
+    if (!(book <= 4.0 && model < book && raw < book)) return false;
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
     const leader = toNum(entry?.leader_profile, 0);
     const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
     return Boolean(
-      cov >= 85.0 && conf >= 85.0 &&
-      leader >= 60.0 && placeProfile >= 58.0 &&
+      cov >= 95.0 && conf >= 95.0 &&
+      leader >= 68.0 && placeProfile >= 80.0 &&
       (tags.includes("top-rated-clear") || tags.includes("value") || tags.includes("raw-value"))
     );
   };
@@ -4899,6 +4899,9 @@ const getShortlistType = (entry) => {
       return "Each Way";
     }
     if (backendRaw && ["Lay Watch", "Win Value", "Win Value A", "Raw Value"].includes(backendRaw)) return "";
+
+    // Current policy rows are never re-promoted from tags in the browser.
+    if (entry?.policy_version) return "";
 
     // Legacy fallback only for older JSON rows that pre-date backend policy.
     const backendTags = tagSet(entry);
@@ -5954,8 +5957,8 @@ const getShortlistType = (entry) => {
   const isMustWinPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
     // Shared compatibility cap: backend Must Win A / ai-back +
-    // top-rated-clear rows display up to decimal 9.0 (8/1).
-    return !isNaN(dec) && dec <= 9.0;
+    // Strict current Must Win ceiling: decimal 4.0 (3/1).
+    return !isNaN(dec) && dec <= 4.0;
   };
 
   const qveNum = (v, fallback = NaN) => {
@@ -5993,7 +5996,7 @@ const getShortlistType = (entry) => {
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 9.0 && model < book && raw < book)) return false;
+    if (!(book <= 4.0 && model < book && raw < book)) return false;
 
     const qveCount = qveCountFor(entry);
     const ensOdds = qveOddsFor(entry);
@@ -6016,8 +6019,8 @@ const getShortlistType = (entry) => {
 
     return Boolean(
       (explicitQVEPass || fieldsQVEPass) &&
-      cov >= 85.0 && conf >= 85.0 &&
-      leader >= 60.0 && placeProfile >= 58.0
+      cov >= 95.0 && conf >= 95.0 &&
+      leader >= 68.0 && placeProfile >= 80.0
     );
   };
 
@@ -6060,14 +6063,14 @@ const getShortlistType = (entry) => {
     const model = parseOdds(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100);
     const raw = parseOdds(entry?.raw_odds);
     if (isNaN(book) || isNaN(model) || isNaN(raw)) return false;
-    if (!(book <= 9.0 && model < book && raw < book)) return false;
+    if (!(book <= 4.0 && model < book && raw < book)) return false;
     const cov = toNum(entry?.data_coverage, 0);
     const conf = toNum(entry?.race_data_confidence, 0);
     const leader = toNum(entry?.leader_profile, 0);
     const placeProfile = toNum(entry?.place_profile ?? entry?.place_probability, 0);
     return Boolean(
-      cov >= 85.0 && conf >= 85.0 &&
-      leader >= 60.0 && placeProfile >= 58.0 &&
+      cov >= 95.0 && conf >= 95.0 &&
+      leader >= 68.0 && placeProfile >= 80.0 &&
       (tags.includes("top-rated-clear") || tags.includes("value") || tags.includes("raw-value"))
     );
   };
@@ -6536,6 +6539,8 @@ const getShortlistType = (entry, extraPlacesArg) => {
     }
     if (raw) return "";
 
+    if (entry?.policy_version) return "";
+
     // Minimal compatibility fallback for old entries with no shortlist_type.
     const tags = tagSet(entry);
     if (tags.includes("place-lay")) return "Place Lay";
@@ -6751,7 +6756,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
     const rows = rpRowsFor(data, product).slice(0, 4);
     const recent = rows.length
       ? `<ul class="rp-product-recent">${rows.map(row => `<li>${rpRecentLabel(row, product)}<br><span class="${rpStatusClass(row.status)}">${rpEsc(row.status || "Pending")}</span></li>`).join("")}</ul>`
-      : `<ul class="rp-product-recent"><li>No v2 selections tracked yet.</li></ul>`;
+      : `<ul class="rp-product-recent"><li>No selective-product selections tracked yet.</li></ul>`;
     return `<section class="rp-product-card">
       <h3>${product === "Placepot" ? "🧩" : product === "Forecast" ? "🔗" : "🔺"} ${rpEsc(product)}</h3>
       <div class="rp-product-stats">
