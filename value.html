@@ -2876,6 +2876,66 @@
       .overview-card:last-child { grid-column: 1 / -1 !important; }
     }
 
+    /* Desktop Today's shortlist: horse followed by every comparable price. */
+    @media (min-width: 721px) {
+      #shortlist-table th:nth-child(1), #shortlist-table td:nth-child(1) { width: 8% !important; }
+      #shortlist-table th:nth-child(2), #shortlist-table td:nth-child(2) { width: 9% !important; }
+      #shortlist-table th:nth-child(3), #shortlist-table td:nth-child(3) { width: 65% !important; }
+      #shortlist-table th:nth-child(4), #shortlist-table td:nth-child(4) { width: 8% !important; }
+      #shortlist-table th:nth-child(5), #shortlist-table td:nth-child(5) { width: 10% !important; }
+
+      .desktop-shortlist-selection {
+        display: grid;
+        grid-template-columns: minmax(120px, 0.9fr) minmax(0, 3.6fr);
+        align-items: center;
+        gap: 0.65rem;
+      }
+      .desktop-shortlist-horse { min-width: 0; }
+      .desktop-shortlist-horse .shortlist-horse-name {
+        display: block;
+        max-width: none !important;
+        min-width: 0 !important;
+        margin-bottom: 0.28rem;
+      }
+      .desktop-shortlist-horse .shortlist-tags {
+        justify-content: flex-start;
+        min-width: 0 !important;
+        margin: 0 !important;
+      }
+      .desktop-shortlist-prices {
+        display: grid;
+        grid-template-columns: repeat(5,minmax(0,1fr));
+        gap: 0.38rem;
+        min-width: 0;
+      }
+      .desktop-price-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        min-height: 54px;
+        padding: 0.38rem 0.42rem;
+        border: 1px solid rgba(255,255,255,0.13);
+        border-radius: 10px;
+        background: rgba(9,17,29,0.48);
+        text-align: center;
+      }
+      .desktop-price-box small {
+        color: #aebbd0;
+        font-size: 0.58rem;
+        font-weight: 900;
+        letter-spacing: 0.28px;
+        text-transform: uppercase;
+      }
+      .desktop-price-box strong { margin-top: 0.12rem; color: #fff; font-size: 0.95rem; }
+      .desktop-price-box.is-model strong { color: #79f89d; }
+      .desktop-price-box.is-raw strong { color: #dce8fa; }
+      .desktop-price-box.is-back { background: linear-gradient(180deg,#bdeeff,#7fd7f7); }
+      .desktop-price-box.is-back small, .desktop-price-box.is-back strong { color: #092238; }
+      .desktop-price-box.is-lay { background: linear-gradient(180deg,#ffc4da,#ff9fc4); }
+      .desktop-price-box.is-lay small, .desktop-price-box.is-lay strong { color: #351022; }
+    }
+
     /* The actionable shortlist gets its own deliberately simple phone view. */
     .mobile-shortlist-list { display: none; }
 
@@ -2919,6 +2979,7 @@
 
       .mobile-selection-line:last-child { border-bottom: 0; }
       .mobile-selection-race { justify-content: flex-start; }
+      .mobile-selection-horse-line { justify-content: flex-start; }
       .mobile-selection-time { color: #fff; font-size: 0.88rem; font-weight: 950; }
       .mobile-selection-course,
       .mobile-selection-horse {
@@ -2982,6 +3043,110 @@
         border-radius: 9px;
         text-align: center;
       }
+
+      /* Supporting runner lists use the same compact visual grammar. */
+      details.section-card .section-note { display: none; }
+      table.mobile-card-table tbody tr.mobile-simple-row {
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto !important;
+        grid-template-rows: auto auto auto;
+        gap: 0 !important;
+        margin-bottom: 0.42rem !important;
+        color: #edf5ff !important;
+        background: #1c2737 !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-left: 4px solid #ffd700 !important;
+        border-radius: 9px !important;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.18) !important;
+      }
+      table.mobile-card-table tbody tr.mobile-simple-row td {
+        display: flex !important;
+        align-items: center;
+        min-width: 0 !important;
+        min-height: 34px;
+        padding: 0.34rem 0.48rem !important;
+        color: #edf5ff !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+        white-space: nowrap !important;
+      }
+      table.mobile-card-table tbody tr.mobile-simple-row td::before { display: none !important; }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-race {
+        grid-column: 1 / -1;
+        grid-row: 1;
+      }
+      .mobile-simple-race .race-racecard-link {
+        display: flex;
+        align-items: center;
+        gap: 0.48rem;
+        min-width: 0;
+      }
+      .mobile-simple-race .race-racecard-link > div:first-child {
+        color: #fff;
+        font-size: 0.86rem;
+        font-weight: 950;
+      }
+      .mobile-simple-race .race-racecard-link > div:nth-child(2) {
+        display: flex;
+        align-items: center;
+        gap: 0.28rem;
+        color: #ffe976;
+        font-weight: 900;
+      }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-horse {
+        grid-column: 1;
+        grid-row: 2;
+        overflow: hidden;
+      }
+      .mobile-simple-horse a {
+        min-width: 0;
+        overflow: hidden;
+        color: #ffe976 !important;
+        font-size: 0.86rem;
+        font-weight: 900;
+        text-overflow: ellipsis;
+      }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-odds {
+        grid-column: 2;
+        grid-row: 2;
+        justify-content: flex-end;
+        gap: 0.62rem;
+      }
+      .mobile-simple-odds span {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.22rem;
+      }
+      .mobile-simple-odds small {
+        color: #9fb0c8;
+        font-size: 0.55rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+      .mobile-simple-odds strong { color: #fff; font-size: 0.82rem; }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-tags {
+        grid-column: 1;
+        grid-row: 3;
+        gap: 0.2rem;
+        overflow: hidden;
+        border-bottom: 0 !important;
+      }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-action {
+        grid-column: 2;
+        grid-row: 3;
+        justify-content: flex-end;
+        border-bottom: 0 !important;
+      }
+      .mobile-simple-action .mybets-add-btn {
+        width: auto !important;
+        min-width: 64px;
+        min-height: 29px;
+        padding: 0.24rem 0.48rem;
+        border-radius: 999px;
+        font-size: 0.68rem;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -2995,7 +3160,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">18 Jul 2026, 11:41</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Jul 2026, 21:57</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -3110,9 +3275,7 @@
               <tr>
                 <th>Type</th>
                 <th>Race</th>
-                <th>Horse</th>
-                <th>Market vs Model</th>
-                <th>Why</th>
+                <th>Horse and prices</th>
                 <th>Status / Result</th>
                 <th>My Bets</th>
               </tr>
@@ -4596,13 +4759,17 @@
     const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
     const source = sourceLabel || entry.shortlist_type || "Selection";
+    const classes = [rowClass, "mobile-simple-row"].filter(Boolean).join(" ");
 
-    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td>${raceCellHTML(entry)}</td>
-      <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div></td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
-      <td><div>${tags}</div></td>
-      <td>${myBetButtonHTML(entry, source, source)}</td>
+    return `<tr class="${classes}">
+      <td class="mobile-simple-race">${raceCellHTML(entry)}</td>
+      <td class="mobile-simple-horse">${racecardHorseLinkHTML(entry, entry.horse)}</td>
+      <td class="mobile-simple-odds">
+        <span><small>Real</small><strong>${escHTML(bookie)}</strong></span>
+        <span><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+      </td>
+      <td class="mobile-simple-tags">${tags}</td>
+      <td class="mobile-simple-action">${myBetButtonHTML(entry, source, source)}</td>
     </tr>`;
   };
 
@@ -4746,6 +4913,40 @@
     return `<span class="result-badge ${resultClass(label)}">${label}</span>`;
   };
 
+  const mainShortlistInlinePricesHTML = (entry) => {
+    const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
+    const raw = entry?.raw_odds ?? "-";
+    const back = entry?.bf_back_odds ?? "-";
+    const lay = entry?.bf_lay_odds ?? "-";
+    return `<div class="desktop-shortlist-prices">
+      <span class="desktop-price-box"><small>Market</small><strong>${escHTML(market)}</strong></span>
+      <span class="desktop-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+      <span class="desktop-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+      <span class="desktop-price-box is-back"><small>BF Back</small><strong>${escHTML(back)}</strong></span>
+      <span class="desktop-price-box is-lay"><small>BF Lay</small><strong>${escHTML(lay)}</strong></span>
+    </div>`;
+  };
+
+  const mainShortlistRow = (entry, rowClass = "") => {
+    const tags = tagSet(entry).slice(0, 4);
+    return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
+      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
+      <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
+      <td data-label="Horse and prices">
+        <div class="desktop-shortlist-selection">
+          <div class="desktop-shortlist-horse">
+            ${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}
+            ${shortlistTagsHTML(tags)}
+          </div>
+          ${mainShortlistInlinePricesHTML(entry)}
+        </div>
+      </td>
+      <td data-label="Status / Result">${resultBadgeHTML(entry)}</td>
+      <td data-label="My Bets">${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
+    </tr>`;
+  };
+
   const mobileShortlistCardHTML = (entry) => {
     const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
@@ -4759,7 +4960,7 @@
         <span class="mobile-selection-time">${escHTML(timeFromRaceDT(entry?.race_datetime))}</span>
         ${raceLink}
       </div>
-      <div class="mobile-selection-line">
+      <div class="mobile-selection-line mobile-selection-horse-line">
         ${horseLink}
         <span class="mobile-selection-price"><small>Real odds</small><strong>${escHTML(market)}</strong></span>
       </div>
@@ -5910,7 +6111,7 @@ const getShortlistType = (entry) => {
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => shortlistRow(e, "shortlist-row"), 7);
+  const shortlist = buildGroupedRows(shortlistItems, e => mainShortlistRow(e, "shortlist-row"), 5);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
@@ -6276,7 +6477,7 @@ const getShortlistType = (entry) => {
   setBody('#race-shape-table', raceShapeHtml, 6);
   setBody('#pick7-table', pick7Html, 7);
 
-  setBody('#shortlist-table', shortlist, 7);
+  setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
   setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
