@@ -2876,6 +2876,38 @@
       .overview-card:last-child { grid-column: 1 / -1 !important; }
     }
 
+    /* Clear comparable prices in the repeated supporting runner lists. */
+    .mobile-simple-inline-real { display: none; }
+    .supporting-price-strip {
+      display: grid;
+      grid-template-columns: repeat(3,minmax(72px,1fr));
+      gap: 0.38rem;
+      width: 100%;
+      min-width: 240px;
+    }
+    .supporting-price-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      min-height: 48px;
+      padding: 0.32rem 0.38rem;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 9px;
+      background: rgba(9,17,29,0.72);
+      text-align: center;
+    }
+    .supporting-price-box small {
+      color: #afbdd2;
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.25px;
+      text-transform: uppercase;
+    }
+    .supporting-price-box strong { margin-top: 0.1rem; color: #fff; font-size: 0.9rem; }
+    .supporting-price-box.is-model strong { color: #79f89d; }
+
     /* Desktop Today's shortlist: horse followed by every comparable price. */
     @media (min-width: 721px) {
       #shortlist-table th:nth-child(1), #shortlist-table td:nth-child(1) { width: 8% !important; }
@@ -3049,7 +3081,7 @@
       table.mobile-card-table tbody tr.mobile-simple-row {
         display: grid !important;
         grid-template-columns: minmax(0,1fr) auto !important;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto auto auto;
         gap: 0 !important;
         margin-bottom: 0.42rem !important;
         color: #edf5ff !important;
@@ -3096,11 +3128,15 @@
         font-weight: 900;
       }
       table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-horse {
-        grid-column: 1;
+        grid-column: 1 / -1;
         grid-row: 2;
+        justify-content: flex-start;
+        gap: 0.5rem;
         overflow: hidden;
       }
       .mobile-simple-horse a {
+        display: block;
+        flex: 0 1 auto;
         min-width: 0;
         overflow: hidden;
         color: #ffe976 !important;
@@ -3108,34 +3144,52 @@
         font-weight: 900;
         text-overflow: ellipsis;
       }
-      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-odds {
-        grid-column: 2;
-        grid-row: 2;
-        justify-content: flex-end;
-        gap: 0.62rem;
-      }
-      .mobile-simple-odds span {
+      .mobile-simple-inline-real {
         display: inline-flex;
         align-items: baseline;
-        gap: 0.22rem;
+        gap: 0.25rem;
+        flex: 0 0 auto;
+        color: #fff;
+        font-size: 0.84rem;
+        font-weight: 950;
       }
-      .mobile-simple-odds small {
+      .mobile-simple-inline-real small {
         color: #9fb0c8;
         font-size: 0.55rem;
         font-weight: 900;
+        letter-spacing: 0.2px;
         text-transform: uppercase;
       }
-      .mobile-simple-odds strong { color: #fff; font-size: 0.82rem; }
+      table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-odds {
+        grid-column: 1 / -1;
+        grid-row: 3;
+        justify-content: flex-start;
+      }
+      .mobile-simple-odds .supporting-price-strip {
+        grid-template-columns: repeat(2,minmax(76px,108px));
+        justify-content: flex-start;
+        gap: 0.34rem;
+        width: auto;
+        min-width: 0;
+      }
+      .mobile-simple-odds .supporting-price-box {
+        min-height: 38px;
+        padding: 0.24rem 0.42rem;
+        border-radius: 8px;
+      }
+      .mobile-simple-odds .supporting-price-box.is-real { display: none; }
+      .mobile-simple-odds .supporting-price-box small { font-size: 0.53rem; }
+      .mobile-simple-odds .supporting-price-box strong { font-size: 0.84rem; }
       table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-tags {
         grid-column: 1;
-        grid-row: 3;
+        grid-row: 4;
         gap: 0.2rem;
         overflow: hidden;
         border-bottom: 0 !important;
       }
       table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-action {
         grid-column: 2;
-        grid-row: 3;
+        grid-row: 4;
         justify-content: flex-end;
         border-bottom: 0 !important;
       }
@@ -4756,6 +4810,7 @@
 
   const twoLineRow = (entry, tagList, rowClass = "", sourceLabel = "") => {
     const bookie = entry.bookie_odds ?? "-";
+    const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
     const raw = entry.raw_odds ?? "-";
     const tags = iconsOnly(tagList);
     const source = sourceLabel || entry.shortlist_type || "Selection";
@@ -4763,10 +4818,16 @@
 
     return `<tr class="${classes}">
       <td class="mobile-simple-race">${raceCellHTML(entry)}</td>
-      <td class="mobile-simple-horse">${racecardHorseLinkHTML(entry, entry.horse)}</td>
+      <td class="mobile-simple-horse">
+        ${racecardHorseLinkHTML(entry, entry.horse)}
+        <span class="mobile-simple-inline-real"><small>Real odds</small><strong>${escHTML(bookie)}</strong></span>
+      </td>
       <td class="mobile-simple-odds">
-        <span><small>Real</small><strong>${escHTML(bookie)}</strong></span>
-        <span><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+        <div class="supporting-price-strip">
+          <span class="supporting-price-box is-real"><small>Real</small><strong>${escHTML(bookie)}</strong></span>
+          <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+          <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+        </div>
       </td>
       <td class="mobile-simple-tags">${tags}</td>
       <td class="mobile-simple-action">${myBetButtonHTML(entry, source, source)}</td>
