@@ -39,7 +39,13 @@
       color: #fff; background: linear-gradient(135deg,var(--navy),var(--navy-2)); }
     .model-order-heading h2 { margin: 2px 0 0; font-size: clamp(1.15rem,2vw,1.55rem); line-height: 1.15; }
     .model-order-kicker { color: #e9c941; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .model-order-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
     .model-order-heading p { max-width: 570px; margin: 0; color: #dbe7f6; font-size: .82rem; font-weight: 650; line-height: 1.4; text-align: right; }
+    .model-race-replay { display: none; flex: 0 0 auto; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px; color: var(--navy); background: #f3cf45; font: inherit; font-size: .74rem; font-weight: 900; cursor: pointer;
+      box-shadow: 0 3px 9px rgba(0,0,0,.16); }
+    .model-order-card.animation-enabled .model-race-replay { display: inline-flex; align-items: center; justify-content: center; }
+    .model-race-replay:hover, .model-race-replay:focus-visible { background: #ffe477; outline: 3px solid rgba(255,255,255,.65); outline-offset: 2px; }
     .model-track-scroll { overflow: hidden; }
     .model-track-scroll-many { max-height: 790px; overflow-y: auto; scrollbar-color: rgba(19,36,60,.45) rgba(255,255,255,.18); }
     .model-track { position: relative; padding: 14px 0; overflow: hidden; background:
@@ -56,7 +62,7 @@
     .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
     .model-lane:last-child { border-bottom: 0; }
     .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
-      transform: translateY(-50%); }
+      transform: translateY(-50%); will-change: left; }
     .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
       transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
     .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
@@ -75,6 +81,27 @@
     .runner-numbers span:first-child { color: #654c00; background: #fff2b8; } .runner-numbers b { color: inherit; font-weight: 950; }
     .model-runner.is-selected .runner-card { outline: 4px solid #f3c63f; outline-offset: 2px; }
     .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
+    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    @keyframes model-runner-race {
+      0%, 5% { left: 6%; }
+      28% { left: var(--race-quarter); }
+      55% { left: var(--race-mid); }
+      82% { left: var(--race-late); }
+      93% { left: var(--race-overshoot); }
+      100% { left: var(--track-position); }
+    }
+    @keyframes model-runner-card-arrival {
+      0%, 58% { opacity: 0; }
+      76%, 100% { opacity: 1; }
+    }
+    @keyframes model-horse-gallop {
+      0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+      50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
+    }
     .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     #racecard-table { min-width: 1080px; }
@@ -110,7 +137,9 @@
       .race-hero { border-radius: 16px; } .race-facts { grid-template-columns: repeat(3,1fr); gap: 6px; }
       .race-fact { padding: 8px; } .race-fact strong { font-size: .94rem; }
       .model-order-card { border-radius: 15px; }
-      .model-order-heading { display: block; padding: 13px 14px 12px; } .model-order-heading p { margin-top: 6px; text-align: left; }
+      .model-order-heading { display: block; padding: 13px 14px 12px; }
+      .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+      .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
       .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
@@ -133,7 +162,11 @@
       .race-facts { grid-template-columns: 1fr; }
       #racecard-table td { grid-template-columns: 96px 1fr; padding-left: 9px; padding-right: 9px; }
     }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
+      .model-order-card.animation-enabled .model-race-replay { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -151,7 +184,7 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> when the model odds are shorter than the market odds, the model may see value. Tap a linked horse from the value page to highlight it here.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 4 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="basilette" style="--track-position:84.00%" data-cloth="1"><a class="runner-card" href="#horse-basilette" aria-label="1st: Basilette"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Basilette</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>546</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="roarin-success" style="--track-position:80.70%" data-cloth="2"><a class="runner-card" href="#horse-roarin-success" aria-label="2nd: Roarin&#x27; Success"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Roarin&#x27; Success</strong><span class="runner-numbers"><span>Real <b>3.00</b></span><span>Score <b>523</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="lucy-the-wire" style="--track-position:72.23%" data-cloth="3"><a class="runner-card" href="#horse-lucy-the-wire" aria-label="3rd: Lucy The Wire"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Lucy The Wire</strong><span class="runner-numbers"><span>Real <b>2.38</b></span><span>Score <b>464</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="klervia" style="--track-position:55.00%" data-cloth="4"><a class="runner-card" href="#horse-klervia" aria-label="4th: Klervia"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Klervia</strong><span class="runner-numbers"><span>Real <b>9.00</b></span><span>Score <b>344</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 4 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="basilette" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="1"><a class="runner-card" href="#horse-basilette" aria-label="1st: Basilette"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Basilette</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>546</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="roarin-success" style="--track-position:80.70%;--race-quarter:24.67%;--race-mid:47.08%;--race-late:71.73%;--race-overshoot:81.25%" data-cloth="2"><a class="runner-card" href="#horse-roarin-success" aria-label="2nd: Roarin&#x27; Success"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Roarin&#x27; Success</strong><span class="runner-numbers"><span>Real <b>3.00</b></span><span>Score <b>523</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="lucy-the-wire" style="--track-position:72.23%;--race-quarter:22.56%;--race-mid:42.43%;--race-late:64.28%;--race-overshoot:72.78%" data-cloth="3"><a class="runner-card" href="#horse-lucy-the-wire" aria-label="3rd: Lucy The Wire"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Lucy The Wire</strong><span class="runner-numbers"><span>Real <b>2.50</b></span><span>Score <b>464</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="klervia" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="4"><a class="runner-card" href="#horse-klervia" aria-label="4th: Klervia"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Klervia</strong><span class="runner-numbers"><span>Real <b>8.50</b></span><span>Score <b>344</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -171,44 +204,44 @@
       <td>1</td>
       <td><span id="horse-basilette" class="horse-anchor-target">Basilette</span></td>
       <td>3.50</td>
-      <td>2.90</td>
-      <td><span class="edge-pill edge-positive">+9.7pp</span></td>
+      <td>2.89</td>
+      <td><span class="edge-pill edge-positive">+9.5pp</span></td>
       <td>1st · 546</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>34.5%</td>
+      <td>34.6%</td>
       <td><div class="model-view-cell">🏟️ Stratford-on-Avon proven 📘 ATR 🧠 Model-history +1% (n=12, avg 5.82)</div></td>
     </tr>
     <tr>
       <td>2</td>
       <td><span id="horse-roarin-success" class="horse-anchor-target">Roarin&#x27; Success</span></td>
       <td>3.00</td>
-      <td>3.13</td>
-      <td><span class="edge-pill edge-positive">+3.0pp</span></td>
+      <td>3.12</td>
+      <td><span class="edge-pill edge-positive">+2.7pp</span></td>
       <td>2nd · 523</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>31.9%</td>
-      <td><div class="model-view-cell">🏟️ Stratford-on-Avon proven 🔥 Hot Jockey 📘 ATR+ 🧠 Model-history +1% (n=11, avg 5.58)</div></td>
+      <td>32.0%</td>
+      <td><div class="model-view-cell">🔥 Hot Jockey 🏟️ Stratford-on-Avon proven 📘 ATR+ 🧠 Model-history +1% (n=11, avg 5.58)</div></td>
     </tr>
     <tr>
       <td>3</td>
       <td><span id="horse-lucy-the-wire" class="horse-anchor-target">Lucy The Wire</span></td>
-      <td>2.38</td>
-      <td>3.98</td>
-      <td><span class="edge-pill edge-negative">-11.5pp</span></td>
+      <td>2.50</td>
+      <td>4.05</td>
+      <td><span class="edge-pill edge-negative">-10.5pp</span></td>
       <td>3rd · 464</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>25.1%</td>
-      <td><div class="model-view-cell">💰 Value · ⚠️ One-Dimensional 🚀 Stratford-on-Avon pace fit 📘 ATR+ 🧠 Model-history +0% (n=7, avg 5.06)</div></td>
+      <td>24.7%</td>
+      <td><div class="model-view-cell">💰 Value · ⚠️ One-Dimensional 📘 ATR+ 🚀 Stratford-on-Avon pace fit 🧠 Model-history +0% (n=7, avg 5.06)</div></td>
     </tr>
     <tr>
       <td>4</td>
       <td><span id="horse-klervia" class="horse-anchor-target">Klervia</span></td>
-      <td>9.00</td>
-      <td>11.85</td>
-      <td><span class="edge-pill edge-negative">-1.2pp</span></td>
+      <td>8.50</td>
+      <td>11.58</td>
+      <td><span class="edge-pill edge-negative">-1.7pp</span></td>
       <td>4th · 344</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>8.4%</td>
+      <td>8.6%</td>
       <td><div class="model-view-cell">🔥 Hot Jockey 🧠 Model-history +0% (n=7, avg 4.62)</div></td>
     </tr>
   </tbody>
@@ -284,24 +317,24 @@
       <td>Basilette</td>
       <td>3.50</td>
       <td>2.49</td>
-      <td>40.16</td>
-      <td>4.03</td>
-      <td>2.90</td>
+      <td>40.18</td>
+      <td>3.98</td>
+      <td>2.89</td>
       <td>2.47</td>
-      <td>34.51</td>
-      <td>24.82</td>
-      <td>9.69</td>
-      <td>34.51</td>
-      <td>24.82</td>
-      <td>9.69</td>
-      <td>-0.274</td>
+      <td>34.62</td>
+      <td>25.14</td>
+      <td>9.49</td>
+      <td>34.62</td>
+      <td>25.14</td>
+      <td>9.49</td>
+      <td>-0.269</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
-      <td>0.6156</td>
-      <td>0.8186</td>
+      <td>0.6148</td>
+      <td>0.8184</td>
       <td>23.5873</td>
-      <td>1.36468</td>
+      <td>1.36444</td>
       <td>1</td>
       <td>546</td>
       <td>stratford-on-avon</td>
@@ -335,32 +368,32 @@
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>2</td>
       <td>Roarin' Success</td>
       <td>3.00</td>
       <td>3.06</td>
-      <td>32.65</td>
-      <td>3.45</td>
-      <td>3.13</td>
+      <td>32.66</td>
+      <td>3.41</td>
       <td>3.12</td>
-      <td>31.95</td>
-      <td>28.96</td>
-      <td>3.00</td>
-      <td>31.95</td>
-      <td>28.96</td>
-      <td>3.00</td>
-      <td>-0.594</td>
+      <td>3.12</td>
+      <td>32.05</td>
+      <td>29.32</td>
+      <td>2.73</td>
+      <td>32.05</td>
+      <td>29.32</td>
+      <td>2.73</td>
+      <td>-0.590</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
-      <td>0.6156</td>
-      <td>0.8186</td>
+      <td>0.6148</td>
+      <td>0.8184</td>
       <td>23.5873</td>
-      <td>1.36468</td>
+      <td>1.36444</td>
       <td>1</td>
       <td>523</td>
       <td>stratford-on-avon</td>
@@ -390,36 +423,36 @@
       <td>+4.5%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>🏟️ Stratford-on-Avon proven 🔥 Hot Jockey 📘 ATR+ 🧠 Model-history +1% (n=11, avg 5.58)</td>
+      <td>🔥 Hot Jockey 🏟️ Stratford-on-Avon proven 📘 ATR+ 🧠 Model-history +1% (n=11, avg 5.58)</td>
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>3</td>
       <td>Lucy The Wire</td>
-      <td>2.38</td>
-      <td>5.09</td>
-      <td>19.63</td>
-      <td>2.73</td>
-      <td>3.98</td>
-      <td>5.57</td>
-      <td>25.10</td>
-      <td>36.57</td>
-      <td>-11.48</td>
-      <td>25.10</td>
-      <td>36.57</td>
-      <td>-11.48</td>
-      <td>-1.084</td>
+      <td>2.50</td>
+      <td>5.10</td>
+      <td>19.60</td>
+      <td>2.84</td>
+      <td>4.05</td>
+      <td>5.58</td>
+      <td>24.69</td>
+      <td>35.19</td>
+      <td>-10.50</td>
+      <td>24.69</td>
+      <td>35.19</td>
+      <td>-10.50</td>
+      <td>-1.062</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
-      <td>0.6156</td>
-      <td>0.8186</td>
+      <td>0.6148</td>
+      <td>0.8184</td>
       <td>23.5873</td>
-      <td>1.36468</td>
+      <td>1.36444</td>
       <td>1</td>
       <td>464</td>
       <td>stratford-on-avon</td>
@@ -429,10 +462,10 @@
       <td>0.504</td>
       <td>2026.07.17-course-profiles-p2.0</td>
       <td>R2 Prominent/Place</td>
-      <td>59.1</td>
+      <td>59.2</td>
       <td>54.3</td>
       <td>69.5</td>
-      <td>88.8</td>
+      <td>88.6</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -449,36 +482,36 @@
       <td>+6.2%</td>
       <td>ATR 2</td>
       <td>✖️</td>
-      <td>⚠️ One-Dimensional 🚀 Stratford-on-Avon pace fit 📘 ATR+ 🧠 Model-history +0% (n=7, avg 5.06)</td>
+      <td>⚠️ One-Dimensional 📘 ATR+ 🚀 Stratford-on-Avon pace fit 🧠 Model-history +0% (n=7, avg 5.06)</td>
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>4</td>
       <td>Klervia</td>
-      <td>9.00</td>
+      <td>8.50</td>
       <td>13.23</td>
       <td>7.56</td>
-      <td>10.36</td>
-      <td>11.85</td>
-      <td>10.58</td>
-      <td>8.44</td>
-      <td>9.65</td>
-      <td>-1.22</td>
-      <td>8.44</td>
-      <td>9.65</td>
-      <td>-1.22</td>
-      <td>-1.021</td>
+      <td>9.66</td>
+      <td>11.58</td>
+      <td>10.60</td>
+      <td>8.64</td>
+      <td>10.35</td>
+      <td>-1.71</td>
+      <td>8.64</td>
+      <td>10.35</td>
+      <td>-1.71</td>
+      <td>-1.050</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
-      <td>0.6156</td>
-      <td>0.8186</td>
+      <td>0.6148</td>
+      <td>0.8184</td>
       <td>23.5873</td>
-      <td>1.36468</td>
+      <td>1.36444</td>
       <td>1</td>
       <td>344</td>
       <td>stratford-on-avon</td>
@@ -488,10 +521,10 @@
       <td>0.000</td>
       <td>2026.07.17-course-profiles-p2.0</td>
       <td>R4 Weak/Lay</td>
-      <td>14.1</td>
-      <td>34.4</td>
+      <td>13.7</td>
+      <td>29.4</td>
       <td>15.6</td>
-      <td>19.2</td>
+      <td>18.3</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -512,8 +545,8 @@
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
   </tbody>
 </table></div>
@@ -521,6 +554,54 @@
   </main>
   <script>
     (function () {
+      const modelOrderCard = document.querySelector(".model-order-card");
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let modelRaceTimer = null;
+      let modelRaceStarted = false;
+
+      function finishModelRace() {
+        if (!modelOrderCard) return;
+        modelOrderCard.classList.add("race-finished");
+        modelOrderCard.classList.remove("race-running");
+      }
+
+      function runModelRace() {
+        if (!modelOrderCard || reduceMotion) return;
+        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelOrderCard.classList.remove("race-running", "race-finished");
+        // Force the shared straight-line starting frame before replaying.
+        void modelOrderCard.offsetWidth;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            modelOrderCard.classList.add("race-running");
+            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+          });
+        });
+      }
+
+      if (modelOrderCard && !reduceMotion) {
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        const replayButton = modelOrderCard.querySelector(".model-race-replay");
+        if (replayButton) replayButton.addEventListener("click", runModelRace);
+        const startFirstModelRace = () => {
+          if (modelRaceStarted) return;
+          modelRaceStarted = true;
+          runModelRace();
+        };
+        if ("IntersectionObserver" in window) {
+          const raceObserver = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.18)) {
+              raceObserver.disconnect();
+              startFirstModelRace();
+            }
+          }, {threshold: [0.18]});
+          raceObserver.observe(modelOrderCard);
+        } else {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
+        }
+      }
+
       const table = document.getElementById("racecard-table");
       if (table) {
         const labels = Array.from(table.querySelectorAll("thead th")).map(cell => cell.textContent.trim());
