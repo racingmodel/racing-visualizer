@@ -39,7 +39,13 @@
       color: #fff; background: linear-gradient(135deg,var(--navy),var(--navy-2)); }
     .model-order-heading h2 { margin: 2px 0 0; font-size: clamp(1.15rem,2vw,1.55rem); line-height: 1.15; }
     .model-order-kicker { color: #e9c941; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .model-order-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
     .model-order-heading p { max-width: 570px; margin: 0; color: #dbe7f6; font-size: .82rem; font-weight: 650; line-height: 1.4; text-align: right; }
+    .model-race-replay { display: none; flex: 0 0 auto; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px; color: var(--navy); background: #f3cf45; font: inherit; font-size: .74rem; font-weight: 900; cursor: pointer;
+      box-shadow: 0 3px 9px rgba(0,0,0,.16); }
+    .model-order-card.animation-enabled .model-race-replay { display: inline-flex; align-items: center; justify-content: center; }
+    .model-race-replay:hover, .model-race-replay:focus-visible { background: #ffe477; outline: 3px solid rgba(255,255,255,.65); outline-offset: 2px; }
     .model-track-scroll { overflow: hidden; }
     .model-track-scroll-many { max-height: 790px; overflow-y: auto; scrollbar-color: rgba(19,36,60,.45) rgba(255,255,255,.18); }
     .model-track { position: relative; padding: 14px 0; overflow: hidden; background:
@@ -56,7 +62,7 @@
     .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
     .model-lane:last-child { border-bottom: 0; }
     .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
-      transform: translateY(-50%); }
+      transform: translateY(-50%); will-change: left; }
     .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
       transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
     .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
@@ -75,6 +81,27 @@
     .runner-numbers span:first-child { color: #654c00; background: #fff2b8; } .runner-numbers b { color: inherit; font-weight: 950; }
     .model-runner.is-selected .runner-card { outline: 4px solid #f3c63f; outline-offset: 2px; }
     .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
+    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    @keyframes model-runner-race {
+      0%, 5% { left: 6%; }
+      28% { left: var(--race-quarter); }
+      55% { left: var(--race-mid); }
+      82% { left: var(--race-late); }
+      93% { left: var(--race-overshoot); }
+      100% { left: var(--track-position); }
+    }
+    @keyframes model-runner-card-arrival {
+      0%, 58% { opacity: 0; }
+      76%, 100% { opacity: 1; }
+    }
+    @keyframes model-horse-gallop {
+      0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+      50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
+    }
     .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     #racecard-table { min-width: 1080px; }
@@ -110,7 +137,9 @@
       .race-hero { border-radius: 16px; } .race-facts { grid-template-columns: repeat(3,1fr); gap: 6px; }
       .race-fact { padding: 8px; } .race-fact strong { font-size: .94rem; }
       .model-order-card { border-radius: 15px; }
-      .model-order-heading { display: block; padding: 13px 14px 12px; } .model-order-heading p { margin-top: 6px; text-align: left; }
+      .model-order-heading { display: block; padding: 13px 14px 12px; }
+      .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+      .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
       .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
@@ -133,7 +162,11 @@
       .race-facts { grid-template-columns: 1fr; }
       #racecard-table td { grid-template-columns: 96px 1fr; padding-left: 9px; padding-right: 9px; }
     }
-    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
+      .model-order-card.animation-enabled .model-race-replay { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -151,7 +184,7 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> when the model odds are shorter than the market odds, the model may see value. Tap a linked horse from the value page to highlight it here.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 6 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="jager-time" style="--track-position:84.00%" data-cloth="4"><a class="runner-card" href="#horse-jager-time" aria-label="1st: Jager Time"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Jager Time</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>557</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="i-am-spider-man" style="--track-position:80.43%" data-cloth="6"><a class="runner-card" href="#horse-i-am-spider-man" aria-label="2nd: I Am Spider Man"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>I Am Spider Man</strong><span class="runner-numbers"><span>Real <b>3.25</b></span><span>Score <b>507</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="juggernaut" style="--track-position:73.93%" data-cloth="5"><a class="runner-card" href="#horse-juggernaut" aria-label="3rd: Juggernaut"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Juggernaut</strong><span class="runner-numbers"><span>Real <b>4.33</b></span><span>Score <b>416</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="time-to-bite" style="--track-position:70.93%" data-cloth="2"><a class="runner-card" href="#horse-time-to-bite" aria-label="4th: Time To Bite"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Time To Bite</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>374</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="byzantium" style="--track-position:61.71%" data-cloth="1"><a class="runner-card" href="#horse-byzantium" aria-label="5th: Byzantium"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Byzantium</strong><span class="runner-numbers"><span>Real <b>6.00</b></span><span>Score <b>245</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="stavanger-rose" style="--track-position:55.00%" data-cloth="7"><a class="runner-card" href="#horse-stavanger-rose" aria-label="6th: Stavanger Rose"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Stavanger Rose</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>151</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 6 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="jager-time" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="4"><a class="runner-card" href="#horse-jager-time" aria-label="1st: Jager Time"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Jager Time</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>557</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="i-am-spider-man" style="--track-position:80.43%;--race-quarter:24.61%;--race-mid:46.94%;--race-late:71.50%;--race-overshoot:80.98%" data-cloth="6"><a class="runner-card" href="#horse-i-am-spider-man" aria-label="2nd: I Am Spider Man"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>I Am Spider Man</strong><span class="runner-numbers"><span>Real <b>3.75</b></span><span>Score <b>507</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="juggernaut" style="--track-position:73.93%;--race-quarter:22.98%;--race-mid:43.36%;--race-late:65.78%;--race-overshoot:74.48%" data-cloth="5"><a class="runner-card" href="#horse-juggernaut" aria-label="3rd: Juggernaut"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Juggernaut</strong><span class="runner-numbers"><span>Real <b>4.33</b></span><span>Score <b>416</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="time-to-bite" style="--track-position:71.00%;--race-quarter:22.25%;--race-mid:41.75%;--race-late:63.20%;--race-overshoot:71.55%" data-cloth="2"><a class="runner-card" href="#horse-time-to-bite" aria-label="4th: Time To Bite"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Time To Bite</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>375</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="byzantium" style="--track-position:61.71%;--race-quarter:19.93%;--race-mid:36.64%;--race-late:55.03%;--race-overshoot:62.26%" data-cloth="1"><a class="runner-card" href="#horse-byzantium" aria-label="5th: Byzantium"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Byzantium</strong><span class="runner-numbers"><span>Real <b>6.00</b></span><span>Score <b>245</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="stavanger-rose" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="7"><a class="runner-card" href="#horse-stavanger-rose" aria-label="6th: Stavanger Rose"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Stavanger Rose</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>151</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -171,30 +204,30 @@
       <td>4</td>
       <td><span id="horse-jager-time" class="horse-anchor-target">Jager Time</span></td>
       <td>3.50</td>
-      <td>3.34</td>
-      <td><span class="edge-pill edge-positive">+6.5pp</span></td>
+      <td>3.31</td>
+      <td><span class="edge-pill edge-positive">+6.4pp</span></td>
       <td>1st · 557</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>76.7%</td>
-      <td><div class="model-view-cell">🏟️ Newton Abbot proven 🔥 Hot Trainer 🧠 Model-history +1% (n=8, avg 6.5)</div></td>
+      <td>76.8%</td>
+      <td><div class="model-view-cell">🔥 Hot Trainer 🏟️ Newton Abbot proven 🧠 Model-history +1% (n=8, avg 6.5)</div></td>
     </tr>
     <tr>
       <td>6</td>
       <td><span id="horse-i-am-spider-man" class="horse-anchor-target">I Am Spider Man</span></td>
-      <td>3.25</td>
-      <td>3.85</td>
-      <td><span class="edge-pill edge-positive">+0.8pp</span></td>
+      <td>3.75</td>
+      <td>4.02</td>
+      <td><span class="edge-pill edge-positive">+2.7pp</span></td>
       <td>2nd · 507</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>71.9%</td>
-      <td><div class="model-view-cell">🏟️ Newton Abbot proven 📘 ATR 🧠 Model-history +1% (n=9, avg 6.21)</div></td>
+      <td>70.0%</td>
+      <td><div class="model-view-cell">📘 ATR 🏟️ Newton Abbot proven 🧠 Model-history +1% (n=9, avg 6.21)</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-juggernaut" class="horse-anchor-target">Juggernaut</span></td>
       <td>4.33</td>
-      <td>5.79</td>
-      <td><span class="edge-pill edge-negative">-1.6pp</span></td>
+      <td>5.75</td>
+      <td><span class="edge-pill edge-negative">-1.8pp</span></td>
       <td>3rd · 416</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
       <td>56.9%</td>
@@ -203,34 +236,34 @@
     <tr>
       <td>2</td>
       <td><span id="horse-time-to-bite" class="horse-anchor-target">Time To Bite</span></td>
-      <td>5.00</td>
-      <td>7.00</td>
-      <td><span class="edge-pill edge-negative">-2.1pp</span></td>
-      <td>4th · 374</td>
+      <td>4.50</td>
+      <td>6.69</td>
+      <td><span class="edge-pill edge-negative">-3.5pp</span></td>
+      <td>4th · 375</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>48.3%</td>
+      <td>49.7%</td>
       <td><div class="model-view-cell">⚠️ One-Dimensional 🏟️ Newton Abbot proven 🧠 Model-history +0% (n=9, avg 5.54)</div></td>
     </tr>
     <tr>
       <td>1</td>
       <td><span id="horse-byzantium" class="horse-anchor-target">Byzantium</span></td>
       <td>6.00</td>
-      <td>11.25</td>
-      <td><span class="edge-pill edge-negative">-4.8pp</span></td>
+      <td>11.17</td>
+      <td><span class="edge-pill edge-negative">-4.9pp</span></td>
       <td>5th · 245</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>32.5%</td>
-      <td><div class="model-view-cell">💰 Value · 🏟️ Newton Abbot proven 🔥 Hot Trainer 📘 ATR 🧠 Model-history −1% (n=4, avg 3.5)</div></td>
+      <td>32.7%</td>
+      <td><div class="model-view-cell">💰 Value · 🔥 Hot Trainer 📘 ATR 🏟️ Newton Abbot proven 🧠 Model-history −1% (n=4, avg 3.5)</div></td>
     </tr>
     <tr>
       <td>7</td>
       <td><span id="horse-stavanger-rose" class="horse-anchor-target">Stavanger Rose</span></td>
       <td>34.00</td>
-      <td>27.50</td>
+      <td>27.30</td>
       <td><span class="edge-pill edge-positive">+1.2pp</span></td>
       <td>6th · 151</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>13.7%</td>
+      <td>13.8%</td>
       <td><div class="model-view-cell">🧠 Model-history −1% (n=7, avg 4.47)</div></td>
     </tr>
   </tbody>
@@ -305,24 +338,24 @@
       <td>4</td>
       <td>Jager Time</td>
       <td>3.50</td>
-      <td>2.97</td>
-      <td>33.71</td>
-      <td>4.27</td>
-      <td>3.34</td>
+      <td>2.96</td>
+      <td>33.73</td>
+      <td>4.21</td>
+      <td>3.31</td>
       <td>2.78</td>
-      <td>29.94</td>
-      <td>23.41</td>
-      <td>6.53</td>
-      <td>76.73</td>
-      <td>65.92</td>
-      <td>10.82</td>
-      <td>0.199</td>
+      <td>30.18</td>
+      <td>23.78</td>
+      <td>6.40</td>
+      <td>76.80</td>
+      <td>66.19</td>
+      <td>10.61</td>
+      <td>0.208</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
       <td>557</td>
@@ -333,10 +366,10 @@
       <td>0.0</td>
       <td>2026.07.17-course-profiles-p2.0</td>
       <td>R1 Win/Leader</td>
-      <td>87.5</td>
-      <td>77.6</td>
-      <td>80.2</td>
-      <td>27.3</td>
+      <td>90.5</td>
+      <td>82.6</td>
+      <td>86.2</td>
+      <td>20.7</td>
       <td>41.4</td>
       <td>Low</td>
       <td>Historic matching run 2/8 at Newton Abbot on 23/06/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
@@ -353,35 +386,35 @@
       <td>+0.0%</td>
       <td></td>
       <td></td>
-      <td>🏟️ Newton Abbot proven 🔥 Hot Trainer 🧠 Model-history +1% (n=8, avg 6.5)</td>
+      <td>🔥 Hot Trainer 🏟️ Newton Abbot proven 🧠 Model-history +1% (n=8, avg 6.5)</td>
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>6</td>
       <td>I Am Spider Man</td>
-      <td>3.25</td>
+      <td>3.75</td>
       <td>3.86</td>
-      <td>25.91</td>
-      <td>3.97</td>
-      <td>3.85</td>
-      <td>3.74</td>
-      <td>25.99</td>
-      <td>25.22</td>
-      <td>0.77</td>
-      <td>71.92</td>
-      <td>68.32</td>
-      <td>3.59</td>
-      <td>-0.113</td>
+      <td>25.89</td>
+      <td>4.51</td>
+      <td>4.02</td>
+      <td>3.75</td>
+      <td>24.85</td>
+      <td>22.20</td>
+      <td>2.66</td>
+      <td>70.05</td>
+      <td>63.62</td>
+      <td>6.43</td>
+      <td>0.018</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
       <td>507</td>
@@ -391,11 +424,11 @@
       <td>0.860</td>
       <td>0.0</td>
       <td>2026.07.17-course-profiles-p2.0</td>
-      <td>R1 Win/Leader</td>
-      <td>80.4</td>
-      <td>64.7</td>
-      <td>81.2</td>
-      <td>42.7</td>
+      <td>R2 Prominent/Place</td>
+      <td>77.7</td>
+      <td>59.6</td>
+      <td>75.4</td>
+      <td>48.4</td>
       <td>48.8</td>
       <td>Low</td>
       <td>Historic matching run 3/8 at Newton Abbot on 23/06/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. Today's mark is 0 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
@@ -412,12 +445,12 @@
       <td>+2.0%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>🏟️ Newton Abbot proven 📘 ATR 🧠 Model-history +1% (n=9, avg 6.21)</td>
+      <td>📘 ATR 🏟️ Newton Abbot proven 🧠 Model-history +1% (n=9, avg 6.21)</td>
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>5</td>
@@ -425,22 +458,22 @@
       <td>4.33</td>
       <td>6.22</td>
       <td>16.08</td>
-      <td>5.29</td>
-      <td>5.79</td>
-      <td>6.46</td>
-      <td>17.26</td>
-      <td>18.91</td>
-      <td>-1.65</td>
-      <td>56.88</td>
-      <td>58.45</td>
-      <td>-1.58</td>
-      <td>-0.304</td>
+      <td>5.21</td>
+      <td>5.75</td>
+      <td>6.45</td>
+      <td>17.40</td>
+      <td>19.21</td>
+      <td>-1.81</td>
+      <td>56.90</td>
+      <td>58.68</td>
+      <td>-1.78</td>
+      <td>-0.298</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
       <td>416</td>
@@ -475,34 +508,34 @@
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>2</td>
       <td>Time To Bite</td>
-      <td>5.00</td>
-      <td>7.72</td>
-      <td>12.96</td>
-      <td>6.10</td>
-      <td>7.00</td>
-      <td>8.28</td>
-      <td>14.28</td>
-      <td>16.39</td>
-      <td>-2.11</td>
-      <td>48.26</td>
-      <td>52.98</td>
-      <td>-4.72</td>
-      <td>-0.417</td>
+      <td>4.50</td>
+      <td>7.71</td>
+      <td>12.97</td>
+      <td>5.41</td>
+      <td>6.69</td>
+      <td>8.27</td>
+      <td>14.95</td>
+      <td>18.50</td>
+      <td>-3.54</td>
+      <td>49.69</td>
+      <td>57.07</td>
+      <td>-7.37</td>
+      <td>-0.482</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
-      <td>374</td>
+      <td>375</td>
       <td>newton abbot</td>
       <td>jumps</td>
       <td>turf</td>
@@ -510,10 +543,10 @@
       <td>0.0</td>
       <td>2026.07.17-course-profiles-p2.0</td>
       <td>R3 Midfield/Unclear</td>
-      <td>49.3</td>
+      <td>49.7</td>
       <td>27.4</td>
-      <td>49.1</td>
-      <td>95.7</td>
+      <td>50.0</td>
+      <td>96.6</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -534,8 +567,8 @@
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>1</td>
@@ -543,22 +576,22 @@
       <td>6.00</td>
       <td>14.61</td>
       <td>6.84</td>
-      <td>7.32</td>
-      <td>11.25</td>
-      <td>15.73</td>
-      <td>8.89</td>
-      <td>13.66</td>
-      <td>-4.77</td>
-      <td>32.52</td>
-      <td>44.94</td>
-      <td>-12.43</td>
-      <td>-0.816</td>
+      <td>7.21</td>
+      <td>11.17</td>
+      <td>15.72</td>
+      <td>8.96</td>
+      <td>13.87</td>
+      <td>-4.92</td>
+      <td>32.72</td>
+      <td>45.01</td>
+      <td>-12.28</td>
+      <td>-0.808</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
       <td>245</td>
@@ -589,35 +622,35 @@
       <td>+3.0%</td>
       <td>ATR 2</td>
       <td>✖️</td>
-      <td>🏟️ Newton Abbot proven 🔥 Hot Trainer 📘 ATR 🧠 Model-history −1% (n=4, avg 3.5)</td>
+      <td>🔥 Hot Trainer 📘 ATR 🏟️ Newton Abbot proven 🧠 Model-history −1% (n=4, avg 3.5)</td>
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
     <tr>
       <td>7</td>
       <td>Stavanger Rose</td>
       <td>34.00</td>
-      <td>22.26</td>
+      <td>22.27</td>
       <td>4.49</td>
-      <td>41.49</td>
-      <td>27.50</td>
-      <td>29.59</td>
-      <td>3.64</td>
-      <td>2.41</td>
-      <td>1.23</td>
-      <td>13.70</td>
-      <td>9.39</td>
-      <td>4.31</td>
-      <td>0.277</td>
+      <td>40.85</td>
+      <td>27.30</td>
+      <td>29.60</td>
+      <td>3.66</td>
+      <td>2.45</td>
+      <td>1.21</td>
+      <td>13.83</td>
+      <td>9.44</td>
+      <td>4.39</td>
+      <td>0.297</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.64</td>
       <td>0.4918</td>
       <td>0.8197</td>
-      <td>49.2919</td>
+      <td>49.5548</td>
       <td>1.25754</td>
       <td>3</td>
       <td>151</td>
@@ -652,8 +685,8 @@
       <td>100.0</td>
       <td>2026.07.17-p2.0-strict-actions-products</td>
       <td>2026.07.17-p2.1-calibrated-actions</td>
-      <td>20260719_152321</td>
-      <td>2026-07-19 15:23:21</td>
+      <td>20260719_160356</td>
+      <td>2026-07-19 16:03:56</td>
     </tr>
   </tbody>
 </table></div>
@@ -661,6 +694,54 @@
   </main>
   <script>
     (function () {
+      const modelOrderCard = document.querySelector(".model-order-card");
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let modelRaceTimer = null;
+      let modelRaceStarted = false;
+
+      function finishModelRace() {
+        if (!modelOrderCard) return;
+        modelOrderCard.classList.add("race-finished");
+        modelOrderCard.classList.remove("race-running");
+      }
+
+      function runModelRace() {
+        if (!modelOrderCard || reduceMotion) return;
+        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelOrderCard.classList.remove("race-running", "race-finished");
+        // Force the shared straight-line starting frame before replaying.
+        void modelOrderCard.offsetWidth;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            modelOrderCard.classList.add("race-running");
+            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+          });
+        });
+      }
+
+      if (modelOrderCard && !reduceMotion) {
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        const replayButton = modelOrderCard.querySelector(".model-race-replay");
+        if (replayButton) replayButton.addEventListener("click", runModelRace);
+        const startFirstModelRace = () => {
+          if (modelRaceStarted) return;
+          modelRaceStarted = true;
+          runModelRace();
+        };
+        if ("IntersectionObserver" in window) {
+          const raceObserver = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.18)) {
+              raceObserver.disconnect();
+              startFirstModelRace();
+            }
+          }, {threshold: [0.18]});
+          raceObserver.observe(modelOrderCard);
+        } else {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
+        }
+      }
+
       const table = document.getElementById("racecard-table");
       if (table) {
         const labels = Array.from(table.querySelectorAll("thead th")).map(cell => cell.textContent.trim());
