@@ -3261,6 +3261,547 @@
     @media (prefers-reduced-motion: reduce) {
       * { scroll-behavior: auto !important; transition: none !important; }
     }
+
+    /* ================================================================
+       Modern light dashboard overhaul — July 2026
+       Keeps the existing data/rendering logic while giving every retained
+       section a clean white surface and high-contrast black information boxes.
+       ================================================================ */
+    :root {
+      --bg: #f3f5f7;
+      --bg-2: #ffffff;
+      --panel: #ffffff;
+      --panel-2: #ffffff;
+      --row-alt: #f7f8fa;
+      --gold: #d8aa00;
+      --gold-soft: #fff0a8;
+      --text: #111318;
+      --muted: #647083;
+      --line: #dce1e7;
+      --shadow: 0 12px 32px rgba(15,23,42,0.09);
+      --radius: 16px;
+      --ink: #0b0d10;
+      --paper: #ffffff;
+      --soft: #f5f7f9;
+    }
+
+    body {
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(255,211,47,0.17), transparent 22rem),
+        radial-gradient(circle at 94% 5%, rgba(47,140,255,0.10), transparent 24rem),
+        linear-gradient(180deg,#fbfcfd 0%,#f2f4f7 52%,#eef1f4 100%);
+    }
+
+    h1 {
+      color: var(--ink);
+      text-shadow: none;
+      letter-spacing: -0.6px;
+    }
+
+    .subtitle { color: #5c6677; opacity: 1; }
+
+    .latest-update {
+      color: #fff;
+      background: var(--ink);
+      border: 1px solid #000;
+      box-shadow: 0 7px 20px rgba(11,13,16,0.16);
+    }
+
+    .latest-update span { color: #fff; }
+
+    .nav-link a {
+      color: #fff;
+      background: var(--ink);
+      border-color: var(--ink);
+      box-shadow: 0 7px 20px rgba(11,13,16,0.14);
+    }
+
+    .alert-btn {
+      color: #111;
+      background: linear-gradient(135deg,#ffdf4d,#f5bd00);
+      border-color: #d7a600;
+      box-shadow: 0 7px 20px rgba(191,143,0,0.18);
+    }
+
+    .page-jump-nav {
+      border: 1px solid #d8dee6;
+      background: rgba(255,255,255,0.94);
+      box-shadow: 0 8px 26px rgba(15,23,42,0.10);
+    }
+
+    .page-jump-nav a {
+      color: #fff;
+      background: var(--ink);
+      border-color: var(--ink);
+      box-shadow: 0 3px 10px rgba(11,13,16,0.10);
+    }
+
+    .page-jump-nav a:hover,
+    .page-jump-nav a:focus-visible {
+      color: #111;
+      background: #ffd528;
+      border-color: #d9aa00;
+    }
+
+    .nav-count,
+    .section-count {
+      color: #111;
+      background: #ffd528;
+      border: 1px solid #e3b600;
+    }
+
+    .overview-card {
+      background: #fff;
+      border: 1px solid #dce1e7;
+      border-top: 4px solid var(--ink);
+      box-shadow: 0 8px 24px rgba(15,23,42,0.07);
+    }
+
+    .overview-card span { color: #6b7482; }
+    .overview-card strong { color: var(--ink); }
+
+    details.section-card,
+    .backtest-card {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid #d8dee6;
+      box-shadow: var(--shadow) !important;
+    }
+
+    details.section-card.section-shortlist { border-top: 4px solid #e7b800; }
+    details.section-card.section-mybets { border-top: 4px solid #12a150; }
+    details.section-card.section-ewep { border-top: 4px solid #17a758; }
+    details.section-card.section-btew { border-top: 4px solid #168ed6; }
+    details.section-card.section-lay { border-top: 4px solid #e23d3d; }
+    details.section-card.section-ew { border-top: 4px solid #8a5bd0; }
+    details.section-card.section-win { border-top: 4px solid #168c42; }
+    details.section-card.section-intel { border-top: 4px solid #e1b400; }
+    details.section-card.section-placepot { border-top: 4px solid #7d50c7; }
+
+    details.section-card[open] { border-color: #cfd6de; }
+    .is-hidden-section { display: none !important; }
+
+    summary.section-title {
+      color: var(--ink);
+      background: #fff;
+      border-bottom: 1px solid #e2e6eb;
+    }
+
+    details:not([open]) > summary.section-title { border-bottom-color: transparent; }
+    .section-chevron { color: #687386; }
+    details[open] .section-chevron { color: var(--ink); }
+    .section-body { background: #fff; }
+    .section-note { color: #5e6979; opacity: 1; }
+
+    .table-wrap,
+    .shortlist-table-wrap {
+      border: 1px solid #e0e4e9;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.65);
+    }
+
+    table,
+    table.shortlist-premium-table {
+      color: var(--text);
+      background: #fff;
+      box-shadow: none;
+    }
+
+    th,
+    table.shortlist-premium-table th {
+      color: #fff;
+      background: var(--ink);
+      border-bottom: 1px solid #000;
+      box-shadow: none;
+    }
+
+    td,
+    table.shortlist-premium-table td {
+      color: #17202b;
+      border-bottom: 1px solid #e2e6ea;
+    }
+
+    tr:nth-child(even) { background: #f7f8fa; }
+
+    tr.shortlist-row,
+    table.shortlist-premium-table tr.shortlist-row {
+      color: #111 !important;
+      background: linear-gradient(90deg,#fff7cf 0%,#fffdf3 42%,#fff 100%) !important;
+      border-left-color: #e7b800;
+    }
+
+    tr.multi-tag-row { color: #102219 !important; background: #e9f8ee !important; }
+    tr.btew-row { color: #10212a !important; background: #eaf7fc !important; }
+    tr.rawlay-row { color: #351414 !important; background: #fff0f0 !important; }
+    tr.ewnotep-row { color: #281a3a !important; background: #f6f0ff !important; }
+    tr.mustwin-row { color: #102619 !important; background: #edf9f0 !important; }
+    tr.rawvalue-row { color: #17212a !important; background: #eef5fa !important; }
+    tr.tonywatch-row { color: #31230c !important; background: #fff7e5 !important; }
+    tr.sleeper-row { color: #28183b !important; background: #f6f0ff !important; }
+    tr.value-row { color: #271f00 !important; background: #fff8d5 !important; }
+    tr.blue-row { color: #14243e !important; background: #edf5ff !important; }
+    tr.toprated-row { color: #2b2405 !important; background: #fff9dc !important; }
+    tr.overlay-row { color: #153026 !important; background: #ecfaf4 !important; }
+    tr.fc-row { color: #172b40 !important; background: #eef6ff !important; }
+    tr.tc-row { color: #2c1d3a !important; background: #f8f0ff !important; }
+    tr.wasvalue-row { color: #303846 !important; background: #f2f4f7 !important; }
+
+    tr[class] small.reason,
+    .shortlist-reason,
+    .product-reason,
+    .was-note { color: #536071 !important; }
+
+    .date-divider td {
+      color: #ffd941 !important;
+      background: var(--ink) !important;
+      border-color: #000;
+    }
+
+    .racecard-link { color: inherit; border-bottom-color: rgba(11,13,16,0.35); }
+    .racecard-link:hover,
+    .racecard-link:focus-visible { color: #111; border-bottom-color: #111; }
+
+    .horse-racecard-link,
+    .shortlist-horse-link,
+    .mybets-horse-link,
+    .placepot-horse-link {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0.42rem 0.62rem;
+      color: #fff !important;
+      background: var(--ink);
+      border: 1px solid #000;
+      border-left: 4px solid #ffd528;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(11,13,16,0.15);
+      text-decoration: none;
+      line-height: 1.18;
+    }
+
+    .horse-racecard-link:hover,
+    .shortlist-horse-link:hover,
+    .mybets-horse-link:hover,
+    .placepot-horse-link:hover {
+      color: #ffe36b !important;
+      background: #15181d;
+      border-color: #000;
+      transform: translateY(-1px);
+    }
+
+    .shortlist-race-time { color: var(--ink); text-shadow: none; }
+    .shortlist-race-course { color: #596475; }
+
+    .modern-price-box,
+    .supporting-price-box,
+    .shortlist-price-box,
+    .desktop-price-box:not(.is-back):not(.is-lay),
+    .price-pill {
+      color: #fff !important;
+      background: var(--ink) !important;
+      border: 1px solid #000 !important;
+      border-radius: 10px;
+      box-shadow: 0 5px 14px rgba(11,13,16,0.14) !important;
+    }
+
+    .modern-price-box {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-width: 72px;
+      min-height: 48px;
+      padding: 0.34rem 0.45rem;
+      text-align: center;
+    }
+
+    .modern-price-box small,
+    .supporting-price-box small,
+    .shortlist-price-box span,
+    .desktop-price-box small {
+      color: #aeb8c6 !important;
+      font-size: 0.56rem;
+      font-weight: 900;
+      letter-spacing: 0.34px;
+      text-transform: uppercase;
+    }
+
+    .modern-price-box strong,
+    .supporting-price-box strong,
+    .shortlist-price-box strong,
+    .desktop-price-box strong,
+    .price-pill { color: #fff !important; }
+
+    .is-real small,
+    .price-real { color: #ffe16a !important; }
+    .is-model small,
+    .price-model { color: #85efa5 !important; }
+    .is-raw small,
+    .price-raw { color: #9ddcff !important; }
+
+    .supporting-price-strip { min-width: 238px; }
+    .supporting-price-strip-compact { min-width: 210px; }
+    .supporting-price-box { min-height: 46px; }
+
+    .price-pill {
+      min-height: 46px;
+      padding: 0.35rem 0.42rem;
+    }
+
+    .bf-price { min-height: 46px; box-shadow: 0 5px 14px rgba(11,13,16,0.12); }
+    .bf-price.bf-back { background: #92ddff; color: #062337; border-color: #5fc8f6; }
+    .bf-price.bf-lay { background: #ffb2cf; color: #3b071a; border-color: #f487af; }
+
+    .tag-chip { box-shadow: none; }
+    .no-ep-badge { color: #6c7685; border-color: #b9c1ca; }
+
+    .mybets-summary-bar {
+      background: #f5f7f9;
+      border-color: #d9dfe6;
+    }
+
+    .mybets-action-btn,
+    .mybets-mini-btn,
+    .mybets-add-btn {
+      color: #111;
+      background: #ffd528;
+      border-color: #d9aa00;
+      box-shadow: 0 4px 12px rgba(166,126,0,0.13);
+    }
+
+    .mybets-action-btn.is-danger,
+    .mybets-mini-btn.is-remove {
+      color: #fff;
+      background: #15181d;
+      border-color: #000;
+    }
+
+    .mybets-type-pill {
+      color: #fff;
+      background: var(--ink);
+      border-color: #000;
+    }
+
+    .mybets-note-input,
+    .mybets-select,
+    .mybets-input {
+      color: #111;
+      background: #fff;
+      border: 1px solid #bfc7d1;
+    }
+
+    .mybets-empty {
+      color: #626d7c;
+      background: #f7f8fa;
+      border-color: #cbd2da;
+    }
+
+    .mybets-row {
+      color: #111 !important;
+      background: linear-gradient(90deg,#eefaf2,#fff) !important;
+      border-left-color: #18a452;
+    }
+
+    #mybets-table th:nth-child(4), #mybets-table td:nth-child(4),
+    #mybets-table th:nth-child(6), #mybets-table td:nth-child(6),
+    #mybets-table th:nth-child(7), #mybets-table td:nth-child(7) {
+      display: table-cell !important;
+    }
+
+    #mybets-table .shortlist-tags { min-width: 0 !important; }
+    #mybets-table .mybets-note-input { min-width: 0 !important; }
+
+    .backtest-card { border-top: 4px solid #e7b800 !important; }
+    .backtest-head { color: #fff; background: var(--ink); border-bottom-color: #000; }
+    .backtest-title,
+    .backtest-updated { color: #fff; }
+    .backtest-summary-grid,
+    .backtest-type-row,
+    .backtest-daily-breakdown,
+    .backtest-details { color: #111; background: #fff; }
+    .backtest-stat,
+    .backtest-heading-pill,
+    .backtest-type-pill,
+    .backtest-daily-pill {
+      color: #111;
+      background: #f5f7f9;
+      border-color: #d7dde5;
+      box-shadow: none;
+    }
+    .backtest-stat span,
+    .backtest-updated,
+    .backtest-day-title { color: #667283; }
+    .backtest-stat strong { color: #111; }
+    .backtest-pl-pos { color: #07843b; }
+    .backtest-pl-neg { color: #c72b2b; }
+    .backtest-pl-zero { color: #586474; }
+
+    .placepot-card {
+      color: #111;
+      background: #fff;
+      border-color: #d8dee6;
+      box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+    }
+    .placepot-card-head { color: #fff; background: var(--ink); border-bottom-color: #000; }
+    .placepot-card-head h3,
+    .placepot-card-head .placepot-race-link { color: #fff !important; }
+    .placepot-leg,
+    .placepot-runner { color: #111; background: #f7f8fa; border-color: #dce1e7; }
+    .placepot-empty { color: #657080; background: #f7f8fa; border-color: #cbd2da; }
+
+    .product-metric { color: #8a6500; }
+    .result-badge.result-pending,
+    .result-badge.result-pending-top-finish,
+    .result-badge.result-unknown {
+      color: #425064;
+      background: #eef1f5;
+      border-color: #c7ced7;
+    }
+
+    @media (min-width: 721px) {
+      #shortlist-table.shortlist-premium-table {
+        min-width: 1220px !important;
+        table-layout: fixed !important;
+      }
+
+      #shortlist-table th,
+      #shortlist-table td {
+        height: 86px;
+        padding: 0.52rem 0.38rem !important;
+        vertical-align: middle;
+      }
+
+      #shortlist-table th:nth-child(1), #shortlist-table td:nth-child(1) { width: 8% !important; }
+      #shortlist-table th:nth-child(2), #shortlist-table td:nth-child(2) { width: 9% !important; }
+      #shortlist-table th:nth-child(3), #shortlist-table td:nth-child(3) { width: 17% !important; }
+      #shortlist-table th:nth-child(4), #shortlist-table td:nth-child(4),
+      #shortlist-table th:nth-child(5), #shortlist-table td:nth-child(5),
+      #shortlist-table th:nth-child(6), #shortlist-table td:nth-child(6) { width: 7% !important; }
+      #shortlist-table th:nth-child(7), #shortlist-table td:nth-child(7),
+      #shortlist-table th:nth-child(8), #shortlist-table td:nth-child(8) { width: 6.5% !important; }
+      #shortlist-table th:nth-child(9), #shortlist-table td:nth-child(9) { width: 13% !important; min-width: 0 !important; max-width: none !important; }
+      #shortlist-table th:nth-child(10), #shortlist-table td:nth-child(10) { width: 8% !important; min-width: 0 !important; max-width: none !important; }
+      #shortlist-table th:nth-child(11), #shortlist-table td:nth-child(11) { width: 11% !important; min-width: 0 !important; max-width: none !important; }
+
+      #shortlist-table .desktop-shortlist-horse .shortlist-horse-name {
+        width: 100%;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 50px;
+        margin: 0;
+        color: #fff !important;
+        background: var(--ink);
+        border-color: #000;
+        border-left-color: #ffd528;
+      }
+
+      #shortlist-table .price-pill,
+      #shortlist-table .bf-price { width: 100%; min-width: 0 !important; }
+      #shortlist-table .shortlist-tags { min-width: 0 !important; gap: 0.2rem; }
+      #shortlist-table .mybets-add-btn { width: 100%; min-width: 0; }
+
+      #mybets-table {
+        min-width: 1180px !important;
+        table-layout: fixed !important;
+      }
+
+      #mybets-table th,
+      #mybets-table td { vertical-align: middle; }
+      #mybets-table th:nth-child(1), #mybets-table td:nth-child(1) { width: 9% !important; }
+      #mybets-table th:nth-child(2), #mybets-table td:nth-child(2) { width: 9% !important; }
+      #mybets-table th:nth-child(3), #mybets-table td:nth-child(3) { width: 15% !important; }
+      #mybets-table th:nth-child(4), #mybets-table td:nth-child(4),
+      #mybets-table th:nth-child(5), #mybets-table td:nth-child(5),
+      #mybets-table th:nth-child(6), #mybets-table td:nth-child(6) { width: 7% !important; }
+      #mybets-table th:nth-child(7), #mybets-table td:nth-child(7) { width: 9% !important; min-width: 0; max-width: none; }
+      #mybets-table th:nth-child(8), #mybets-table td:nth-child(8) { width: 12% !important; }
+      #mybets-table th:nth-child(9), #mybets-table td:nth-child(9) { width: 17% !important; min-width: 0; max-width: none; }
+      #mybets-table th:nth-child(10), #mybets-table td:nth-child(10) { width: 8% !important; min-width: 0; max-width: none; }
+    }
+
+    @media (max-width: 720px) {
+      .page-jump-nav { background: rgba(255,255,255,0.96); }
+
+      .mobile-mybets-dock {
+        color: #fff;
+        background: var(--ink);
+        border-color: #000;
+        box-shadow: 0 10px 28px rgba(11,13,16,0.24);
+      }
+      .mobile-mybets-dock .nav-count { color: #111; background: #ffd528; }
+
+      .mobile-selection-date,
+      .mobile-shortlist-date { color: #ffdc40; background: var(--ink); }
+
+      .mobile-selection-card {
+        color: #111;
+        background: #fff;
+        border-color: #d8dee6;
+        border-left-color: #e7b800;
+        box-shadow: 0 5px 16px rgba(15,23,42,0.08);
+      }
+      .mobile-selection-line { border-bottom-color: #e4e8ed; }
+      .mobile-selection-time { color: #111; }
+      .mobile-selection-course { color: #596475 !important; }
+      .mobile-selection-horse {
+        padding: 0.38rem 0.5rem;
+        color: #fff !important;
+        background: var(--ink);
+        border-left: 4px solid #ffd528;
+        border-radius: 8px;
+      }
+      .mobile-selection-price {
+        padding: 0.32rem 0.46rem;
+        color: #fff;
+        background: var(--ink);
+        border: 1px solid #000;
+        border-radius: 8px;
+      }
+      .mobile-selection-price small { color: #aeb8c6; }
+      .mobile-selection-model strong { color: #8df0aa; }
+      .mobile-selection-raw strong { color: #a9dfff; }
+      .mobile-shortlist-empty { color: #5e6979; background: #f7f8fa; }
+
+      table.mobile-card-table tbody tr:not(.date-divider),
+      table.mobile-card-table tbody tr.mobile-simple-row,
+      #mybets-table.mobile-card-table tbody tr:not(.date-divider) {
+        color: #111 !important;
+        background: #fff !important;
+        border-color: #d8dee6 !important;
+        box-shadow: 0 5px 16px rgba(15,23,42,0.08) !important;
+      }
+
+      table.mobile-card-table tbody tr:not(.date-divider) td,
+      table.mobile-card-table tbody tr.mobile-simple-row td,
+      #mybets-table.mobile-card-table tbody tr:not(.date-divider) td {
+        display: block !important;
+        color: #111 !important;
+        background: transparent !important;
+        border-bottom-color: #e4e8ed !important;
+      }
+
+      table.mobile-card-table tbody tr:not(.date-divider) td::before,
+      #mybets-table.mobile-card-table tbody tr:not(.date-divider) td::before { color: #6b7584; }
+
+      .mobile-simple-race .race-racecard-link > div:first-child { color: #111; }
+      .mobile-simple-race .race-racecard-link > div:nth-child(2) { color: #596475; }
+      .mobile-simple-horse a { color: #fff !important; background: var(--ink); }
+      .mobile-simple-inline-real { color: #fff; background: var(--ink); padding: 0.28rem 0.4rem; border-radius: 7px; }
+      .mobile-simple-inline-real small { color: #aeb8c6; }
+
+      .supporting-price-strip,
+      .supporting-price-strip-compact { min-width: 0; }
+
+      #mybets-table .modern-price-box { max-width: 120px; }
+      #mybets-table .mybets-horse-link { justify-content: flex-start; }
+      #mybets-table .mybets-note-input { color: #111; background: #fff; }
+
+      .date-divider td { color: #ffdc40 !important; background: var(--ink) !important; }
+    }
   </style>
 </head>
 <body>
@@ -3351,17 +3892,16 @@
             <table id="mybets-table">
               <thead>
                 <tr>
+                  <th>Source</th>
                   <th>Race</th>
                   <th>Horse</th>
-                  <th>Source</th>
-                  <th>Bet Type</th>
-                  <th>Odds</th>
-                  <th>Stake</th>
-                  <th>Estimate</th>
-                  <th>Status</th>
+                  <th>Market Odds</th>
+                  <th>Model Odds</th>
+                  <th>Raw Odds</th>
                   <th>Result</th>
+                  <th>Tags</th>
                   <th>Notes</th>
-                  <th>Actions</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -3384,8 +3924,14 @@
               <tr>
                 <th>Type</th>
                 <th>Race</th>
-                <th>Horse and prices</th>
-                <th>Status / Result</th>
+                <th>Horse</th>
+                <th>Market Odds</th>
+                <th>Model Odds</th>
+                <th>Raw Odds</th>
+                <th>BF Back</th>
+                <th>BF Lay</th>
+                <th>Tags</th>
+                <th>Result</th>
                 <th>My Bets</th>
               </tr>
             </thead>
@@ -3550,7 +4096,7 @@
       </div>
     </details>
 
-    <details class="section-card">
+    <details class="section-card is-hidden-section" hidden aria-hidden="true">
       <summary class="section-title">
         <span class="section-title-left">🤖 AI Suggested Bets</span>
         <span class="section-chevron">▶</span>
@@ -3719,7 +4265,7 @@
       </div>
     </details>
 
-    <details class="section-card section-product-pick7">
+    <details class="section-card section-product-pick7 is-hidden-section" hidden aria-hidden="true">
       <summary class="section-title">
         <span class="section-title-left">🎮 Model Pick 7</span>
         <span class="section-chevron">▶</span>
@@ -4650,28 +5196,16 @@
     tableBody.innerHTML = items.map(item => {
       const tags = Array.isArray(item.tags) ? item.tags : [];
       return `<tr class="mybets-row" data-mybets-row="${myBetsEsc(item.id)}">
-        <td class="mybets-race-cell" data-label="Race">${racecardRaceLinkHTML(item, `<b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span>`, "mybets-race-link")}</td>
-        <td class="mybets-horse-cell" data-label="Horse"><b>${racecardHorseLinkHTML(item, item.horse, "mybets-horse-link")}</b><span class="mybets-sub">${shortlistTagsHTML(tags)}</span></td>
         <td data-label="Source"><span class="mybets-type-pill">${myBetsEsc(item.source_type || item.source || "Selection")}</span></td>
-        <td data-label="Bet Type">
-          <select class="mybets-select" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="bet_type">
-            ${["Win","Each Way","Lay","Placepot","Watch"].map(opt => `<option value="${opt}"${String(item.bet_type || "") === opt ? " selected" : ""}>${opt}</option>`).join("")}
-          </select>
-        </td>
-        <td class="mybets-price-cell" data-label="Prices">
-          <div>Market <b>${myBetsEsc(item.bookie_odds || "-")}</b></div>
-          <span class="mybets-sub">Raw ${myBetsEsc(item.raw_odds || "-")} · Model ${myBetsEsc(item.model_odds || "-")}</span>
-        </td>
-        <td data-label="Stake"><input class="mybets-input" inputmode="decimal" placeholder="£" value="${myBetsEsc(item.stake || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="stake"></td>
-        <td class="mybets-return" data-label="Estimate">${myBetsEsc(estimateMyBetReturn(item))}</td>
-        <td data-label="Status">
-          <select class="mybets-select" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="user_status">
-            ${["Watching","Backed","Laid","Ignored","Settled"].map(opt => `<option value="${opt}"${String(item.user_status || "Watching") === opt ? " selected" : ""}>${opt}</option>`).join("")}
-          </select>
-        </td>
+        <td class="mybets-race-cell" data-label="Race">${racecardRaceLinkHTML(item, `<b>${myBetsEsc(timeFromRaceDT(item.race_datetime))}</b><span class="mybets-sub">${myBetsEsc(item.course)}</span>`, "mybets-race-link")}</td>
+        <td class="mybets-horse-cell" data-label="Horse"><b>${racecardHorseLinkHTML(item, item.horse, "mybets-horse-link")}</b></td>
+        <td class="mybets-price-cell" data-label="Market Odds"><span class="modern-price-box is-real"><small>Market</small><strong>${myBetsEsc(item.bookie_odds || "-")}</strong></span></td>
+        <td class="mybets-price-cell" data-label="Model Odds"><span class="modern-price-box is-model"><small>Model</small><strong>${myBetsEsc(item.model_odds || "-")}</strong></span></td>
+        <td class="mybets-price-cell" data-label="Raw Odds"><span class="modern-price-box is-raw"><small>Raw</small><strong>${myBetsEsc(item.raw_odds || "-")}</strong></span></td>
         <td class="mybets-result-cell" data-label="Result">${myBetsResultHTML(item)}</td>
+        <td class="mybets-tags-cell" data-label="Tags">${shortlistTagsHTML(tags)}</td>
         <td data-label="Notes"><input class="mybets-note-input" placeholder="Add note" value="${myBetsEsc(item.notes || "")}" data-mybets-id="${myBetsEsc(item.id)}" data-mybets-field="notes"></td>
-        <td data-label="Actions"><button type="button" class="mybets-mini-btn is-remove" data-mybets-remove="${myBetsEsc(item.id)}">Remove</button></td>
+        <td data-label="Action"><button type="button" class="mybets-mini-btn is-remove" data-mybets-remove="${myBetsEsc(item.id)}">Remove</button></td>
       </tr>`;
     }).join("");
 
@@ -4863,6 +5397,13 @@
     </div>`;
   };
 
+  const bfSinglePriceHTML = (value, side) => {
+    const clean = (value === undefined || value === null || String(value).trim() === "") ? "-" : String(value);
+    const safeSide = side === "lay" ? "lay" : "back";
+    const label = safeSide === "lay" ? "Lay" : "Back";
+    return `<span class="bf-price bf-${safeSide}"><span class="bf-label">${label}</span><span class="bf-odds">${escHTML(clean)}</span></span>`;
+  };
+
   const twoLineRow = (entry, tagList, rowClass = "", sourceLabel = "") => {
     const bookie = entry.bookie_odds ?? "-";
     const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
@@ -4908,7 +5449,11 @@
     return `<tr class="sleeper-row">
       <td>${raceCellHTML(entry)}</td>
       <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div></td>
-      <td><div>${escHTML(entry?.bookie_odds ?? "-")}</div><div>${escHTML(entry?.raw_odds ?? "-")}</div></td>
+      <td><div class="supporting-price-strip supporting-price-strip-compact">
+        <span class="supporting-price-box is-real"><small>Real</small><strong>${escHTML(entry?.bookie_odds ?? "-")}</strong></span>
+        <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-")}</strong></span>
+        <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(entry?.raw_odds ?? "-")}</strong></span>
+      </div></td>
       <td><b>${score}/100</b><br><small>${escHTML(confidence)} confidence</small><br>${plotWatch ? `<span class="tag-chip tag-sleeper">🕵️ Possible Plot Watch</span>` : iconsOnly(tagSet(entry))}</td>
       <td><small class="reason">${escHTML(reason)}</small></td>
       <td>${myBetButtonHTML(entry, "Sleeper Watch", "Watch")}</td>
@@ -5046,19 +5591,22 @@
 
   const mainShortlistRow = (entry, rowClass = "") => {
     const tags = tagSet(entry).slice(0, 4);
+    const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
+    const raw = entry?.raw_odds ?? "-";
+    const back = entry?.bf_back_odds ?? "-";
+    const lay = entry?.bf_lay_odds ?? "-";
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
-      <td data-label="Horse and prices">
-        <div class="desktop-shortlist-selection">
-          <div class="desktop-shortlist-horse">
-            ${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}
-            ${shortlistTagsHTML(tags)}
-          </div>
-          ${mainShortlistInlinePricesHTML(entry)}
-        </div>
-      </td>
-      <td data-label="Status / Result">${resultBadgeHTML(entry)}</td>
+      <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div></td>
+      <td data-label="Market Odds">${pricePillHTML(market, "price-real")}</td>
+      <td data-label="Model Odds">${pricePillHTML(model, "price-model")}</td>
+      <td data-label="Raw Odds">${pricePillHTML(raw, "price-raw")}</td>
+      <td data-label="BF Back">${bfSinglePriceHTML(back, "back")}</td>
+      <td data-label="BF Lay">${bfSinglePriceHTML(lay, "lay")}</td>
+      <td data-label="Tags">${shortlistTagsHTML(tags)}</td>
+      <td data-label="Result">${resultBadgeHTML(entry)}</td>
       <td data-label="My Bets">${myBetButtonHTML(entry, entry.shortlist_type || "Shortlist", entry.shortlist_type || "Shortlist")}</td>
     </tr>`;
   };
@@ -5119,6 +5667,7 @@
 
   const wasValueRow = (entry) => {
     const bookie = entry.bookie_odds ?? "-";
+    const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
     const raw = entry.raw_odds ?? "-";
     const checked = entry.last_checked || "-";
     const lastLive = entry.last_live_seen || entry.dropped_at || "-";
@@ -5131,8 +5680,11 @@
         <span class="was-note">${raceHasStarted(entry) ? "Race started — removed from shortlist" : "No longer in shortlist/latest run"}</span>
       </td>
       <td>
-        <div>${bookie}</div>
-        <div>${raw}</div>
+        <div class="supporting-price-strip supporting-price-strip-compact">
+          <span class="supporting-price-box is-real"><small>Real</small><strong>${escHTML(bookie)}</strong></span>
+          <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+          <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+        </div>
         <span class="was-note">Checked: ${checked}</span>
       </td>
       <td>
@@ -5150,6 +5702,7 @@
   const overlayRow = (entry, tagList, rowClass = "") => {
     const reason = entry.reason ? `<small class='reason'>🧠 ${entry.reason}</small>` : "";
     const bookie = entry.bookie_odds ?? "-";
+    const model  = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
     const raw    = entry.raw_odds ?? "-";
     const delta  = (entry.rank_delta ?? "");
     const rModel = (entry.rank_model ?? "");
@@ -5158,7 +5711,11 @@
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td>${raceCellHTML(entry)}</td>
       <td><div>${racecardHorseLinkHTML(entry, entry.horse)}</div>${reason}</td>
-      <td><div>${bookie}</div><div>${raw}</div></td>
+      <td><div class="supporting-price-strip supporting-price-strip-compact">
+        <span class="supporting-price-box is-real"><small>Real</small><strong>${escHTML(bookie)}</strong></span>
+        <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+        <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+      </div></td>
       <td><strong>${delta}</strong></td>
       <td>${rModel || ""} / ${rMarket || ""}</td>
       <td>${myBetButtonHTML(entry, "Rank Overlay", "Rank Overlay")}</td>
@@ -5174,9 +5731,13 @@
 
   const productOddsHTML = (entry) => {
     const real = entry?.bookie_odds || entry?.latest_odds || "-";
-    const model = entry?.model_odds || "";
-    const raw = entry?.raw_odds || "";
-    return `<div>${escHTML(real)}</div>${model ? `<div>Model ${escHTML(model)}</div>` : ""}${raw ? `<div>Raw ${escHTML(raw)}</div>` : ""}`;
+    const model = entry?.model_odds || entry?.model_100_odds || entry?.model_100 || "-";
+    const raw = entry?.raw_odds || "-";
+    return `<div class="supporting-price-strip supporting-price-strip-compact">
+      <span class="supporting-price-box is-real"><small>Real</small><strong>${escHTML(real)}</strong></span>
+      <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+      <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+    </div>`;
   };
 
   const productMoveHTML = (entry) => {
@@ -6227,7 +6788,7 @@ const getShortlistType = (entry) => {
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const shortlist = buildGroupedRows(shortlistItems, e => mainShortlistRow(e, "shortlist-row"), 5);
+  const shortlist = buildGroupedRows(shortlistItems, e => mainShortlistRow(e, "shortlist-row"), 11);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", "BT E/W"), 5);
