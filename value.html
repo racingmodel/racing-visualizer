@@ -4311,7 +4311,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Jul 2026, 18:10</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Jul 2026, 18:39</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4503,7 +4503,7 @@
               <tr>
                 <th>Race</th>
                 <th>Horse</th>
-                <th>Latest Odds</th>
+                <th>Advised Odds</th>
                 <th>Result</th>
                 <th>BF SP</th>
                 <th>Was Tagged As</th>
@@ -5383,6 +5383,8 @@
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
 
   const wasTagsFor = (entry) => {
+    if (Array.isArray(entry.advised_tags) && entry.advised_tags.length) return entry.advised_tags.map(t => String(t).toLowerCase());
+    if (Array.isArray(entry.shortlist_was_tags) && entry.shortlist_was_tags.length) return entry.shortlist_was_tags.map(t => String(t).toLowerCase());
     if (Array.isArray(entry.was_tags) && entry.was_tags.length) return entry.was_tags.map(t => String(t).toLowerCase());
     if (Array.isArray(entry.previous_tags) && entry.previous_tags.length) return entry.previous_tags.map(t => String(t).toLowerCase());
     if (Array.isArray(entry.history_tags) && entry.history_tags.length) return entry.history_tags.map(t => String(t).toLowerCase());
@@ -6364,11 +6366,13 @@
 
 
   const wasValueRow = (entry) => {
-    const bookie = entry.bookie_odds ?? "-";
-    const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
-    const raw = entry.raw_odds ?? "-";
+    const bookie = entry.advised_odds ?? entry.bookie_odds ?? "-";
+    const model = entry.advised_model_odds ?? entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
+    const raw = entry.advised_raw_odds ?? entry.raw_odds ?? "-";
     const checked = entry.last_checked || "-";
-    const lastLive = entry.last_live_seen || entry.dropped_at || "-";
+    const lastLive = entry.shortlist_last_live_seen || entry.last_live_seen || entry.shortlist_dropped_at || entry.dropped_at || "-";
+    const advisedAt = entry.advised_at || "-";
+    const advisedType = entry.advised_shortlist_type || entry.shortlist_was_type || "Shortlist";
     const resultUpdated = entry.bf_result_updated || "";
 
     return `<tr class="wasvalue-row">
@@ -6383,7 +6387,8 @@
           <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
           <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
         </div>
-        <span class="was-note">Checked: ${checked}</span>
+        <span class="was-note">Advised: ${escHTML(advisedAt)}</span>
+        <span class="was-note">Latest check: ${escHTML(checked)}</span>
       </td>
       <td>
         ${resultBadgeHTML(entry)}
@@ -6391,8 +6396,9 @@
       </td>
       <td>${bfSPHTML(entry)}</td>
       <td>
+        ${typeBadgeHTML(advisedType)}
         ${wasTagsHTML(entry)}
-        <span class="was-note">Last live: ${lastLive}</span>
+        <span class="was-note">Last shortlisted: ${escHTML(lastLive)}</span>
       </td>
     </tr>`;
   };
@@ -7276,9 +7282,12 @@ const getShortlistType = (entry) => {
   const snapshotEntry = (entry, snap = {}) => ({
     ...entry,
     tags: Array.isArray(snap.tags) ? snap.tags : [],
+    shortlist_type: snap.shortlist_type ?? snap.type ?? entry?.shortlist_type ?? "",
     bookie_odds: snap.bookie_odds ?? entry?.bookie_odds,
     model_odds: snap.model_odds ?? entry?.model_odds,
     raw_odds: snap.raw_odds ?? entry?.raw_odds,
+    policy_version: snap.policy_version ?? entry?.policy_version,
+    current_policy_finalized: snap.policy_finalized ?? entry?.current_policy_finalized,
   });
 
   const shortlistTypeFromSnapshot = (entry, snap = {}) => getShortlistType(snapshotEntry(entry, snap));
@@ -7289,31 +7298,61 @@ const getShortlistType = (entry) => {
 
     const snapshots = [];
 
+    // The backend's immutable first-advice record is authoritative. It remains
+    // available even after later model runs clear the live shortlist type/tags.
+    if (
+      entry?.shortlist_advised &&
+      entry?.advised_shortlist_type &&
+      entry?.advised_odds !== undefined &&
+      entry?.advised_odds !== null &&
+      String(entry?.advised_odds).trim() !== ""
+    ) {
+      snapshots.push({
+        shortlist_type: entry.advised_shortlist_type,
+        tags: Array.isArray(entry.advised_tags) ? entry.advised_tags : [],
+        bookie_odds: entry.advised_odds,
+        model_odds: entry.advised_model_odds ?? entry.model_odds,
+        raw_odds: entry.advised_raw_odds ?? entry.raw_odds,
+        policy_version: entry.advised_policy_version ?? entry.policy_version,
+        policy_finalized: entry.advice_policy_finalized !== false,
+        seen_at: parseRunTS(entry.advised_at)
+      });
+    }
+
     if (Array.isArray(entry?.history)) {
       entry.history.forEach(h => {
-        if (!Array.isArray(h?.tags) || !h.tags.length) return;
+        const hasTags = Array.isArray(h?.tags) && h.tags.length;
+        const hasType = String(h?.shortlist_type || h?.type || "").trim();
+        if (!hasTags && !hasType) return;
         const seenAt = parseRunTS(h.run_ts);
-        snapshots.push({ ...h, tags: h.tags, seen_at: seenAt });
+        snapshots.push({
+          ...h,
+          tags: Array.isArray(h?.tags) ? h.tags : [],
+          shortlist_type: h?.shortlist_type || h?.type || "",
+          seen_at: seenAt
+        });
       });
     }
 
     if (Array.isArray(entry?.was_tags) && entry.was_tags.length) {
       snapshots.push({
         tags: entry.was_tags,
-        bookie_odds: entry?.bookie_odds,
-        model_odds: entry?.model_odds,
-        raw_odds: entry?.raw_odds,
-        seen_at: parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.dropped_at) || parseRunTS(entry?.first_seen)
+        shortlist_type: entry?.advised_shortlist_type || entry?.shortlist_was_type || "",
+        bookie_odds: entry?.advised_odds ?? entry?.bookie_odds,
+        model_odds: entry?.advised_model_odds ?? entry?.model_odds,
+        raw_odds: entry?.advised_raw_odds ?? entry?.raw_odds,
+        seen_at: parseRunTS(entry?.advised_at) || parseRunTS(entry?.shortlist_last_live_seen) || parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.shortlist_dropped_at) || parseRunTS(entry?.dropped_at)
       });
     }
 
     if (Array.isArray(entry?.previous_tags) && entry.previous_tags.length) {
       snapshots.push({
         tags: entry.previous_tags,
-        bookie_odds: entry?.bookie_odds,
-        model_odds: entry?.model_odds,
-        raw_odds: entry?.raw_odds,
-        seen_at: parseRunTS(entry?.last_live_seen) || parseRunTS(entry?.first_seen)
+        shortlist_type: entry?.advised_shortlist_type || entry?.shortlist_was_type || "",
+        bookie_odds: entry?.advised_odds ?? entry?.bookie_odds,
+        model_odds: entry?.advised_model_odds ?? entry?.model_odds,
+        raw_odds: entry?.advised_raw_odds ?? entry?.raw_odds,
+        seen_at: parseRunTS(entry?.advised_at) || parseRunTS(entry?.shortlist_last_live_seen) || parseRunTS(entry?.last_live_seen)
       });
     }
 
@@ -7346,15 +7385,21 @@ const getShortlistType = (entry) => {
     .filter(e =>
       wasInShortlistBeforeRaceStart(e) &&
       (
-        e?.was_value_earlier ||
-        e?.status === "was_value" ||
-        e?.currently_live === false ||
+        e?.shortlist_currently_live === false ||
+        (
+          e?.shortlist_currently_live === undefined &&
+          (
+            e?.was_value_earlier ||
+            e?.status === "was_value" ||
+            e?.currently_live === false
+          )
+        ) ||
         isNonRunner(e) ||
         raceHasStarted(e) ||
         !getShortlistType(e)
       )
     )
-    .filter(e => !isSameRunWasValueArtifact(e))
+    .filter(e => e?.shortlist_advised || e?.shortlist_ever_qualified || !isSameRunWasValueArtifact(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const dateDividerRow = (dateLabel, cols) =>
