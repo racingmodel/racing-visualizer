@@ -200,6 +200,9 @@
     details.section-card.section-ew        { box-shadow: 0 10px 28px rgba(181,124,255,0.16); }
     details.section-card.section-win       { box-shadow: 0 10px 28px rgba(57,211,83,0.16); }
     details.section-card.section-intel     { box-shadow: 0 10px 30px rgba(255,215,0,0.18); border-color: rgba(255,215,0,0.16); }
+    details.section-card.section-namebets  { box-shadow: 0 10px 30px rgba(255,105,180,0.18); border-color: rgba(255,105,180,0.20); }
+    tr.namebet-row { background: linear-gradient(90deg, rgba(255,105,180,0.20), rgba(255,215,0,0.06)) !important; color: #fff; font-weight: 800; border-left: 8px solid #ff69b4; }
+    .namebet-match { display:inline-flex; padding:0.18rem 0.5rem; border-radius:999px; background:rgba(255,105,180,0.18); border:1px solid rgba(255,105,180,0.42); color:#ffd8eb; font-size:0.76rem; font-weight:900; }
 
     summary.section-title {
       list-style: none;
@@ -3406,6 +3409,7 @@
     details.section-card.section-win { border-top: 4px solid #168c42; }
     details.section-card.section-intel { border-top: 4px solid #e1b400; }
     details.section-card.section-placepot { border-top: 4px solid #7d50c7; }
+    details.section-card.section-namebets { border-top: 4px solid #d63f8c; }
 
     details.section-card[open] { border-color: #cfd6de; }
     .is-hidden-section { display: none !important; }
@@ -4337,7 +4341,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 Jul 2026, 12:34</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 Jul 2026, 13:26</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4516,6 +4520,19 @@
       </div>
     </details>
 
+
+    <details id="name-bets-section" class="section-card section-namebets" open>
+      <summary class="section-title">
+        <span class="section-title-left">🎉 Name Bets <span id="name-bets-section-count" class="section-count">0</span></span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">Purely for fun: every runner whose name matches Jeremy/Jez, Scott/Scotty, Pilgrim, Jones, Tony, David/Dave, Gaz/Gary, Shaun/Sean/Shawn or Gilder. No value or model-quality test is required.</div>
+        <div class="table-wrap">
+          <table id="namebets-table"><thead><tr><th>Race</th><th>Horse</th><th>Market / Model / Raw</th><th>Name Match</th><th>My List</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </details>
 
     <details class="section-card">
       <summary class="section-title">
@@ -6043,6 +6060,25 @@
 
 
 
+  const nameBetRow = (entry) => {
+    const matches = Array.isArray(entry?.name_bet_matches) ? entry.name_bet_matches : [];
+    const matchText = matches.length ? matches.join(", ") : "Name match";
+    return `<tr class="namebet-row mobile-simple-row">
+      <td class="mobile-simple-race">${raceCellHTML(entry)}</td>
+      <td class="mobile-simple-horse">${racecardHorseLinkHTML(entry, entry.horse)}</td>
+      <td class="mobile-simple-odds">
+        <div class="supporting-price-strip">
+          <span class="supporting-price-box is-real"><small>Market</small><strong>${escHTML(entry.bookie_odds ?? "-")}</strong></span>
+          <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(entry.model_odds ?? "-")}</strong></span>
+          <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(entry.raw_odds ?? "-")}</strong></span>
+        </div>
+      </td>
+      <td><span class="namebet-match">${escHTML(matchText)}</span></td>
+      <td>${myBetButtonHTML(entry, "Name Bet", "Fun")}</td>
+    </tr>`;
+  };
+
+
   const escHTML = (v) => String(v ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -7514,6 +7550,7 @@ const getShortlistType = (entry) => {
   let valueItems = [];
   let blueItems = [];
   let topItems = [];
+  let nameBetItems = [];
 
   liveEntries.forEach(entry => {
     const tags = tagSet(entry);
@@ -7547,6 +7584,11 @@ const getShortlistType = (entry) => {
   tonyItems = allEntries
   .filter(isLiveEntry)
   .filter(entry => tagSet(entry).includes("tony-watch"));
+
+  nameBetItems = allEntries
+    .filter(isLiveEntry)
+    .filter(entry => tagSet(entry).includes("name-bet"))
+    .sort(byRaceTime);
 
   const normalShortlistItems = [
     ...multiItems,
@@ -7648,6 +7690,7 @@ const getShortlistType = (entry) => {
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row", "Big E/W Odds"), 5);
   const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear"), 5);
   const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 6);
+  const nameBetsHtml = buildGroupedRows(nameBetItems, nameBetRow, 5);
 
   const overlayEntries = liveEntries
     .filter(e => tagSet(e).includes("rank-overlay"))
@@ -8004,6 +8047,7 @@ const getShortlistType = (entry) => {
   setBody('#machine-learning-table', machineLearning, 9);
   setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
+  setBody('#namebets-table', nameBetsHtml, 5);
   setBody('#multitag-table',  multi, 5);
   setBody('#btew-table',      btew, 5);
   setBody('#rawlays-table',   rawlays, 5);
@@ -8020,6 +8064,9 @@ const getShortlistType = (entry) => {
   setBody('#overlay-table',   overlay, 6);
   setBody('#blue-table',      blue, 5);
   setBody('#toprated-table',  top, 5);
+
+  const nameBetCount = document.getElementById("name-bets-section-count");
+  if (nameBetCount) nameBetCount.textContent = String(nameBetItems.length);
 
   const activeShortlistCount = shortlistItems.length;
   ["nav-shortlist-count", "shortlist-section-count"].forEach(id => {
