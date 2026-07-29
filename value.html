@@ -4312,15 +4312,14 @@
         min-width: 1120px;
         table-layout: fixed;
       }
-      #machine-learning-table th:nth-child(1), #machine-learning-table td:nth-child(1) { width: 11%; }
-      #machine-learning-table th:nth-child(2), #machine-learning-table td:nth-child(2) { width: 9%; }
-      #machine-learning-table th:nth-child(3), #machine-learning-table td:nth-child(3) { width: 17%; }
+      #machine-learning-table th:nth-child(1), #machine-learning-table td:nth-child(1) { width: 12%; }
+      #machine-learning-table th:nth-child(2), #machine-learning-table td:nth-child(2) { width: 10%; }
+      #machine-learning-table th:nth-child(3), #machine-learning-table td:nth-child(3) { width: 18%; }
       #machine-learning-table th:nth-child(4), #machine-learning-table td:nth-child(4) { width: 8%; }
-      #machine-learning-table th:nth-child(5), #machine-learning-table td:nth-child(5) { width: 9%; }
-      #machine-learning-table th:nth-child(6), #machine-learning-table td:nth-child(6) { width: 12%; }
-      #machine-learning-table th:nth-child(7), #machine-learning-table td:nth-child(7) { width: 13%; }
-      #machine-learning-table th:nth-child(8), #machine-learning-table td:nth-child(8) { width: 10%; }
-      #machine-learning-table th:nth-child(9), #machine-learning-table td:nth-child(9) { width: 11%; }
+      #machine-learning-table th:nth-child(5), #machine-learning-table td:nth-child(5) { width: 14%; }
+      #machine-learning-table th:nth-child(6), #machine-learning-table td:nth-child(6) { width: 13%; }
+      #machine-learning-table th:nth-child(7), #machine-learning-table td:nth-child(7) { width: 14%; }
+      #machine-learning-table th:nth-child(8), #machine-learning-table td:nth-child(8) { width: 11%; }
     }
     @media (max-width: 720px) {
       #machine-learning-table.mobile-card-table tbody tr:not(.date-divider) {
@@ -4331,7 +4330,6 @@
         width: 100%;
         min-height: 30px;
       }
-      #machine-learning-table .mybets-add-btn { width: 100%; }
     }
   </style>
 </head>
@@ -4341,7 +4339,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 Jul 2026, 19:33</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 Jul 2026, 22:21</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4479,12 +4477,12 @@
 
     <details id="machine-learning-section" class="section-card section-machine-learning" open>
       <summary class="section-title">
-        <span class="section-title-left">🤖 P5 Best Five — Machine Learning <span id="machine-learning-section-count" class="section-count">0</span></span>
+        <span class="section-title-left">🤖 P5 Place Evidence <span id="machine-learning-section-count" class="section-count">0</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
         <div class="section-note">
-          The five strongest daily P5 second opinions, ranked from the learned place and finishing-order evidence. Every row is tagged <b>Machine Learning</b> and remains separate from the official P4 Best Bets &amp; Lays above.
+          Calibrated Top-4 confirmations and research observations only: genuine 4+ place terms, 8–15 runners, 10.0–50.0 odds and agreement from both P4 price engines. P5 remains shadow-only and does not create a bet.
         </div>
         <div class="table-wrap">
           <table id="machine-learning-table" class="shortlist-premium-table">
@@ -4498,7 +4496,6 @@
                 <th>P5 Place</th>
                 <th>Place Edge</th>
                 <th>Confidence</th>
-                <th>My Bets</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -5460,7 +5457,8 @@
     'product-ew': '🎯',
     'product-lay': '🚨',
     'placepot': '🧩',
-    'machine-learning': '🤖 Machine Learning'
+    'machine-learning': '🤖 Machine Learning',
+    'p5-place-support': 'P5 Place Support'
   };
 
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
@@ -6344,25 +6342,23 @@
     return (1 / p).toFixed(2);
   };
 
-  const p5SelectionType = (row) =>
-    String(row?.signal || "").toUpperCase().includes("ML EW")
-      ? "ML Each Way"
-      : "ML Rank Win";
+  const p5SelectionType = (row) => {
+    const signal = String(row?.signal || "").trim().toUpperCase();
+    if (signal === "P5 EW SHADOW") return "Place + E/W Shadow";
+    if (signal === "P5 PLACE CONFIRMATION") return "P4 Place Confirmed";
+    return "Place Research";
+  };
 
   const p5SelectionScore = (row) => {
     /*
-      Compare the two P5 specialist families on one conservative scale.
-      Place edges use the calibrated market-anchored P5 probabilities, not the
-      larger raw ML edges. The small specialist bonus reflects the fact that
-      P5's place models earned live blend weight while win probability did not.
+      Rank only the validated place pocket. Win and lay specialists received
+      zero blend weight in chronological testing and are deliberately absent.
     */
     const confidence = Math.max(0, Math.min(100, p5Num(row?.p5_confidence, 0)));
     const coverage = Math.max(0, Math.min(100, p5Num(row?.data_coverage, 0)));
     const place3Edge = Math.max(0, p5Num(row?.p5_place_edge_pp, 0));
     const place4Edge = Math.max(0, p5Num(row?.p5_place4_edge_pp, 0));
     const marketRank = p5Num(row?.market_rank, 99);
-    const finishRank = p5Num(row?.p5_finish_rank, 99);
-    const rankImprovement = Math.max(0, marketRank - finishRank);
     const market = p5Num(row?.market_odds, 0);
     const p4 = p5Num(row?.p4_odds, 0);
     const raw = p5Num(row?.raw_odds, 0);
@@ -6370,17 +6366,16 @@
       (market > 1 && p4 > 1 && market > p4 ? 1 : 0) +
       (market > 1 && raw > 1 && market > raw ? 1 : 0)
     );
-    const isPlaceSpecialist = String(row?.signal || "").toUpperCase().includes("ML EW");
-    const specialistBonus = isPlaceSpecialist ? 5 : (finishRank === 1 ? 5 : 0);
+    const signal = String(row?.signal || "").toUpperCase();
+    const confirmationBonus = signal.includes("CONFIRMATION") ? 6 : 0;
 
     return (
       (0.30 * confidence) +
       (0.20 * coverage) +
       (0.90 * place3Edge) +
       (0.90 * place4Edge) +
-      (2.00 * rankImprovement) +
       (1.50 * valueAgreement) +
-      specialistBonus
+      confirmationBonus
     );
   };
 
@@ -6390,10 +6385,10 @@
     const place4 = p5Num(row?.p5_place4_prob, 0) * 100;
     const place3Edge = p5Num(row?.p5_place_edge_pp, 0);
     const place4Edge = p5Num(row?.p5_place4_edge_pp, 0);
-    const finishRank = p5Num(row?.p5_finish_rank, 0);
-    const reason = type === "ML Each Way"
-      ? `P5's learned place specialist sees ${place3Edge >= 0 ? "+" : ""}${place3Edge.toFixed(1)}pp Top 3 and ${place4Edge >= 0 ? "+" : ""}${place4Edge.toFixed(1)}pp Top 4 value.`
-      : `P5 ranks this runner ${finishRank ? `#${finishRank}` : "at the head of the race"} and its calibrated place evidence provides the supporting signal.`;
+    const reason = `P5's calibrated Top-4 blend sees ${place4Edge >= 0 ? "+" : ""}${place4Edge.toFixed(1)}pp value in the validated place pocket. ${type === "P4 Place Confirmed" ? "This confirms an existing P4 E/W selection." : "Research only; this did not create a P4 bet."}`;
+    const supportTag = ["P4 Place Confirmed", "Place + E/W Shadow"].includes(type)
+      ? ["p5-place-support"]
+      : [];
 
     return {
       ...row,
@@ -6405,7 +6400,7 @@
       course: String(row?.course || ""),
       shortlist_type: type,
       source_type: type,
-      tags: ["machine-learning"],
+      tags: ["machine-learning", ...supportTag],
       p5_place3_pct: place3,
       p5_place4_pct: place4,
       p5_place3_edge_pp: place3Edge,
@@ -6426,15 +6421,19 @@
       .sort();
     const latestDate = availableDates.length ? availableDates[availableDates.length - 1] : "";
 
-    const supportedSignals = new Set(["P5 ML EW WATCH", "P5 RANK WIN WATCH"]);
+    const supportedSignals = new Set([
+      "P5 EW SHADOW",
+      "P5 PLACE CONFIRMATION",
+      "P5 PLACE RESEARCH"
+    ]);
     const seen = new Set();
     return rows
       .filter(row => !latestDate || String(row?.race_date || "").trim() === latestDate)
       .filter(row => supportedSignals.has(String(row?.signal || "").trim().toUpperCase()))
       .filter(row => row?.bundle_stale !== true)
       .filter(row => p5Num(row?.market_odds, 0) > 1)
-      .filter(row => p5Num(row?.p5_confidence, 0) >= 70)
-      .filter(row => p5Num(row?.data_coverage, 0) >= 75)
+      .filter(row => p5Num(row?.p5_confidence, 0) >= 60)
+      .filter(row => p5Num(row?.data_coverage, 0) >= 70)
       .map(p5EntryFromRow)
       .sort((a, b) => (
         p5Num(b?.p5_daily_score, 0) - p5Num(a?.p5_daily_score, 0) ||
@@ -6461,14 +6460,13 @@
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
       <td data-label="Horse">
         ${racecardHorseLinkHTML(entry, entry?.horse || "", "shortlist-horse-name shortlist-horse-link")}
-        ${shortlistTagsHTML(["machine-learning"])}
+        ${shortlistTagsHTML(entry?.tags || ["machine-learning"])}
       </td>
       <td data-label="Market">${pricePillHTML(entry?.bookie_odds ?? "-", "price-real")}</td>
       <td data-label="P5 Type"><span class="machine-learning-type">${escHTML(entry?.shortlist_type || "ML Pick")}</span></td>
       <td data-label="P5 Place"><span class="machine-learning-metric"><strong>3P ${place3.toFixed(1)}%</strong><small>4P ${place4.toFixed(1)}%</small></span></td>
       <td data-label="Place Edge"><span class="machine-learning-metric machine-learning-edge"><strong>3P ${edge3 >= 0 ? "+" : ""}${edge3.toFixed(1)}pp</strong><small>4P ${edge4 >= 0 ? "+" : ""}${edge4.toFixed(1)}pp</small></span></td>
       <td data-label="Confidence"><span class="machine-learning-metric"><strong>${confidence.toFixed(1)}%</strong><small>Data ${coverage.toFixed(0)}%</small></span></td>
-      <td data-label="My Bets">${myBetButtonHTML(entry, "Machine Learning", entry?.shortlist_type || "ML Pick")}</td>
     </tr>`;
   };
 
@@ -7684,14 +7682,30 @@ const getShortlistType = (entry) => {
   const liveIntelShortlistItems = liveIntelItems
     .filter(isIntelEwShortlistType);
 
+  const machineLearningItems = buildP5TopFive(p5Data);
+  const p5SupportKeys = new Set(
+    machineLearningItems
+      .filter(entry => (entry?.tags || []).includes("p5-place-support"))
+      .map(shortlistRunnerKey)
+  );
+
   const shortlistItems = [
       ...normalShortlistItems,
       ...liveIntelShortlistItems
     ]
+    .map(entry => p5SupportKeys.has(shortlistRunnerKey(entry))
+      ? {
+          ...entry,
+          tags: Array.from(new Set([
+            ...(Array.isArray(entry.tags) ? entry.tags : []),
+            "p5-place-support"
+          ]))
+        }
+      : entry
+    )
     .filter(e => !raceHasStarted(e))
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
-  const machineLearningItems = buildP5TopFive(p5Data);
   // Today's shortlist has one shared day/date heading. Keep it above the
   // column labels, then render only runner rows in the tbody.
   const shortlist = shortlistItems
@@ -7706,7 +7720,7 @@ const getShortlistType = (entry) => {
         }).format(new Date());
     shortlistDateHeading.textContent = `📅 ${dateLabel}`;
   }
-  const machineLearning = buildGroupedRows(machineLearningItems, machineLearningRow, 9);
+  const machineLearning = buildGroupedRows(machineLearningItems, machineLearningRow, 8);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", e.shortlist_type || "BT E/W"), 5);
@@ -8075,7 +8089,7 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
-  setBody('#machine-learning-table', machineLearning, 9);
+  setBody('#machine-learning-table', machineLearning, 8);
   setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
   setBody('#namebets-table', nameBetsHtml, 5);
