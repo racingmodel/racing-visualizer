@@ -7585,9 +7585,40 @@ const getShortlistType = (entry) => {
   .filter(isLiveEntry)
   .filter(entry => tagSet(entry).includes("tony-watch"));
 
+  const NAME_BET_GROUPS = [
+    { label: "Jeremy / Jez", terms: ["jeremy", "jez"] },
+    { label: "Scott / Scotty", terms: ["scott", "scotty"] },
+    { label: "Pilgrim", terms: ["pilgrim"] },
+    { label: "Jones / Jon", terms: ["jones", "jon", "john", "jonny", "johnny"] },
+    { label: "Tony", terms: ["tony"] },
+    { label: "David / Dave", terms: ["david", "dave"] },
+    { label: "Gaz / Gary", terms: ["gaz", "gary"] },
+    { label: "Shaun / Sean / Shawn", terms: ["shaun", "sean", "shawn"] },
+    { label: "Gilder", terms: ["gilder"] }
+  ];
+
+  const normaliseNameBetText = (value) => String(value || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const getNameBetMatches = (entry) => {
+    const supplied = Array.isArray(entry?.name_bet_matches)
+      ? entry.name_bet_matches.map(v => String(v || "").trim()).filter(Boolean)
+      : [];
+    const horseText = ` ${normaliseNameBetText(entry?.horse)} `;
+    const detected = NAME_BET_GROUPS
+      .filter(group => group.terms.some(term => horseText.includes(` ${term} `)))
+      .map(group => group.label);
+    return [...new Set([...supplied, ...detected])];
+  };
+
   nameBetItems = allEntries
     .filter(isLiveEntry)
-    .filter(entry => tagSet(entry).includes("name-bet"))
+    .map(entry => ({ ...entry, name_bet_matches: getNameBetMatches(entry) }))
+    .filter(entry => tagSet(entry).includes("name-bet") || entry.name_bet_matches.length > 0)
     .sort((a, b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const normalShortlistItems = [
