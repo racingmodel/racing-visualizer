@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - 'value.html'
+      - 'valueNEW.html'
       - 'index.html'
       - 'AtoZ.html'
       - '2026-*.html'
@@ -55,6 +56,7 @@ jobs:
           echo "Copying live racing visualizer files..."
 
           cp -f value.html _site/ 2>/dev/null || true
+          cp -f valueNEW.html _site/ 2>/dev/null || true
           cp -f index.html _site/ 2>/dev/null || true
           cp -f AtoZ.html _site/ 2>/dev/null || true
           cp -f extra_places.txt _site/ 2>/dev/null || true
@@ -74,6 +76,10 @@ jobs:
 
           echo "Site artifact contents, first 80 files:"
           find _site -maxdepth 2 -type f | sort | sed -n '1,80p'
+
+          echo "Checking that the new page was included:"
+          test -f _site/valueNEW.html
+          ls -lh _site/valueNEW.html
 
           echo "HTML count:"
           find _site -name "*.html" | wc -l
