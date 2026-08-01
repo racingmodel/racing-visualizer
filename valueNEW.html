@@ -5717,7 +5717,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Aug 2026, 21:33</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Aug 2026, 22:26</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -6447,7 +6447,7 @@
     const t = String(type || "").trim();
     if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Strong Win B"].includes(t)) return "Win";
+    if (["Must Win", "Strong Win B", "Mid-Price Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -6586,6 +6586,7 @@
     const groups = summariseBacktestGroups(rows);
     const winA = summariseBacktestTypes(rows, ["Must Win"]);
     const winB = summariseBacktestTypes(rows, ["Strong Win B"]);
+    const midPriceWin = summariseBacktestTypes(rows, ["Mid-Price Win"]);
     const longshotEwB = summariseBacktestTypes(rows, ["Longshot BT E/W B"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
@@ -6595,6 +6596,7 @@
       `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
       backtestPillHTML("Must Win A", winA),
       backtestPillHTML("Strong Win B", winB),
+      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
@@ -6614,6 +6616,7 @@
     if (typeEl) typeEl.innerHTML = [
       backtestPillHTML("Must Win A", winA),
       backtestPillHTML("Strong Win B", winB),
+      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
@@ -7349,6 +7352,7 @@
     if (type === 'Longshot BT E/W B') return `<span class="type-badge type-btew">Longshot BT E/W B</span>`;
     if (type === 'Must Win' || type === 'Must Win A') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Strong Win B') return `<span class="type-badge type-win">Strong Win B</span>`;
+    if (type === 'Mid-Price Win') return `<span class="type-badge type-win">Mid-Price Win</span>`;
     if (type === 'Win Value A') return `<span class="type-badge type-win">Win Value A</span>`;
     if (type === 'Win Value') return `<span class="type-badge type-win">Win Value</span>`;
     if (type === 'Place Lay' || type === 'Place Lay A') return `<span class="type-badge type-lay">PLACE LAY</span>`;
@@ -7506,6 +7510,9 @@
     }
     if (type === "Strong Win B") {
       return "Strong Win B: a clear model number one at 4.0 or shorter with dual price support, top-two market rank, strong leader/place profiles and 95%+ data, but just outside one Grade-A boundary.";
+    }
+    if (type === "Mid-Price Win") {
+      return "Mid-Price Win: a controlled 5.0-8.99 Grade-B back candidate with dual model/raw value, 90/90 data, model rank one, strong place/leader evidence and at least two corroboration points. Value, Top Rated Clear and Tony Watch cannot qualify it by themselves.";
     }
     if (type === "Strong Value E/W") {
       return "Strong Value E/W: an exceptional mid-priced clear model number one, overlooked by the market, with strong model/raw price overlays, elite place/rank evidence and real extra-place terms.";
@@ -8652,7 +8659,7 @@ const getShortlistType = (entry) => {
     ]);
     const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
-    if (["Must Win", "Strong Win B", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
+    if (["Must Win", "Strong Win B", "Mid-Price Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
       return backendType;
     }
     if (backendType === "Each Way") {
@@ -8918,6 +8925,7 @@ const getShortlistType = (entry) => {
   let ewnotepItems = [];
   let btewItems = [];
   let mustwinItems = [];
+  let midPriceItems = [];
   let strongValueItems = [];
   let winvalueItems = [];
   let rawvItems = [];
@@ -8944,6 +8952,7 @@ const getShortlistType = (entry) => {
     });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
     if (shortlistType === 'Strong Win B') mustwinItems.push({ ...entry, shortlist_type: 'Strong Win B' });
+    if (shortlistType === 'Mid-Price Win') midPriceItems.push({ ...entry, shortlist_type: 'Mid-Price Win' });
     if (shortlistType === 'Strong Value E/W') strongValueItems.push({ ...entry, shortlist_type: 'Strong Value E/W' });
     if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
@@ -9002,6 +9011,7 @@ const getShortlistType = (entry) => {
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
+    ...midPriceItems,
     ...strongValueItems,
     ...rawlayItems,
     ...placelayItems
@@ -9645,7 +9655,7 @@ const getShortlistType = (entry) => {
     const t = String(type || "").trim();
     if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Strong Win B"].includes(t)) return "Win";
+    if (["Must Win", "Strong Win B", "Mid-Price Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -9784,6 +9794,7 @@ const getShortlistType = (entry) => {
     const groups = summariseBacktestGroups(rows);
     const winA = summariseBacktestTypes(rows, ["Must Win"]);
     const winB = summariseBacktestTypes(rows, ["Strong Win B"]);
+    const midPriceWin = summariseBacktestTypes(rows, ["Mid-Price Win"]);
     const longshotEwB = summariseBacktestTypes(rows, ["Longshot BT E/W B"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
@@ -9791,6 +9802,7 @@ const getShortlistType = (entry) => {
     if (headingPillsEl) headingPillsEl.innerHTML = [
       backtestPillHTML("Must Win A", winA),
       backtestPillHTML("Strong Win B", winB),
+      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
@@ -9810,6 +9822,7 @@ const getShortlistType = (entry) => {
     if (typeEl) typeEl.innerHTML = [
       backtestPillHTML("Must Win A", winA),
       backtestPillHTML("Strong Win B", winB),
+      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
@@ -10484,7 +10497,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
       if (isExtra) return "Big E/W - EP";
       return "Each Way";
     }
-    if (["Must Win", "Strong Win B", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
+    if (["Must Win", "Strong Win B", "Mid-Price Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
       return type;
     }
     if (raw) return "";
