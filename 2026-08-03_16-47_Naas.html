@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="race-data-confidence" content="55.2">
+  <meta name="race-runner-count" content="12">
+  <meta name="race-estimated-places" content="3">
+  <title>Irish EBF Ballyhane Stakes (Median Sires Series)</title>
+  <style>
+    :root {
+      --ink: #142033; --muted: #607089; --line: #dfe5ec; --panel: #ffffff;
+      --navy: #13243c; --navy-2: #203858; --gold: #d6a800; --green: #087a45;
+      --red: #b42318; --blue: #0b67a3; --soft: #f3f6f9; --shadow: 0 12px 34px rgba(18,36,60,.10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: linear-gradient(180deg,#edf2f6 0,#f8fafc 300px);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .race-shell { width: min(96vw, 1540px); margin: 0 auto; padding: 18px 0 42px; }
+    .race-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .race-nav a { display: inline-flex; align-items: center; min-height: 42px; padding: 9px 14px; border-radius: 999px;
+      color: #fff; background: var(--navy); text-decoration: none; font-weight: 800; box-shadow: 0 5px 16px rgba(18,36,60,.14); }
+    .race-hero { padding: clamp(18px,3vw,34px); border-radius: 20px; color: #fff;
+      background: radial-gradient(circle at top right,rgba(255,215,0,.22),transparent 28%),linear-gradient(135deg,var(--navy),var(--navy-2));
+      box-shadow: var(--shadow); }
+    h1 { margin: 0; font-size: clamp(1.45rem,3vw,2.35rem); line-height: 1.12; }
+    .race-date { margin-top: 7px; color: #dbe7f6; font-weight: 650; }
+    .race-facts { display: grid; grid-template-columns: repeat(3,minmax(130px,1fr)); gap: 10px; margin-top: 18px; max-width: 620px; }
+    .race-fact { padding: 10px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgba(255,255,255,.09); }
+    .race-fact span { display: block; color: #c9d8eb; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .race-fact strong { display: block; margin-top: 3px; font-size: 1.08rem; }
+    .reader-note { margin: 14px 0; padding: 11px 14px; border-left: 4px solid var(--gold); border-radius: 10px; background: #fff8d8;
+      color: #4e4211; font-size: .9rem; line-height: 1.45; box-shadow: 0 5px 16px rgba(18,36,60,.06); }
+    .model-order-card { margin: 14px 0 16px; border: 1px solid #cfd9e4; border-radius: 18px; overflow: hidden; background: #fff;
+      box-shadow: var(--shadow); }
+    .model-order-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 15px 18px 13px;
+      color: #fff; background: linear-gradient(135deg,var(--navy),var(--navy-2)); }
+    .model-order-heading h2 { margin: 2px 0 0; font-size: clamp(1.15rem,2vw,1.55rem); line-height: 1.15; }
+    .model-order-kicker { color: #e9c941; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .model-order-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+    .model-order-heading p { max-width: 570px; margin: 0; color: #dbe7f6; font-size: .82rem; font-weight: 650; line-height: 1.4; text-align: right; }
+    .model-race-replay { display: none; flex: 0 0 auto; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px; color: var(--navy); background: #f3cf45; font: inherit; font-size: .74rem; font-weight: 900; cursor: pointer;
+      box-shadow: 0 3px 9px rgba(0,0,0,.16); }
+    .model-order-card.animation-enabled .model-race-replay { display: inline-flex; align-items: center; justify-content: center; }
+    .model-race-replay:hover, .model-race-replay:focus-visible { background: #ffe477; outline: 3px solid rgba(255,255,255,.65); outline-offset: 2px; }
+    .model-track-scroll { overflow: hidden; }
+    .model-track-scroll-many { max-height: 790px; overflow-y: auto; scrollbar-color: rgba(19,36,60,.45) rgba(255,255,255,.18); }
+    .model-track { position: relative; padding: 14px 0; overflow: hidden; background:
+      linear-gradient(90deg,rgba(255,255,255,.08),transparent 18%,transparent 82%,rgba(255,255,255,.08)),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0,rgba(255,255,255,.045) 1px,transparent 1px,transparent 15px),
+      #56a34f; box-shadow: inset 0 8px 18px rgba(21,74,35,.18), inset 0 -8px 18px rgba(21,74,35,.12); }
+    .model-track::before, .model-track::after { content: ""; position: absolute; z-index: 4; left: 0; right: 0; height: 5px;
+      background: #eef3f7; box-shadow: 0 1px 0 rgba(19,36,60,.28); pointer-events: none; }
+    .model-track::before { top: 0; } .model-track::after { bottom: 0; }
+    .finish-line { position: absolute; z-index: 1; top: 0; bottom: 0; right: 4.5%; width: 7px;
+      background: repeating-linear-gradient(0deg,#fff 0 7px,#172337 7px 14px); box-shadow: 0 0 0 2px rgba(255,255,255,.5); }
+    .finish-line span { position: sticky; z-index: 6; top: 8px; display: block; width: 34px; margin-left: -13px; font-size: 1.55rem;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
+    .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
+    .model-lane:last-child { border-bottom: 0; }
+    .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
+      transform: translateY(-50%); will-change: left; }
+    .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
+      transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
+    .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
+      max-width: min(225px,47vw); padding: 7px 9px 7px 7px; border: 1px solid rgba(19,36,60,.12); border-radius: 10px;
+      color: var(--navy); background: rgba(255,255,255,.97); text-decoration: none; box-shadow: 0 4px 10px rgba(16,46,25,.22); }
+    .runner-card::after { content: ""; position: absolute; top: 50%; right: -7px; width: 12px; height: 12px; background: #fff;
+      border-top: 1px solid rgba(19,36,60,.12); border-right: 1px solid rgba(19,36,60,.12); transform: translateY(-50%) rotate(45deg); }
+    .runner-card:hover, .runner-card:focus-visible { outline: 3px solid #f3d142; outline-offset: 2px; }
+    .runner-rank { position: relative; z-index: 1; flex: 0 0 auto; display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 5px;
+      border-radius: 50%; color: #fff; background: #31435b; font-size: .73rem; font-weight: 950; }
+    .podium-1 .runner-rank { color: #4c3600; background: #f3c63f; } .podium-2 .runner-rank { color: #354052; background: #dce2e8; }
+    .podium-3 .runner-rank { color: #fff; background: #b66a3c; }
+    .runner-copy { min-width: 0; } .runner-copy strong { display: block; overflow-wrap: anywhere; font-size: .9rem; line-height: 1.08; }
+    .runner-numbers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; color: #516075; font-size: .68rem; font-weight: 750; }
+    .runner-numbers span { padding: 2px 5px; border-radius: 5px; background: #edf2f6; white-space: nowrap; }
+    .runner-numbers span:first-child { color: #654c00; background: #fff2b8; } .runner-numbers b { color: inherit; font-weight: 950; }
+    .model-runner.is-selected .runner-card { outline: 4px solid #f3c63f; outline-offset: 2px; }
+    .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
+    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    @keyframes model-runner-race {
+      0%, 5% { left: 6%; }
+      28% { left: var(--race-quarter); }
+      55% { left: var(--race-mid); }
+      82% { left: var(--race-late); }
+      93% { left: var(--race-overshoot); }
+      100% { left: var(--track-position); }
+    }
+    @keyframes model-runner-card-arrival {
+      0%, 58% { opacity: 0; }
+      76%, 100% { opacity: 1; }
+    }
+    @keyframes model-horse-gallop {
+      0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+      50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
+    }
+    .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    #racecard-table { min-width: 1080px; }
+    th { position: sticky; top: 0; z-index: 2; padding: 12px 10px; color: #fff; background: var(--navy); font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .035em; white-space: nowrap; }
+    td { padding: 13px 10px; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; font-size: .88rem; }
+    tbody tr:nth-child(even) { background: #f7f9fb; }
+    tbody tr:hover { background: #fff8d8; }
+    tbody tr:last-child td { border-bottom: 0; }
+    #racecard-table th:nth-child(2), #racecard-table td:nth-child(2) { text-align: left; min-width: 160px; font-weight: 850; }
+    #racecard-table th:nth-child(9), #racecard-table td:nth-child(9) { text-align: left; min-width: 230px; max-width: 330px; }
+    .horse-anchor-target { scroll-margin-top: 95px; font-weight: 850; }
+    .edge-pill { display: inline-flex; min-width: 64px; justify-content: center; padding: 5px 8px; border-radius: 999px; font-weight: 900; }
+    .edge-positive { color: #075b37; background: #d7f5e6; } .edge-negative { color: #8f1d16; background: #ffe0dd; }
+    .edge-neutral { color: #4b5565; background: #e9edf2; }
+    .fit-list { display: grid; grid-template-columns: repeat(2,minmax(54px,1fr)); gap: 5px; min-width: 126px; }
+    .fit-chip { display: inline-flex; gap: 5px; align-items: center; justify-content: center; padding: 5px 6px; border-radius: 8px; white-space: nowrap; font-weight: 800; }
+    .fit-good { color: #087a45; background: #e1f5e9; }
+    .fit-bad { color: #b42318; background: #ffe5e1; }
+    .fit-mixed { color: #7a5700; background: #fff1bd; }
+    .fit-neutral { color: #536176; background: #edf3f8; }
+    .fit-chip b { color: inherit; } .model-view-cell { white-space: normal; line-height: 1.38; color: #3e4c61; }
+    tr.horse-highlight, tr.horse-highlight:nth-child(even) { background: #fff0a8 !important; outline: 3px solid #e0ad00; outline-offset: -3px; }
+    .technical-details { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; overflow: hidden; }
+    .technical-details summary { cursor: pointer; padding: 13px 15px; color: var(--navy); background: #edf3f8; font-weight: 850; }
+    .technical-note { margin: 0; padding: 12px 15px 0; color: var(--muted); font-size: .84rem; }
+    .technical-scroll { overflow-x: auto; padding: 0 14px 14px; }
+    #technical-table { min-width: 4200px; margin-top: 12px; font-size: .76rem; }
+    #technical-table th { position: static; } #technical-table td { padding: 9px 8px; }
+    @media (max-width: 720px) {
+      .race-shell { width: 100%; padding: 10px 10px calc(28px + env(safe-area-inset-bottom)); }
+      .race-nav a { flex: 1 1 140px; justify-content: center; }
+      .race-hero { border-radius: 16px; } .race-facts { grid-template-columns: repeat(3,1fr); gap: 6px; }
+      .race-fact { padding: 8px; } .race-fact strong { font-size: .94rem; }
+      .model-order-card { border-radius: 15px; }
+      .model-order-heading { display: block; padding: 13px 14px 12px; }
+      .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+      .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
+      .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
+      .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
+      .runner-numbers { gap: 3px; font-size: .61rem; } .runner-numbers span { padding: 2px 4px; }
+      .runner-horse { margin-left: 4px; font-size: 1.95rem; } .finish-line { right: 4%; }
+      .table-shell { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+      #racecard-table, #racecard-table tbody { display: block; min-width: 0; background: transparent; }
+      #racecard-table thead { display: none; }
+      #racecard-table tr { display: block; margin-bottom: 12px; border: 1px solid var(--line); border-left: 5px solid var(--gold);
+        border-radius: 14px; overflow: hidden; background: #fff !important; box-shadow: 0 8px 22px rgba(18,36,60,.09); }
+      #racecard-table td { display: grid; grid-template-columns: minmax(106px,38%) 1fr; gap: 9px; align-items: center; width: 100%; min-width: 0 !important;
+        max-width: none !important; padding: 9px 11px; text-align: left !important; border-bottom: 1px solid #edf0f3; white-space: normal; }
+      #racecard-table td::before { content: attr(data-label); color: var(--muted); font-size: .69rem; font-weight: 850; text-transform: uppercase; letter-spacing: .035em; }
+      #racecard-table td:nth-child(2) { font-size: 1.02rem; color: var(--navy); }
+      #racecard-table td:last-child { border-bottom: 0; }
+      .fit-list { min-width: 0; max-width: 190px; }
+      .technical-details { margin-top: 12px; }
+    }
+    @media (max-width: 390px) {
+      .race-facts { grid-template-columns: 1fr; }
+      #racecard-table td { grid-template-columns: 96px 1fr; padding-left: 9px; padding-right: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
+      .model-order-card.animation-enabled .model-race-replay { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="race-shell">
+    <nav class="race-nav" aria-label="Racecard navigation">
+      <a href="index.html">← All races</a><a href="value.html">⭐ Today’s best bets</a>
+    </nav>
+    <header class="race-hero" data-race-confidence="55.2" data-runner-count="12" data-estimated-places="3">
+      <h1>Irish EBF Ballyhane Stakes (Median Sires Series)</h1>
+      <div class="race-date">03/08/2026</div>
+      <div class="race-facts">
+        <div class="race-fact"><span>Data confidence</span><strong>55.2%</strong></div>
+        <div class="race-fact"><span>Runners</span><strong>12</strong></div>
+        <div class="race-fact"><span>Estimated places</span><strong>3</strong></div>
+      </div>
+    </header>
+    <p class="reader-note"><strong>Quick read:</strong> when the model odds are shorter than the market odds, the model may see value. Tap a linked horse from the value page to highlight it here.</p>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 12 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="livenka" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="11"><a class="runner-card" href="#horse-livenka" aria-label="1st: Livenka"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Livenka</strong><span class="runner-numbers"><span>Real <b>1.91</b></span><span>Score <b>567</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="alpe-dhuez" style="--track-position:81.24%;--race-quarter:24.81%;--race-mid:47.38%;--race-late:72.21%;--race-overshoot:81.79%" data-cloth="6"><a class="runner-card" href="#horse-alpe-dhuez" aria-label="2nd: Alpe d&#x27;Huez"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Alpe d&#x27;Huez</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>523</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="south-dakota" style="--track-position:79.37%;--race-quarter:24.34%;--race-mid:46.35%;--race-late:70.56%;--race-overshoot:79.92%" data-cloth="1"><a class="runner-card" href="#horse-south-dakota" aria-label="3rd: South Dakota"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>South Dakota</strong><span class="runner-numbers"><span>Real <b>4.33</b></span><span>Score <b>493</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="star-prospect" style="--track-position:79.11%;--race-quarter:24.28%;--race-mid:46.21%;--race-late:70.34%;--race-overshoot:79.66%" data-cloth="2"><a class="runner-card" href="#horse-star-prospect" aria-label="4th: Star Prospect"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Star Prospect</strong><span class="runner-numbers"><span>Real <b>7.50</b></span><span>Score <b>489</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="weekend-roar" style="--track-position:76.80%;--race-quarter:23.70%;--race-mid:44.94%;--race-late:68.30%;--race-overshoot:77.35%" data-cloth="9"><a class="runner-card" href="#horse-weekend-roar" aria-label="5th: Weekend Roar"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Weekend Roar</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>452</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="eighteenth-smiles" style="--track-position:76.30%;--race-quarter:23.57%;--race-mid:44.66%;--race-late:67.86%;--race-overshoot:76.85%" data-cloth="3"><a class="runner-card" href="#horse-eighteenth-smiles" aria-label="6th: Eighteenth Smiles"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Eighteenth Smiles</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>444</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="el-domino" style="--track-position:66.96%;--race-quarter:21.24%;--race-mid:39.53%;--race-late:59.65%;--race-overshoot:67.51%" data-cloth="7"><a class="runner-card" href="#horse-el-domino" aria-label="7th: El Domino"><span class="runner-rank">7th</span><span class="runner-copy"><strong>El Domino</strong><span class="runner-numbers"><span>Real <b>51.00</b></span><span>Score <b>295</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="ranting-duke" style="--track-position:64.90%;--race-quarter:20.72%;--race-mid:38.39%;--race-late:57.83%;--race-overshoot:65.45%" data-cloth="4"><a class="runner-card" href="#horse-ranting-duke" aria-label="8th: Ranting Duke"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Ranting Duke</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>262</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="lily-bear" style="--track-position:56.19%;--race-quarter:18.55%;--race-mid:33.60%;--race-late:50.17%;--race-overshoot:56.74%" data-cloth="10"><a class="runner-card" href="#horse-lily-bear" aria-label="9th: Lily Bear"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Lily Bear</strong><span class="runner-numbers"><span>Real <b>101.00</b></span><span>Score <b>123</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="maeda-matsu" style="--track-position:55.88%;--race-quarter:18.47%;--race-mid:33.43%;--race-late:49.89%;--race-overshoot:56.43%" data-cloth="12"><a class="runner-card" href="#horse-maeda-matsu" aria-label="10th: Maeda Matsu"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Maeda Matsu</strong><span class="runner-numbers"><span>Real <b>51.00</b></span><span>Score <b>118</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="anglesea-bridge" style="--track-position:55.56%;--race-quarter:18.39%;--race-mid:33.26%;--race-late:49.62%;--race-overshoot:56.11%" data-cloth="8"><a class="runner-card" href="#horse-anglesea-bridge" aria-label="11th: Anglesea Bridge"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Anglesea Bridge</strong><span class="runner-numbers"><span>Real <b>101.00</b></span><span>Score <b>113</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="starlit" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="5"><a class="runner-card" href="#horse-starlit" aria-label="12th: Starlit"><span class="runner-rank">12th</span><span class="runner-copy"><strong>Starlit</strong><span class="runner-numbers"><span>Real <b>41.00</b></span><span>Score <b>104</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>Market Odds</th>
+      <th>Model Odds</th>
+      <th>Value Edge</th>
+      <th>Model Rating</th>
+      <th>Suitability</th>
+      <th>Place Chance</th>
+      <th>Model View</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>11</td>
+      <td><span id="horse-livenka" class="horse-anchor-target">Livenka</span></td>
+      <td>1.91</td>
+      <td>3.35</td>
+      <td><span class="edge-pill edge-negative">-8.4pp</span></td>
+      <td>1st · 567</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>70.7%</td>
+      <td><div class="model-view-cell">💰 Value · 🌟 Improver Field 📘 ATR+ 🏟️ Naas proven 🧠 Model-history +1% (n=3, avg 7.47) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><span id="horse-alpe-dhuez" class="horse-anchor-target">Alpe d&#x27;Huez</span></td>
+      <td>17.00</td>
+      <td>13.45</td>
+      <td><span class="edge-pill edge-positive">+3.1pp</span></td>
+      <td>2nd · 523</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>25.8%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 🧠 Model-history +0% (n=3, avg 6.53) context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><span id="horse-south-dakota" class="horse-anchor-target">South Dakota</span></td>
+      <td>4.33</td>
+      <td>6.24</td>
+      <td><span class="edge-pill edge-negative">-0.8pp</span></td>
+      <td>3rd · 493</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>48.8%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧠 Model-history +0% (n=3, avg 5.42) context-fitness context-connection-risk</div></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span id="horse-star-prospect" class="horse-anchor-target">Star Prospect</span></td>
+      <td>7.50</td>
+      <td>8.74</td>
+      <td><span class="edge-pill edge-positive">+1.7pp</span></td>
+      <td>4th · 489</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>36.2%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 🏟️ Naas proven 🧠 Model-history +1% (n=4, avg 6.97) context-edge context-connection context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><span id="horse-weekend-roar" class="horse-anchor-target">Weekend Roar</span></td>
+      <td>4.50</td>
+      <td>6.85</td>
+      <td><span class="edge-pill edge-negative">-1.6pp</span></td>
+      <td>5th · 452</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>45.0%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR+ 🧠 Model-history +1% (n=2, avg 9.0) context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><span id="horse-eighteenth-smiles" class="horse-anchor-target">Eighteenth Smiles</span></td>
+      <td>17.00</td>
+      <td>15.43</td>
+      <td><span class="edge-pill edge-positive">+2.2pp</span></td>
+      <td>6th · 444</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>22.8%</td>
+      <td><div class="model-view-cell">🌟 Improver Field ⚠️ One-Dimensional 🧠 Model-history +0% (n=5, avg 5.43) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><span id="horse-el-domino" class="horse-anchor-target">El Domino</span></td>
+      <td>51.00</td>
+      <td>38.42</td>
+      <td><span class="edge-pill edge-positive">+1.2pp</span></td>
+      <td>7th · 295</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>9.3%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR- 🧠 Model-history +0% (n=1, avg 7.8)</div></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span id="horse-ranting-duke" class="horse-anchor-target">Ranting Duke</span></td>
+      <td>17.00</td>
+      <td>20.97</td>
+      <td><span class="edge-pill edge-positive">+0.5pp</span></td>
+      <td>8th · 262</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>16.6%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧠 Model-history −1% (n=2, avg 4.33)</div></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><span id="horse-lily-bear" class="horse-anchor-target">Lily Bear</span></td>
+      <td>101.00</td>
+      <td>75.88</td>
+      <td><span class="edge-pill edge-positive">+0.6pp</span></td>
+      <td>9th · 123</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>4.9%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR- 🧠 Model-history −1% (n=1, avg 1.32) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><span id="horse-maeda-matsu" class="horse-anchor-target">Maeda Matsu</span></td>
+      <td>51.00</td>
+      <td>50.69</td>
+      <td><span class="edge-pill edge-positive">+0.5pp</span></td>
+      <td>10th · 118</td>
+      <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
+      <td>7.2%</td>
+      <td><div class="model-view-cell">🌟 Improver Field context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><span id="horse-anglesea-bridge" class="horse-anchor-target">Anglesea Bridge</span></td>
+      <td>101.00</td>
+      <td>77.01</td>
+      <td><span class="edge-pill edge-positive">+0.6pp</span></td>
+      <td>11th · 113</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>4.4%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧠 Model-history −1% (n=2, avg 3.45) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span id="horse-starlit" class="horse-anchor-target">Starlit</span></td>
+      <td>41.00</td>
+      <td>45.36</td>
+      <td><span class="edge-pill edge-positive">+0.4pp</span></td>
+      <td>12th · 104</td>
+      <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
+      <td>8.3%</td>
+      <td><div class="model-view-cell">🌟 Improver Field context-risk context-connection-risk context-fitness-risk</div></td>
+    </tr>
+  </tbody>
+</table></div>
+    <details class="technical-details">
+      <summary>Advanced model details</summary>
+      <p class="technical-note">Full diagnostic output for deeper auditing. Swipe horizontally on smaller screens.</p>
+      <div class="technical-scroll"><table border="1" class="dataframe technical-table" id="technical-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>🎯 Real Odds</th>
+      <th>Fundamental Odds</th>
+      <th>Fundamental Win %</th>
+      <th>Market Fair Odds</th>
+      <th>Model 100%</th>
+      <th>📉 Raw Odds</th>
+      <th>Model Win %</th>
+      <th>Market Fair %</th>
+      <th>Model Edge pp</th>
+      <th>Model Place %</th>
+      <th>Market Place %</th>
+      <th>Place Edge pp</th>
+      <th>EW EV 1/5</th>
+      <th>Model Book %</th>
+      <th>Raw Book %</th>
+      <th>_model_market_blend_alpha</th>
+      <th>_race_competitiveness</th>
+      <th>_race_entropy</th>
+      <th>_race_top_gap</th>
+      <th>_model_temperature</th>
+      <th>Estimated Places</th>
+      <th>📈 Score</th>
+      <th>_course_key</th>
+      <th>_course_code</th>
+      <th>_course_surface</th>
+      <th>_course_adjustment_pct</th>
+      <th>_course_track_bias_pct</th>
+      <th>_course_profile_version</th>
+      <th>Pre-Context Composite Score</th>
+      <th>World Context Adjustment %</th>
+      <th>World Context Score Delta</th>
+      <th>World Context Confidence</th>
+      <th>World Context Positive Families</th>
+      <th>World Context Negative Families</th>
+      <th>World Context Evidence</th>
+      <th>World Context Version</th>
+      <th>Trip Fit %</th>
+      <th>Trip Confidence %</th>
+      <th>Trip Evidence Runs</th>
+      <th>Trip Delta Furlongs</th>
+      <th>Pace Setup Fit</th>
+      <th>Race Pace Pressure</th>
+      <th>Fresh/Second-Up Edge</th>
+      <th>Connection Edge</th>
+      <th>Previous Run Reliability %</th>
+      <th>Ordinal Rank Zone</th>
+      <th>Ordinal Rank Score</th>
+      <th>Leader Profile</th>
+      <th>Place Profile</th>
+      <th>Ordinal Uncertainty</th>
+      <th>Sleeper Score</th>
+      <th>Sleeper Confidence</th>
+      <th>Sleeper Evidence</th>
+      <th>Sleeper Plot Watch</th>
+      <th>Sleeper Best Match</th>
+      <th>Sleeper Reason Codes</th>
+      <th>Sleeper Mark Advantage</th>
+      <th>Sleeper Engine Version</th>
+      <th>Going</th>
+      <th>Distance</th>
+      <th>Class</th>
+      <th>Form</th>
+      <th>ATR</th>
+      <th>ATR Adj</th>
+      <th>ATR Pick</th>
+      <th>💰 Value</th>
+      <th>🔖 Tags</th>
+      <th>_data_coverage</th>
+      <th>model_version</th>
+      <th>policy_version</th>
+      <th>run_id</th>
+      <th>run_ts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>11</td>
+      <td>Livenka</td>
+      <td>1.91</td>
+      <td>5.64</td>
+      <td>17.72</td>
+      <td>2.62</td>
+      <td>3.35</td>
+      <td>5.18</td>
+      <td>29.85</td>
+      <td>38.23</td>
+      <td>-8.38</td>
+      <td>70.74</td>
+      <td>82.39</td>
+      <td>-11.65</td>
+      <td>-0.594</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>567</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.450</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>566.991659</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>71.875000</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.039 (140); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>98.907576</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>-0.296437</td>
+      <td>-0.103589</td>
+      <td>1.085309</td>
+      <td>0.038895</td>
+      <td>0.011655</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>95.1</td>
+      <td>73.6</td>
+      <td>90.4</td>
+      <td>20.7</td>
+      <td>32.3</td>
+      <td>Low</td>
+      <td>Historic matching run 1/9 at Fairyhouse on 08/07/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '08/07/26', 'course': 'Fairyhouse', 'class': None, 'distance': '6f', 'going': 'Good (Good to Firm in places)', 'or': None, 'position': 1, 'runners': 9, 'condition_similarity': 0.7975, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 3rd pick ATR top course jockey ATR chance</td>
+      <td>+4.5%</td>
+      <td>ATR 3</td>
+      <td>✖️</td>
+      <td>🌟 Improver Field 📘 ATR+ 🏟️ Naas proven 🧠 Model-history +1% (n=3, avg 7.47) context-fitness</td>
+      <td>62.5</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Alpe d'Huez</td>
+      <td>17.00</td>
+      <td>6.84</td>
+      <td>14.61</td>
+      <td>23.29</td>
+      <td>13.45</td>
+      <td>6.48</td>
+      <td>7.43</td>
+      <td>4.29</td>
+      <td>3.14</td>
+      <td>25.81</td>
+      <td>16.71</td>
+      <td>9.10</td>
+      <td>0.347</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>523</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>523.172932</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>46.875000</td>
+      <td></td>
+      <td>fitness</td>
+      <td>fresh-yard A/E edge -0.018 (111); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.843640</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>0.111887</td>
+      <td>-0.224343</td>
+      <td>1.085309</td>
+      <td>-0.018264</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>79.9</td>
+      <td>62.9</td>
+      <td>70.6</td>
+      <td>43.6</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 🧠 Model-history +0% (n=3, avg 6.53) context-fitness-risk</td>
+      <td>75.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>South Dakota</td>
+      <td>4.33</td>
+      <td>7.80</td>
+      <td>12.82</td>
+      <td>5.94</td>
+      <td>6.24</td>
+      <td>7.54</td>
+      <td>16.03</td>
+      <td>16.84</td>
+      <td>-0.81</td>
+      <td>48.78</td>
+      <td>54.83</td>
+      <td>-6.05</td>
+      <td>-0.492</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>493</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>493.313092</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>71.875000</td>
+      <td>fitness</td>
+      <td>connection</td>
+      <td>fresh-yard A/E edge +0.013 (310); rider-yard A/E -0.019 (157); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>90.379343</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>-0.899575</td>
+      <td>0.128209</td>
+      <td>1.085309</td>
+      <td>0.012970</td>
+      <td>-0.018859</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>80.7</td>
+      <td>42.7</td>
+      <td>79.4</td>
+      <td>41.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 2nd pick</td>
+      <td>+3.0%</td>
+      <td>ATR 2</td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR 🧠 Model-history +0% (n=3, avg 5.42) context-fitness context-connection-risk</td>
+      <td>75.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Star Prospect</td>
+      <td>7.50</td>
+      <td>7.95</td>
+      <td>12.58</td>
+      <td>10.28</td>
+      <td>8.74</td>
+      <td>7.71</td>
+      <td>11.44</td>
+      <td>9.73</td>
+      <td>1.71</td>
+      <td>36.25</td>
+      <td>35.26</td>
+      <td>0.99</td>
+      <td>-0.308</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>489</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.511</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>480.058899</td>
+      <td>1.855549</td>
+      <td>8.907727</td>
+      <td>76.785714</td>
+      <td>connection,fitness,trip</td>
+      <td></td>
+      <td>optimal trip 87%; fresh-yard A/E edge +0.016 (184); rider-yard A/E +0.034 (264)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>86.977076</td>
+      <td>66.666667</td>
+      <td>4.0</td>
+      <td>1.056506</td>
+      <td>0.154748</td>
+      <td>1.085309</td>
+      <td>0.016140</td>
+      <td>0.034176</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>75.4</td>
+      <td>45.6</td>
+      <td>72.0</td>
+      <td>53.4</td>
+      <td>26.0</td>
+      <td>Low</td>
+      <td>Historic matching run 3/8 at Cork on 24/07/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '24/07/26', 'course': 'Cork', 'class': None, 'distance': '5f', 'going': 'Good to Firm', 'or': None, 'position': 3, 'runners': 8, 'condition_similarity': 0.7188, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 🏟️ Naas proven 🧠 Model-history +1% (n=4, avg 6.97) context-edge context-connection context-fitness context-trip</td>
+      <td>87.5</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Weekend Roar</td>
+      <td>4.50</td>
+      <td>9.33</td>
+      <td>10.72</td>
+      <td>6.17</td>
+      <td>6.85</td>
+      <td>9.28</td>
+      <td>14.59</td>
+      <td>16.22</td>
+      <td>-1.63</td>
+      <td>45.00</td>
+      <td>52.77</td>
+      <td>-7.77</td>
+      <td>-0.578</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>452</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>452.231598</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>41.875000</td>
+      <td></td>
+      <td>fitness</td>
+      <td>fresh-yard A/E edge -0.053 (120); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.980295</td>
+      <td>33.333333</td>
+      <td>2.0</td>
+      <td>-0.039706</td>
+      <td>-0.043932</td>
+      <td>1.085309</td>
+      <td>-0.052682</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>72.0</td>
+      <td>36.1</td>
+      <td>74.8</td>
+      <td>70.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 1st pick</td>
+      <td>+4.5%</td>
+      <td>ATR 1</td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR+ 🧠 Model-history +1% (n=2, avg 9.0) context-fitness-risk</td>
+      <td>62.5</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Eighteenth Smiles</td>
+      <td>17.00</td>
+      <td>9.65</td>
+      <td>10.37</td>
+      <td>23.29</td>
+      <td>15.43</td>
+      <td>9.65</td>
+      <td>6.48</td>
+      <td>4.29</td>
+      <td>2.19</td>
+      <td>22.76</td>
+      <td>16.72</td>
+      <td>6.04</td>
+      <td>0.058</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>444</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>435.383972</td>
+      <td>2.091218</td>
+      <td>9.104830</td>
+      <td>76.785714</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 98%; fresh-yard A/E edge +0.035 (397)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>98.280460</td>
+      <td>66.666667</td>
+      <td>4.0</td>
+      <td>0.372505</td>
+      <td>-0.012914</td>
+      <td>1.085309</td>
+      <td>0.034696</td>
+      <td>-0.002270</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>62.9</td>
+      <td>51.8</td>
+      <td>60.0</td>
+      <td>80.6</td>
+      <td>15.0</td>
+      <td>Low</td>
+      <td>Historic matching run 5/15 at Redcar on 18/05/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '18/05/26', 'course': 'Redcar', 'class': 5, 'distance': '5f 217y', 'going': 'Good (Good to Firm in places)', 'or': None, 'position': 5, 'runners': 15, 'condition_similarity': 0.7975, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, recent_poor_matching_conditions_penalty]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field ⚠️ One-Dimensional 🧠 Model-history +0% (n=5, avg 5.43) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>El Domino</td>
+      <td>51.00</td>
+      <td>18.15</td>
+      <td>5.51</td>
+      <td>69.87</td>
+      <td>38.42</td>
+      <td>18.34</td>
+      <td>2.60</td>
+      <td>1.43</td>
+      <td>1.17</td>
+      <td>9.30</td>
+      <td>6.00</td>
+      <td>3.30</td>
+      <td>0.350</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>295</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>295.194216</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>59.375000</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.466441</td>
+      <td>16.666667</td>
+      <td>1.0</td>
+      <td>-0.453097</td>
+      <td>-0.085548</td>
+      <td>1.085309</td>
+      <td>0.000000</td>
+      <td>-0.009786</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>39.5</td>
+      <td>40.1</td>
+      <td>37.1</td>
+      <td>78.5</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR well beaten ATR no extra ATR beaten far recently</td>
+      <td>-4.4%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR- 🧠 Model-history +0% (n=1, avg 7.8)</td>
+      <td>37.5</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Ranting Duke</td>
+      <td>17.00</td>
+      <td>20.81</td>
+      <td>4.81</td>
+      <td>23.29</td>
+      <td>20.97</td>
+      <td>24.00</td>
+      <td>4.77</td>
+      <td>4.29</td>
+      <td>0.47</td>
+      <td>16.61</td>
+      <td>17.10</td>
+      <td>-0.49</td>
+      <td>-0.492</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>262</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>261.784638</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>30.500000</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.989247</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>0.029330</td>
+      <td>-0.062585</td>
+      <td>1.085309</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>41.3</td>
+      <td>28.8</td>
+      <td>48.5</td>
+      <td>82.4</td>
+      <td>55.7</td>
+      <td>Low</td>
+      <td>Historic matching run 2/15 at York on 14/05/26 matched going, distance. 1 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '14/05/26', 'course': 'York', 'class': 2, 'distance': '6f', 'going': 'Good', 'or': None, 'position': 2, 'runners': 15, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, matched_condition_performance_uplift]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR equipment note ATR bit to prove ATR well beaten</td>
+      <td>-3.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR 🧠 Model-history −1% (n=2, avg 4.33)</td>
+      <td>62.5</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Lily Bear</td>
+      <td>101.00</td>
+      <td>35.69</td>
+      <td>2.80</td>
+      <td>138.37</td>
+      <td>75.88</td>
+      <td>45.60</td>
+      <td>1.32</td>
+      <td>0.72</td>
+      <td>0.60</td>
+      <td>4.88</td>
+      <td>3.08</td>
+      <td>1.79</td>
+      <td>0.355</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>123</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>122.954109</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>33.875000</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.032 (29); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>89.115867</td>
+      <td>16.666667</td>
+      <td>1.0</td>
+      <td>-0.960137</td>
+      <td>0.078495</td>
+      <td>1.085309</td>
+      <td>0.031553</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>15.8</td>
+      <td>20.4</td>
+      <td>18.9</td>
+      <td>26.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR no extra ATR weakened ATR beaten far recently</td>
+      <td>-3.8%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR- 🧠 Model-history −1% (n=1, avg 1.32) context-fitness</td>
+      <td>50.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Maeda Matsu</td>
+      <td>51.00</td>
+      <td>36.32</td>
+      <td>2.75</td>
+      <td>69.87</td>
+      <td>50.69</td>
+      <td>47.69</td>
+      <td>1.97</td>
+      <td>1.43</td>
+      <td>0.54</td>
+      <td>7.16</td>
+      <td>5.29</td>
+      <td>1.87</td>
+      <td>-0.206</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>118</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>118.233279</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>23.500000</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.036 (32); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>1.085309</td>
+      <td>0.035510</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>23.9</td>
+      <td>28.4</td>
+      <td>29.3</td>
+      <td>56.6</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>ATR debutant/no history</td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field context-fitness</td>
+      <td>0.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Anglesea Bridge</td>
+      <td>101.00</td>
+      <td>37.04</td>
+      <td>2.70</td>
+      <td>138.37</td>
+      <td>77.01</td>
+      <td>48.89</td>
+      <td>1.30</td>
+      <td>0.72</td>
+      <td>0.58</td>
+      <td>4.41</td>
+      <td>2.74</td>
+      <td>1.67</td>
+      <td>0.237</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>113</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>112.863981</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>44.000000</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.043 (48); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.958426</td>
+      <td>33.333333</td>
+      <td>2.0</td>
+      <td>0.057677</td>
+      <td>0.091055</td>
+      <td>1.085309</td>
+      <td>0.042999</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>10.5</td>
+      <td>20.0</td>
+      <td>16.6</td>
+      <td>15.5</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR needs more ATR beaten far recently</td>
+      <td>-3.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field 📘 ATR 🧠 Model-history −1% (n=2, avg 3.45) context-fitness</td>
+      <td>50.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Starlit</td>
+      <td>41.00</td>
+      <td>38.20</td>
+      <td>2.62</td>
+      <td>56.17</td>
+      <td>45.36</td>
+      <td>50.84</td>
+      <td>2.20</td>
+      <td>1.78</td>
+      <td>0.42</td>
+      <td>8.31</td>
+      <td>7.11</td>
+      <td>1.20</td>
+      <td>-0.348</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.399375</td>
+      <td>0.6761</td>
+      <td>0.8696</td>
+      <td>43.8187</td>
+      <td>1.21283</td>
+      <td>3</td>
+      <td>104</td>
+      <td>naas</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.07.17-course-profiles-p2.0</td>
+      <td>105.770031</td>
+      <td>-1.288341</td>
+      <td>-1.362679</td>
+      <td>50.000000</td>
+      <td></td>
+      <td>connection,fitness</td>
+      <td>fresh-yard A/E edge -0.032 (187); rider-yard A/E -0.015 (231); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>0.0</td>
+      <td>NaN</td>
+      <td>0.000000</td>
+      <td>1.085309</td>
+      <td>-0.031792</td>
+      <td>-0.014936</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>25.1</td>
+      <td>23.1</td>
+      <td>31.2</td>
+      <td>59.2</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Sleeper assessment.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>ATR debutant/no history</td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🌟 Improver Field context-risk context-connection-risk context-fitness-risk</td>
+      <td>0.0</td>
+      <td>2026.07.30-p4.10-contextual-extra-place</td>
+      <td>2026.07.29-p4.9-evidence-place</td>
+      <td>20260802_205538</td>
+      <td>2026-08-02 20:55:38</td>
+    </tr>
+  </tbody>
+</table></div>
+    </details>
+  </main>
+  <script>
+    (function () {
+      const modelOrderCard = document.querySelector(".model-order-card");
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let modelRaceTimer = null;
+      let modelRaceStarted = false;
+
+      function finishModelRace() {
+        if (!modelOrderCard) return;
+        modelOrderCard.classList.add("race-finished");
+        modelOrderCard.classList.remove("race-running");
+      }
+
+      function runModelRace() {
+        if (!modelOrderCard || reduceMotion) return;
+        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelOrderCard.classList.remove("race-running", "race-finished");
+        // Force the shared straight-line starting frame before replaying.
+        void modelOrderCard.offsetWidth;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            modelOrderCard.classList.add("race-running");
+            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+          });
+        });
+      }
+
+      if (modelOrderCard && !reduceMotion) {
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        const replayButton = modelOrderCard.querySelector(".model-race-replay");
+        if (replayButton) replayButton.addEventListener("click", runModelRace);
+        const startFirstModelRace = () => {
+          if (modelRaceStarted) return;
+          modelRaceStarted = true;
+          runModelRace();
+        };
+        if ("IntersectionObserver" in window) {
+          const raceObserver = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.18)) {
+              raceObserver.disconnect();
+              startFirstModelRace();
+            }
+          }, {threshold: [0.18]});
+          raceObserver.observe(modelOrderCard);
+        } else {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
+        }
+      }
+
+      const table = document.getElementById("racecard-table");
+      if (table) {
+        const labels = Array.from(table.querySelectorAll("thead th")).map(cell => cell.textContent.trim());
+        table.querySelectorAll("tbody tr").forEach(row => {
+          Array.from(row.children).forEach((cell, index) => cell.setAttribute("data-label", labels[index] || ""));
+        });
+      }
+      function slug(name) {
+        return String(name || "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").replace(/-+$/, "") || "runner";
+      }
+      function highlightHorse() {
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const requested = params.get("horse") || "";
+          const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+          const target = document.getElementById(hash || (requested ? "horse-" + slug(requested) : ""));
+          if (!target) return;
+          document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+          document.querySelectorAll(".model-runner.is-selected").forEach(runner => runner.classList.remove("is-selected"));
+          const row = target.closest("tr");
+          if (row) row.classList.add("horse-highlight");
+          const horseSlug = String(target.id || "").replace(/^horse-/, "");
+          const visualRunner = document.querySelector('.model-runner[data-horse-slug="' + horseSlug + '"]');
+          if (visualRunner) visualRunner.classList.add("is-selected");
+          setTimeout(() => (row || target).scrollIntoView({behavior: "smooth", block: "center"}), 60);
+        } catch (error) {}
+      }
+      highlightHorse();
+      window.addEventListener("hashchange", highlightHorse);
+    })();
+  </script>
+</body>
+</html>
