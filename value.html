@@ -4774,35 +4774,6 @@
       </div>
     </details>
 
-    <details id="machine-learning-section" class="section-card section-machine-learning">
-      <summary class="section-title">
-        <span class="section-title-left">🤖 P5 Place Evidence <span id="machine-learning-section-count" class="section-count">0</span></span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="section-note">
-          Calibrated Top-4 confirmations and research observations only: genuine 4+ place terms, 8–15 runners, 10.0–50.0 odds and agreement from both P4 price engines. P5 remains shadow-only and does not create a bet.
-        </div>
-        <div class="table-wrap">
-          <table id="machine-learning-table" class="shortlist-premium-table">
-            <thead>
-              <tr>
-                <th>Source</th>
-                <th>Race</th>
-                <th>Horse</th>
-                <th>Market</th>
-                <th>P5 Type</th>
-                <th>P5 Place</th>
-                <th>Place Edge</th>
-                <th>Confidence</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-
     <details id="race-products-section" class="section-card section-placepot">
       <summary class="section-title">
         <span class="section-title-left">🧩 Placepot Picker</span>
@@ -4849,6 +4820,35 @@
                 <th>Result</th>
                 <th>BF SP</th>
                 <th>Was Tagged As</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details id="machine-learning-section" class="section-card section-machine-learning">
+      <summary class="section-title">
+        <span class="section-title-left">🤖 P5 Place Evidence <span id="machine-learning-section-count" class="section-count">0</span></span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">
+          Top-4 place evidence in the validated 4+ place, 8–15 runner and 10.0–50.0 odds pocket. Confirmations may support an existing P4 E/W row; research observations are display-only and never create or promote a bet.
+        </div>
+        <div class="table-wrap">
+          <table id="machine-learning-table" class="shortlist-premium-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Market</th>
+                <th>P5 Type</th>
+                <th>P5 Place</th>
+                <th>Place Edge</th>
+                <th>Confidence</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -5004,9 +5004,9 @@
     </details>
 
     <details class="section-card">
-      <summary class="section-title"><span class="section-title-left">💰 Model Edge &amp; Price Watch</span><span class="section-chevron">▶</span></summary>
+      <summary class="section-title"><span class="section-title-left">💰 Model Edge — Value Now</span><span class="section-chevron">▶</span></summary>
       <div class="section-body">
-        <div class="section-note">Model100 is now the fundamental-led 100% model book. Direct Model Value compares it with the executable bookmaker quote; a Price Watch compares it with the de-vigged fair market. “Back at” is the minimum model price, and official bets still require Raw confirmation plus the full shortlist gates.</div>
+        <div class="section-note">Only quote-confirmed Value Now rows are displayed here. Price Watch evidence remains available behind the scenes for supporting logic, but is hidden from this table. Official bets still require Raw confirmation plus the full shortlist gates.</div>
         <div class="table-wrap"><table id="value-table"><thead><tr><th>Race</th><th>Horse</th><th>Prices</th><th>Edge / Target</th><th>My List</th></tr></thead><tbody></tbody></table></div>
       </div>
     </details>
@@ -6380,7 +6380,7 @@
     const edgeNum = Number(direct ? (entry?.model_edge_pts ?? 0) : (entry?.model_edge_vs_fair_pts ?? 0));
     const edgeBasis = direct ? "quote" : "fair";
     const edgeText = Number.isFinite(edgeNum) ? `${edgeNum >= 0 ? "+" : ""}${edgeNum.toFixed(2)}pp vs ${edgeBasis}` : "Model edge";
-    const source = direct ? "Model Value" : "Model Price Watch";
+    const source = direct ? "Value Now" : "Model Price Watch";
 
     return `<tr class="value-row mobile-simple-row">
       <td class="mobile-simple-race">${raceCellHTML(entry)}</td>
@@ -6800,10 +6800,34 @@
       "P5 PLACE CONFIRMATION",
       "P5 PLACE RESEARCH"
     ]);
+    const isDisplayResearch = (row) => {
+      /*
+        P5 is evidence, not a second betting engine. Its strict signal layer
+        also requires dual P4/Raw win-price value, which can legitimately leave
+        the evidence panel empty. Keep those rows non-supporting, but display
+        the strongest positive Top-4 observations from the validated pocket.
+      */
+      const signal = String(row?.signal || "").trim().toUpperCase();
+      return (
+        signal === "NO BET" &&
+        p5Num(row?.extra_places, 0) >= 4 &&
+        p5Num(row?.p5_blend_alpha_place4, 0) >= 0.25 &&
+        p5Num(row?.field_size, 0) >= 8 &&
+        p5Num(row?.field_size, 0) <= 15 &&
+        p5Num(row?.market_odds, 0) >= 10 &&
+        p5Num(row?.market_odds, 0) <= 50 &&
+        p5Num(row?.p5_place4_edge_pp, 0) >= 2 &&
+        p5Num(row?.p5_confidence, 0) >= 60 &&
+        p5Num(row?.data_coverage, 0) >= 70
+      );
+    };
     const seen = new Set();
     return rows
       .filter(row => !latestDate || String(row?.race_date || "").trim() === latestDate)
-      .filter(row => supportedSignals.has(String(row?.signal || "").trim().toUpperCase()))
+      .filter(row => (
+        supportedSignals.has(String(row?.signal || "").trim().toUpperCase()) ||
+        isDisplayResearch(row)
+      ))
       .filter(row => row?.bundle_stale !== true)
       .filter(row => p5Num(row?.market_odds, 0) > 1)
       .filter(row => p5Num(row?.p5_confidence, 0) >= 60)
@@ -7950,7 +7974,9 @@ const getShortlistType = (entry) => {
 
     if (tags.includes("raw-value") || tags.includes("raw-value-watch")) rawvItems.push(entry);
     if (tags.includes("sleeper"))         sleeperItems.push(entry);
-    if (tags.includes("value") || tags.includes("model-edge-watch")) valueItems.push(entry);
+    // Price-watch evidence remains on the entry for downstream logic, but this
+    // visible panel is intentionally limited to quote-confirmed Value Now rows.
+    if (tags.includes("value")) valueItems.push(entry);
     if (tags.includes("blue")) blueItems.push(entry);
     if (tags.includes("top-rated-clear")) topItems.push(entry);
   });
