@@ -4464,6 +4464,53 @@
       }
     }
 
+    /* Independent horse ELO evidence: results-only ratings, separate from P4/P5. */
+    details.section-card.section-elo {
+      border-top: 4px solid #22d3ee;
+      box-shadow: 0 10px 30px rgba(34,211,238,0.15);
+    }
+    .elo-rating-pill,
+    .tag-elo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #e6fbff !important;
+      background: linear-gradient(135deg,#075985,#0e7490) !important;
+      border: 1px solid #67e8f9 !important;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      padding: 0.28rem 0.5rem;
+      white-space: nowrap;
+    }
+    .elo-table tr.elo-row {
+      color: #e8fbff !important;
+      background: linear-gradient(90deg,#082f49 0%,#102b36 48%,#151b20 100%) !important;
+    }
+    .elo-metric { display: flex; flex-direction: column; gap: 0.16rem; min-width: 76px; }
+    .elo-metric strong { color: #cffafe; font-size: 0.9rem; }
+    .elo-metric small { color: #9ecbd3; font-size: 0.63rem; line-height: 1.25; }
+    .elo-change-positive { color: #86efac !important; }
+    .elo-change-negative { color: #fca5a5 !important; }
+    .elo-edge-positive { color: #67e8f9 !important; }
+    .elo-note { color: #c7e8ed; font-size: 0.69rem; line-height: 1.35; }
+    @media (min-width: 721px) {
+      #elo-table { min-width: 1120px; table-layout: fixed; }
+      #elo-table th:nth-child(1), #elo-table td:nth-child(1) { width: 11%; }
+      #elo-table th:nth-child(2), #elo-table td:nth-child(2) { width: 15%; }
+      #elo-table th:nth-child(3), #elo-table td:nth-child(3) { width: 10%; }
+      #elo-table th:nth-child(4), #elo-table td:nth-child(4) { width: 11%; }
+      #elo-table th:nth-child(5), #elo-table td:nth-child(5) { width: 11%; }
+      #elo-table th:nth-child(6), #elo-table td:nth-child(6) { width: 11%; }
+      #elo-table th:nth-child(7), #elo-table td:nth-child(7) { width: 23%; }
+      #elo-table th:nth-child(8), #elo-table td:nth-child(8) { width: 8%; }
+    }
+    @media (max-width: 720px) {
+      #elo-table.mobile-card-table tbody tr:not(.date-divider) {
+        border-left: 4px solid #22d3ee !important;
+      }
+    }
+
     /* P5 stays visually and logically separate from the official P4 shortlist. */
     details.section-card.section-machine-learning {
       border-top: 4px solid #a855f7;
@@ -4638,7 +4685,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">10 Aug 2026, 17:06</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">10 Aug 2026, 17:52</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4651,6 +4698,7 @@
 
     <nav class="page-jump-nav" aria-label="Page sections">
       <a href="#todays-shortlist">⭐ Best Bets <span id="nav-shortlist-count" class="nav-count">0</span></a>
+      <a href="#elo-section">⚡ Horse ELO <span id="nav-elo-count" class="nav-count">0</span></a>
       <a href="#machine-learning-section">🤖 Machine Learning <span id="nav-ml-count" class="nav-count">0</span></a>
       <a href="#my-bets-section">📝 My Bets <span id="nav-mybets-count" class="nav-count">0</span></a>
       <a href="#shortlist-backtest-card">📊 Live Record</a>
@@ -4771,6 +4819,27 @@
           </table>
         </div>
         <div id="mobile-shortlist-list" class="mobile-shortlist-list" aria-label="Today's mobile bet and lay shortlist"></div>
+      </div>
+    </details>
+
+    <details id="elo-section" class="section-card section-elo" open>
+      <summary class="section-title">
+        <span class="section-title-left">⚡ Horse ELO Ratings <span id="elo-section-count" class="section-count">0</span></span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note">
+          Independent race-by-race ratings learned only from earlier results against the actual field, then adjusted for matching code, surface, distance, going, class and course evidence. ELO Value is a watch signal; production shortlist support also needs the main model to qualify the same horse.
+        </div>
+        <div class="table-wrap">
+          <table id="elo-table" class="elo-table">
+            <thead><tr>
+              <th>Race</th><th>Horse</th><th>ELO Rating</th><th>Recent Change</th>
+              <th>ELO Price</th><th>Edge / Confidence</th><th>Evidence</th><th>My List</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </div>
     </details>
 
@@ -5771,7 +5840,13 @@
     'product-lay': '🚨',
     'placepot': '🧩',
     'machine-learning': '🤖 Machine Learning',
-    'p5-place-support': 'P5 Place Support'
+    'p5-place-support': 'P5 Place Support',
+    'elo': '⚡ ELO',
+    'elo-leader': '🥇 ELO Leader',
+    'elo-value': '💹 ELO Value',
+    'elo-shortlist-ready': '✓ ELO Qualified',
+    'elo-shortlist-support': '⭐ ELO Support',
+    'elo-shortlist': '⚡ ELO Shortlist'
   };
 
   const iconsOnly = (tags) => tags.map(t => iconMap[t] || '').join(' ');
@@ -6868,6 +6943,44 @@
     </tr>`;
   };
 
+  const eloRow = (entry) => {
+    const rating = p5Num(entry?.elo_rating, 1500);
+    const globalRating = p5Num(entry?.elo_global_rating, rating);
+    const rank = p5Num(entry?.elo_rank, 0);
+    const field = p5Num(entry?.elo_field_size ?? entry?.field_size, 0);
+    const runs = p5Num(entry?.elo_runs, 0);
+    const wins = p5Num(entry?.elo_wins, 0);
+    const places = p5Num(entry?.elo_places, 0);
+    const lastChange = p5Num(entry?.elo_last_change, 0);
+    const recentChange = p5Num(entry?.elo_recent_change_3, 0);
+    const probability = p5Num(entry?.elo_win_prob, 0);
+    const fairOdds = p5Num(entry?.elo_fair_odds, 0);
+    const edge = p5Num(entry?.elo_edge_pp, 0);
+    const confidence = p5Num(entry?.elo_confidence, 0);
+    const changeClass = recentChange >= 0 ? "elo-change-positive" : "elo-change-negative";
+    const edgeClass = edge > 0 ? "elo-edge-positive" : "elo-change-negative";
+    const status = entry?.elo_confirmed_shortlist_support
+      ? "Main shortlist confirmed"
+      : entry?.elo_shortlist_ready
+        ? "Strong shadow watch"
+        : entry?.elo_value
+          ? "Value watch"
+          : "ELO leader";
+    return `<tr class="elo-row">
+      <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
+      <td data-label="Horse">
+        ${racecardHorseLinkHTML(entry, entry?.horse || "", "shortlist-horse-name shortlist-horse-link")}
+        ${shortlistTagsHTML(entry?.tags || ["elo"])}
+      </td>
+      <td data-label="ELO Rating"><span class="elo-metric"><strong class="elo-rating-pill">${rating.toFixed(0)}</strong><small>Global ${globalRating.toFixed(0)} · rank ${rank.toFixed(0)}/${field.toFixed(0)}</small></span></td>
+      <td data-label="Recent Change"><span class="elo-metric"><strong class="${changeClass}">${recentChange >= 0 ? "+" : ""}${recentChange.toFixed(1)}</strong><small>Last ${lastChange >= 0 ? "+" : ""}${lastChange.toFixed(1)} · ${runs.toFixed(0)} runs · ${wins.toFixed(0)}W/${places.toFixed(0)}P</small></span></td>
+      <td data-label="ELO Price"><span class="elo-metric"><strong>${fairOdds > 0 ? fairOdds.toFixed(2) : "-"}</strong><small>${probability.toFixed(1)}% win · market ${escHTML(entry?.bookie_odds ?? "-")}</small></span></td>
+      <td data-label="Edge / Confidence"><span class="elo-metric"><strong class="${edgeClass}">${edge >= 0 ? "+" : ""}${edge.toFixed(1)}pp</strong><small>${confidence.toFixed(0)}% confidence · ${escHTML(status)}</small></span></td>
+      <td data-label="Evidence"><div class="elo-note">${escHTML(entry?.racing_reason || entry?.reason || "Independent ELO evidence.")}</div></td>
+      <td data-label="My List">${myBetButtonHTML(entry, "Horse ELO", entry?.elo_confirmed_shortlist_support ? "ELO Support" : "ELO Watch")}</td>
+    </tr>`;
+  };
+
   const bfSPHTML = (entry) => {
     const sp = entry?.bf_actual_sp ?? "";
     const clean = (sp === undefined || sp === null || String(sp).trim() === "") ? "-" : String(sp);
@@ -7948,6 +8061,7 @@ const getShortlistType = (entry) => {
   let blueItems = [];
   let topItems = [];
   let nameBetItems = [];
+  let eloItems = [];
 
   liveEntries.forEach(entry => {
     const tags = tagSet(entry);
@@ -7979,7 +8093,14 @@ const getShortlistType = (entry) => {
     if (tags.includes("value")) valueItems.push(entry);
     if (tags.includes("blue")) blueItems.push(entry);
     if (tags.includes("top-rated-clear")) topItems.push(entry);
+    if (tags.includes("elo"))             eloItems.push(entry);
   });
+
+  eloItems = eloItems
+    .sort((a, b) => (
+      parseRaceDT(a?.race_datetime) - parseRaceDT(b?.race_datetime) ||
+      p5Num(a?.elo_rank, 999) - p5Num(b?.elo_rank, 999)
+    ));
 
   tonyItems = allEntries
   .filter(isLiveEntry)
@@ -8124,6 +8245,7 @@ const getShortlistType = (entry) => {
     shortlistDateHeading.textContent = `📅 ${dateLabel}`;
   }
   const machineLearning = buildGroupedRows(machineLearningItems, machineLearningRow, 8);
+  const eloHtml = buildGroupedRows(eloItems, eloRow, 8);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", e.shortlist_type || "BT E/W"), 5);
@@ -8496,6 +8618,7 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
+  setBody('#elo-table', eloHtml, 8);
   setBody('#machine-learning-table', machineLearning, 8);
   setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
@@ -8528,6 +8651,10 @@ const getShortlistType = (entry) => {
   ["nav-ml-count", "machine-learning-section-count"].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = String(machineLearningItems.length);
+  });
+  ["nav-elo-count", "elo-section-count"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(eloItems.length);
   });
   const dashboardCount = document.getElementById("dashboard-shortlist-count");
   if (dashboardCount) dashboardCount.textContent = `${activeShortlistCount} active`;
