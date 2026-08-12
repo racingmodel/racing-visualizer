@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Filter every horse modelled today by race, price, model, suitability, connections and racing intelligence.">
+  <title>Race Finder · Daily Racing Model</title>
+  <style>
+    :root {
+      --navy:#10243f; --navy-2:#1d3b60; --navy-3:#071527; --ink:#152338;
+      --muted:#66758b; --line:#dce4ed; --panel:#fff; --soft:#f3f6f9;
+      --gold:#f4c430; --gold-2:#ffe789; --green:#087a45; --green-soft:#e8f7ef;
+      --red:#b42318; --red-soft:#fff0ee; --blue:#0b67a3; --blue-soft:#eaf5ff;
+      --purple:#6f42c1; --shadow:0 14px 38px rgba(16,36,63,.12);
+      --radius:18px;
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0; color:var(--ink); background:
+        radial-gradient(circle at 88% 0,rgba(244,196,48,.22),transparent 25rem),
+        linear-gradient(180deg,#eaf0f5 0,#f8fafc 31rem,#f5f7fa 100%);
+      font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    button,input,select { font:inherit; }
+    button,a,summary,input,select { -webkit-tap-highlight-color:transparent; }
+    :focus-visible { outline:3px solid rgba(11,103,163,.35); outline-offset:2px; }
+    .shell { width:min(96vw,1560px); margin:0 auto; padding:18px 0 52px; }
+    .hero {
+      position:relative; overflow:hidden; padding:25px clamp(20px,4vw,44px) 27px;
+      color:#fff; border-radius:24px; box-shadow:var(--shadow);
+      background:linear-gradient(135deg,var(--navy-3),var(--navy-2));
+    }
+    .hero::after {
+      content:""; position:absolute; width:330px; height:330px; right:-120px; top:-180px;
+      border-radius:50%; background:rgba(244,196,48,.18); border:1px solid rgba(255,255,255,.16);
+    }
+    .hero-top { position:relative; z-index:1; display:flex; justify-content:space-between; gap:20px; align-items:flex-start; }
+    .eyebrow { margin:0 0 7px; color:var(--gold-2); font-size:.74rem; font-weight:950; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(2rem,4.5vw,3.9rem); line-height:.96; letter-spacing:-.045em; }
+    .hero-copy { max-width:790px; margin:13px 0 0; color:#d9e6f4; font-size:clamp(.91rem,1.5vw,1.05rem); line-height:1.55; }
+    .hero-badge { flex:0 0 auto; padding:9px 13px; border:1px solid rgba(255,255,255,.19); border-radius:999px; background:rgba(255,255,255,.09); color:#fff; font-size:.76rem; font-weight:900; }
+    .site-nav { position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+    .site-nav a { padding:9px 13px; border-radius:999px; color:#fff; border:1px solid rgba(255,255,255,.17); background:rgba(255,255,255,.08); text-decoration:none; font-size:.78rem; font-weight:900; }
+    .site-nav a[aria-current="page"] { color:var(--navy); background:var(--gold); border-color:var(--gold); }
+    .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:14px 0; }
+    .stat { min-height:82px; padding:14px 16px; border:1px solid var(--line); border-radius:15px; background:rgba(255,255,255,.94); box-shadow:0 8px 24px rgba(16,36,63,.06); }
+    .stat span { display:block; color:var(--muted); font-size:.69rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+    .stat strong { display:block; margin-top:5px; color:var(--navy); font-size:1.25rem; line-height:1.1; }
+
+    .filter-panel { position:sticky; top:8px; z-index:30; border:1px solid var(--line); border-radius:20px; background:rgba(255,255,255,.97); box-shadow:var(--shadow); backdrop-filter:blur(12px); }
+    .mode-row { display:flex; justify-content:space-between; gap:12px; padding:12px 14px 0; }
+    .mode-tabs,.preset-row,.view-buttons { display:flex; flex-wrap:wrap; gap:7px; }
+    .mode-button,.preset,.view-button,.primary-button,.secondary-button {
+      min-height:38px; border:1px solid #cbd6e1; border-radius:999px; padding:8px 13px; color:var(--navy); background:#fff; cursor:pointer; font-size:.78rem; font-weight:900;
+    }
+    .mode-button.is-active,.view-button.is-active { color:#fff; border-color:var(--navy); background:var(--navy); }
+    .primary-button { color:var(--navy); border-color:var(--gold); background:var(--gold); }
+    .secondary-button:hover,.preset:hover,.mode-button:hover,.view-button:hover { border-color:#8fa4ba; background:#f5f8fb; }
+    .quick-grid { display:grid; grid-template-columns:minmax(180px,1.35fr) minmax(150px,.9fr) minmax(210px,1.25fr) minmax(130px,.75fr) minmax(150px,.8fr) auto; gap:10px; padding:12px 14px; align-items:end; }
+    .field { min-width:0; }
+    .field label,.field-label { display:block; margin:0 0 5px 2px; color:#506177; font-size:.66rem; font-weight:950; letter-spacing:.055em; text-transform:uppercase; }
+    .control { width:100%; min-height:43px; padding:9px 11px; color:var(--ink); border:1px solid #cbd6e1; border-radius:11px; background:#fff; }
+    .control::placeholder { color:#8795a8; }
+    .range-pair { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .range-pair input { min-width:0; }
+    .filter-actions { display:flex; gap:7px; }
+    .filter-actions button { white-space:nowrap; }
+
+    .multi-select { position:relative; }
+    .multi-select summary { display:flex; justify-content:space-between; align-items:center; min-height:43px; padding:9px 11px; border:1px solid #cbd6e1; border-radius:11px; background:#fff; cursor:pointer; list-style:none; font-size:.85rem; font-weight:800; }
+    .multi-select summary::-webkit-details-marker { display:none; }
+    .multi-select summary::after { content:"⌄"; color:#738399; font-size:1.1rem; }
+    .multi-select[open] summary { border-color:#7093b5; box-shadow:0 0 0 3px rgba(11,103,163,.1); }
+    .option-popover { position:absolute; left:0; top:calc(100% + 6px); z-index:50; width:max(100%,250px); max-height:290px; overflow:auto; padding:8px; border:1px solid #cbd6e1; border-radius:13px; background:#fff; box-shadow:0 16px 38px rgba(16,36,63,.18); }
+    .check-option { display:flex; align-items:center; gap:9px; min-height:38px; padding:7px 8px; border-radius:8px; color:#293a50; font-size:.83rem; font-weight:750; cursor:pointer; }
+    .check-option:hover { background:var(--soft); }
+    .check-option input { width:17px; height:17px; accent-color:var(--navy); }
+
+    .presets { padding:0 14px 12px; border-top:1px solid #edf1f5; }
+    .presets .field-label { margin-top:10px; }
+    .preset { min-height:34px; padding:6px 11px; font-size:.73rem; background:#f8fafc; }
+    .advanced { border-top:1px solid var(--line); }
+    .advanced > summary { display:flex; align-items:center; justify-content:center; gap:7px; min-height:44px; color:var(--navy); cursor:pointer; list-style:none; font-size:.78rem; font-weight:950; }
+    .advanced > summary::-webkit-details-marker { display:none; }
+    .advanced > summary::after { content:"⌄"; transition:transform .18s ease; }
+    .advanced[open] > summary::after { transform:rotate(180deg); }
+    .advanced-body { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; padding:0 14px 14px; }
+    .filter-group { min-width:0; padding:13px; border:1px solid var(--line); border-radius:14px; background:#f8fafc; }
+    .filter-group h2 { margin:0 0 10px; color:var(--navy); font-size:.88rem; }
+    .mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .mini-grid .span-2 { grid-column:1/-1; }
+    .toggle-list { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .toggle { display:flex; align-items:flex-start; gap:8px; min-width:0; padding:7px 8px; border:1px solid #dfe6ee; border-radius:9px; background:#fff; color:#34465c; font-size:.76rem; font-weight:800; line-height:1.25; cursor:pointer; }
+    .toggle input { flex:0 0 auto; width:16px; height:16px; margin-top:0; accent-color:var(--navy); }
+    .signal-options { max-height:235px; overflow:auto; padding-right:2px; }
+
+    .active-bar { display:flex; align-items:center; gap:8px; min-height:46px; margin:12px 0; padding:8px 10px; border:1px solid var(--line); border-radius:13px; background:#fff; }
+    .active-label { flex:0 0 auto; color:var(--muted); font-size:.68rem; font-weight:950; text-transform:uppercase; }
+    .active-chips { display:flex; flex-wrap:wrap; gap:6px; min-width:0; }
+    .active-chip { display:inline-flex; align-items:center; gap:6px; min-height:29px; padding:5px 9px; border:1px solid #b8cadb; border-radius:999px; color:#173753; background:#edf6fd; font-size:.72rem; font-weight:850; }
+    .active-chip button { padding:0; border:0; color:#48677f; background:transparent; cursor:pointer; font-weight:950; }
+    .active-empty { color:#7a899d; font-size:.78rem; }
+    .data-warning { display:none; margin:0 0 12px; padding:11px 13px; border:1px solid #f1c56b; border-radius:12px; color:#6c4400; background:#fff7df; font-size:.8rem; font-weight:750; }
+    .data-warning.is-visible { display:block; }
+
+    .results-head { display:flex; justify-content:space-between; gap:14px; align-items:end; margin:20px 0 10px; }
+    .results-head h2 { margin:0; color:var(--navy); font-size:clamp(1.35rem,2.2vw,1.8rem); }
+    .results-copy { margin:4px 0 0; color:var(--muted); font-size:.8rem; }
+    .result-controls { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:7px; }
+    .small-control { min-height:37px; padding:7px 9px; border:1px solid #cbd6e1; border-radius:9px; color:var(--ink); background:#fff; font-size:.75rem; font-weight:800; }
+    .race-group { margin:0 0 16px; }
+    .race-heading { display:flex; justify-content:space-between; gap:10px; align-items:center; margin:0 0 8px; padding:9px 12px; color:#fff; border-radius:11px; background:linear-gradient(135deg,var(--navy),var(--navy-2)); }
+    .race-heading strong { font-size:.88rem; }
+    .race-heading span { color:#dce8f5; font-size:.72rem; font-weight:800; }
+    .card-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:11px; }
+    .runner-card { position:relative; overflow:hidden; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(220px,.75fr); gap:13px; padding:15px; border:1px solid var(--line); border-left:5px solid #9aaabd; border-radius:16px; background:#fff; box-shadow:0 8px 25px rgba(16,36,63,.07); }
+    .runner-card.is-best { border-left-color:var(--gold); background:linear-gradient(105deg,#fffdf1 0,#fff 42%); }
+    .runner-card.is-lay { border-left-color:var(--red); }
+    .runner-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .runner-race { color:var(--blue); font-size:.68rem; font-weight:950; letter-spacing:.045em; text-transform:uppercase; }
+    .runner-name { margin:3px 0 0; color:var(--navy); font-size:clamp(1.08rem,2vw,1.35rem); line-height:1.08; }
+    .runner-number { display:inline-grid; place-items:center; min-width:27px; height:27px; margin-right:7px; border-radius:8px; color:#fff; background:var(--navy); font-size:.72rem; vertical-align:2px; }
+    .type-badge { flex:0 0 auto; max-width:145px; padding:5px 8px; border-radius:999px; color:#5a4300; background:var(--gold-2); font-size:.65rem; font-weight:950; text-align:center; }
+    .connections { margin:8px 0 0; color:#506177; font-size:.75rem; line-height:1.45; }
+    .connections b { color:#263d57; }
+    .price-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-top:11px; }
+    .price { padding:8px; border:1px solid #e0e6ec; border-radius:10px; background:#f8fafc; text-align:center; }
+    .price span { display:block; color:#728197; font-size:.59rem; font-weight:950; text-transform:uppercase; }
+    .price strong { display:block; margin-top:2px; color:var(--navy); font-size:.97rem; }
+    .price.is-market { background:#fff8d9; border-color:#f1d76b; }
+    .price.is-positive strong { color:var(--green); }
+    .metric-row { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; margin-top:7px; }
+    .metric { min-width:0; padding:6px 5px; border-radius:8px; background:#edf2f6; text-align:center; }
+    .metric span { display:block; color:#75849a; font-size:.55rem; font-weight:950; text-transform:uppercase; }
+    .metric b { display:block; overflow:hidden; color:#22364e; font-size:.76rem; text-overflow:ellipsis; white-space:nowrap; }
+    .suitability { display:flex; flex-wrap:wrap; gap:5px; margin-top:10px; }
+    .fit-chip { display:inline-flex; align-items:center; gap:5px; min-height:27px; padding:4px 7px; border-radius:8px; color:#5e6c7d; background:#edf1f5; font-size:.65rem; font-weight:900; }
+    .fit-chip b { font-size:.7rem; }
+    .fit-0 { color:#8d251d; background:var(--red-soft); }
+    .fit-1 { color:#705700; background:#fff8d6; }
+    .fit-2 { color:#11643d; background:var(--green-soft); }
+    .fit-3 { color:#473600; background:var(--gold-2); }
+    .signal-row { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .signal { max-width:100%; padding:4px 7px; border:1px solid #dbe4ec; border-radius:999px; color:#3a536d; background:#f6f9fc; font-size:.62rem; font-weight:850; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .signal.is-value { color:#075f37; border-color:#a9d9be; background:#eaf8f0; }
+    .reason { margin:9px 0 0; color:#596a7f; font-size:.7rem; line-height:1.42; }
+    .runner-side { display:flex; flex-direction:column; justify-content:space-between; gap:10px; padding-left:12px; border-left:1px solid #e4eaf0; }
+    .race-meta { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+    .meta-box { padding:7px 8px; border-radius:9px; background:#f1f5f8; }
+    .meta-box span { display:block; color:#718096; font-size:.55rem; font-weight:950; text-transform:uppercase; }
+    .meta-box strong { display:block; margin-top:2px; color:#2b4058; font-size:.72rem; }
+    .card-actions { display:flex; gap:6px; }
+    .card-link { display:inline-flex; justify-content:center; align-items:center; min-height:36px; flex:1; padding:7px 9px; border-radius:9px; color:#fff; background:var(--navy); text-decoration:none; font-size:.7rem; font-weight:900; }
+    .card-link:hover { background:var(--navy-2); }
+
+    .table-wrap { display:none; overflow:auto; border:1px solid var(--line); border-radius:14px; background:#fff; box-shadow:0 8px 25px rgba(16,36,63,.07); }
+    .table-wrap.is-visible { display:block; }
+    .results-table { width:100%; min-width:1220px; border-collapse:collapse; font-size:.72rem; }
+    .results-table th { position:sticky; top:0; z-index:2; padding:9px 8px; color:#fff; background:var(--navy); text-align:left; font-size:.62rem; letter-spacing:.035em; text-transform:uppercase; }
+    .results-table td { padding:9px 8px; border-bottom:1px solid #e7ecf1; vertical-align:middle; }
+    .results-table tr:hover td { background:#f7fafc; }
+    .table-horse { color:var(--navy); font-weight:950; }
+    .positive { color:var(--green); font-weight:900; }
+    .negative { color:var(--red); font-weight:900; }
+    .empty-state { padding:38px 20px; border:1px dashed #b9c7d5; border-radius:16px; background:#fff; color:#69798e; text-align:center; }
+    .empty-state strong { display:block; margin-bottom:5px; color:var(--navy); font-size:1.05rem; }
+    footer { margin-top:24px; padding:16px; color:#738197; text-align:center; font-size:.7rem; line-height:1.5; }
+    .loading { animation:pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity:.55; } }
+
+    @media (max-width:1180px) {
+      .quick-grid { grid-template-columns:1.2fr .9fr 1fr .7fr .8fr; }
+      .filter-actions { grid-column:1/-1; justify-content:flex-end; }
+      .advanced-body { grid-template-columns:1fr 1fr; }
+      .filter-group:last-child { grid-column:1/-1; }
+      .runner-card { grid-template-columns:1fr; }
+      .runner-side { padding:0; border-left:0; border-top:1px solid #e4eaf0; padding-top:10px; }
+    }
+    @media (max-width:820px) {
+      .shell { width:min(97vw,760px); padding-top:7px; }
+      .hero { border-radius:18px; padding:20px 17px; }
+      .hero-top { display:block; }
+      .hero-badge { display:inline-block; margin-top:13px; }
+      .stats { grid-template-columns:1fr 1fr; }
+      .filter-panel { position:static; border-radius:15px; }
+      .mode-row { align-items:flex-start; flex-direction:column; }
+      .quick-grid { grid-template-columns:1fr 1fr; }
+      .quick-grid .field:first-child { grid-column:1/-1; }
+      .filter-actions { justify-content:stretch; }
+      .filter-actions button { flex:1; }
+      .advanced-body { grid-template-columns:1fr; }
+      .filter-group:last-child { grid-column:auto; }
+      .results-head { align-items:flex-start; flex-direction:column; }
+      .result-controls { justify-content:flex-start; }
+      .card-grid { grid-template-columns:1fr; }
+      .table-view-button { display:none; }
+      .table-wrap { display:none !important; }
+    }
+    @media (max-width:540px) {
+      .site-nav { display:grid; grid-template-columns:1fr 1fr; }
+      .site-nav a { text-align:center; }
+      .stat { min-height:72px; padding:12px; }
+      .stat strong { font-size:1.05rem; }
+      .quick-grid { grid-template-columns:1fr; }
+      .quick-grid .field:first-child { grid-column:auto; }
+      .range-pair { grid-template-columns:1fr 1fr; }
+      .toggle-list { grid-template-columns:1fr; }
+      .active-bar { align-items:flex-start; flex-direction:column; }
+      .runner-card { padding:12px; border-radius:13px; }
+      .runner-top { align-items:flex-start; }
+      .price-grid { gap:4px; }
+      .price { padding:7px 4px; }
+      .metric-row { grid-template-columns:1fr 1fr; }
+      .race-meta { grid-template-columns:1fr 1fr; }
+      .result-controls { display:grid; grid-template-columns:1fr 1fr; width:100%; }
+      .small-control { width:100%; }
+    }
+    @media (prefers-reduced-motion:reduce) {
+      * { scroll-behavior:auto !important; animation:none !important; transition:none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="hero-top">
+        <div>
+          <p class="eyebrow">Daily runner intelligence</p>
+          <h1>Race Finder</h1>
+          <p class="hero-copy">Start with the official Today’s Best Bets shortlist, or filter every horse modelled today by race, price, rating, probability, suitability, connections and supporting systems.</p>
+        </div>
+        <div id="run-badge" class="hero-badge">Loading latest model…</div>
+      </div>
+      <nav class="site-nav" aria-label="Racing model pages">
+        <a href="index.html">All Races</a>
+        <a href="value.html">Value &amp; Shortlist</a>
+        <a href="valueNEW.html">Tile Dashboard</a>
+        <a href="racefinder.html" aria-current="page">Race Finder</a>
+        <a href="AtoZ.html">A–Z Runners</a>
+      </nav>
+    </header>
+
+    <section class="stats" aria-label="Daily Race Finder summary">
+      <div class="stat"><span>Modelled runners</span><strong id="stat-runners" class="loading">Loading</strong></div>
+      <div class="stat"><span>Races</span><strong id="stat-races" class="loading">Loading</strong></div>
+      <div class="stat"><span>Courses</span><strong id="stat-courses" class="loading">Loading</strong></div>
+      <div class="stat"><span>Active best bets</span><strong id="stat-best" class="loading">Loading</strong></div>
+    </section>
+
+    <section class="filter-panel" aria-label="Race Finder filters">
+      <div class="mode-row">
+        <div class="mode-tabs" role="group" aria-label="Result mode">
+          <button id="mode-best" class="mode-button is-active" type="button">★ Today’s Best Bets</button>
+          <button id="mode-all" class="mode-button" type="button">All Horses Today</button>
+        </div>
+        <div class="view-buttons" role="group" aria-label="Result view">
+          <button id="view-cards" class="view-button is-active" type="button">Cards</button>
+          <button id="view-table" class="view-button table-view-button" type="button">Table</button>
+        </div>
+      </div>
+
+      <div class="quick-grid">
+        <div class="field">
+          <label for="search">Horse, trainer or jockey</label>
+          <input id="search" class="control filter-input" type="search" autocomplete="off" placeholder="Start typing a name…">
+        </div>
+        <div class="field">
+          <span class="field-label">Course</span>
+          <details id="course-select" class="multi-select">
+            <summary id="course-summary">All courses</summary>
+            <div id="course-options" class="option-popover"></div>
+          </details>
+        </div>
+        <div class="field">
+          <label>Market price (decimal)</label>
+          <div class="range-pair">
+            <input id="price-min" class="control filter-input" type="number" min="1.01" step="0.5" placeholder="Min">
+            <input id="price-max" class="control filter-input" type="number" min="1.01" step="0.5" placeholder="Max">
+          </div>
+        </div>
+        <div class="field">
+          <label for="rank-max">Model rank</label>
+          <select id="rank-max" class="control filter-input">
+            <option value="">Any rank</option><option value="1">Top 1</option><option value="2">Top 2</option><option value="3">Top 3</option><option value="5">Top 5</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="profile-filter">Suitability</label>
+          <select id="profile-filter" class="control filter-input">
+            <option value="">Any profile</option>
+            <option value="no-red">No red factors</option>
+            <option value="all-positive">All positive</option>
+            <option value="two-strong">Two strong factors</option>
+            <option value="all-strong">All strong</option>
+          </select>
+        </div>
+        <div class="filter-actions">
+          <button id="more-filters" class="secondary-button" type="button">More filters</button>
+          <button id="reset" class="primary-button" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="presets">
+        <span class="field-label">Quick searches</span>
+        <div class="preset-row">
+          <button class="preset" type="button" data-preset="strong-favourite">Strong favourites</button>
+          <button class="preset" type="button" data-preset="big-ew">Big-price EW</button>
+          <button class="preset" type="button" data-preset="value">Positive value</button>
+          <button class="preset" type="button" data-preset="extra-place">Extra places</button>
+          <button class="preset" type="button" data-preset="connections">Top connections</button>
+          <button class="preset" type="button" data-preset="elo">ELO candidates</button>
+          <button class="preset" type="button" data-preset="p5">P5 supported</button>
+          <button class="preset" type="button" data-preset="lay">Lay candidates</button>
+        </div>
+      </div>
+
+      <details id="advanced" class="advanced">
+        <summary>Advanced filters</summary>
+        <div class="advanced-body">
+          <section class="filter-group">
+            <h2>Race &amp; runner</h2>
+            <div class="mini-grid">
+              <div class="field">
+                <label for="race-status">Race status</label>
+                <select id="race-status" class="control filter-input"><option value="">All</option><option value="upcoming">Upcoming only</option><option value="started">Started only</option></select>
+              </div>
+              <div class="field">
+                <label for="race-code">Race code</label>
+                <select id="race-code" class="control filter-input"><option value="">All</option><option value="flat">Flat turf</option><option value="aw">All-weather</option><option value="jumps">Jumps</option></select>
+              </div>
+              <div class="field span-2">
+                <span class="field-label">Going</span>
+                <details id="going-select" class="multi-select">
+                  <summary id="going-summary">All goings</summary>
+                  <div id="going-options" class="option-popover"></div>
+                </details>
+              </div>
+              <div class="field"><label for="class-min">Class min</label><input id="class-min" class="control filter-input" type="number" min="1" max="7" step="1" placeholder="1"></div>
+              <div class="field"><label for="class-max">Class max</label><input id="class-max" class="control filter-input" type="number" min="1" max="7" step="1" placeholder="7"></div>
+              <div class="field"><label for="distance-min">Distance min (f)</label><input id="distance-min" class="control filter-input" type="number" min="4" step="0.5" placeholder="Min"></div>
+              <div class="field"><label for="distance-max">Distance max (f)</label><input id="distance-max" class="control filter-input" type="number" min="4" step="0.5" placeholder="Max"></div>
+              <div class="field"><label for="field-min">Field min</label><input id="field-min" class="control filter-input" type="number" min="1" step="1" placeholder="Min"></div>
+              <div class="field"><label for="field-max">Field max</label><input id="field-max" class="control filter-input" type="number" min="1" step="1" placeholder="Max"></div>
+              <div class="field"><label for="age-min">Age min</label><input id="age-min" class="control filter-input" type="number" min="2" step="1" placeholder="Min"></div>
+              <div class="field"><label for="age-max">Age max</label><input id="age-max" class="control filter-input" type="number" min="2" step="1" placeholder="Max"></div>
+              <div class="field"><label for="or-min">Official rating min</label><input id="or-min" class="control filter-input" type="number" min="0" step="1" placeholder="Min"></div>
+              <div class="field"><label for="or-max">Official rating max</label><input id="or-max" class="control filter-input" type="number" min="0" step="1" placeholder="Max"></div>
+              <div class="field"><label for="last-ran-max">Ran within days</label><input id="last-ran-max" class="control filter-input" type="number" min="0" step="1" placeholder="Any"></div>
+              <div class="field"><label for="headgear">Headgear</label><select id="headgear" class="control filter-input"><option value="">Any</option><option value="yes">Wearing headgear</option><option value="no">No headgear</option></select></div>
+              <div class="field span-2"><label for="trainer-search">Trainer contains</label><input id="trainer-search" class="control filter-input" type="search" placeholder="Trainer name"></div>
+              <div class="field span-2"><label for="jockey-search">Jockey contains</label><input id="jockey-search" class="control filter-input" type="search" placeholder="Jockey name"></div>
+            </div>
+          </section>
+
+          <section class="filter-group">
+            <h2>Prices, model &amp; probability</h2>
+            <div class="mini-grid">
+              <div class="field"><label for="model-odds-max">Model odds max</label><input id="model-odds-max" class="control filter-input" type="number" min="1.01" step="0.5" placeholder="Any"></div>
+              <div class="field"><label for="raw-odds-max">Raw odds max</label><input id="raw-odds-max" class="control filter-input" type="number" min="1.01" step="0.5" placeholder="Any"></div>
+              <div class="field"><label for="score-min">Model score min</label><input id="score-min" class="control filter-input" type="number" step="5" placeholder="Any"></div>
+              <div class="field"><label for="edge-min">Price edge min (pp)</label><input id="edge-min" class="control filter-input" type="number" step="0.5" placeholder="Any"></div>
+              <div class="field"><label for="win-min">Win chance min %</label><input id="win-min" class="control filter-input" type="number" min="0" max="100" step="1" placeholder="Any"></div>
+              <div class="field"><label for="place-min">Place chance min %</label><input id="place-min" class="control filter-input" type="number" min="0" max="100" step="1" placeholder="Any"></div>
+              <div class="field"><label for="coverage-min">Horse data min %</label><input id="coverage-min" class="control filter-input" type="number" min="0" max="100" step="5" placeholder="Any"></div>
+              <div class="field"><label for="race-confidence-min">Race confidence min %</label><input id="race-confidence-min" class="control filter-input" type="number" min="0" max="100" step="5" placeholder="Any"></div>
+              <div class="field"><label for="elo-rank-max">ELO rank max</label><input id="elo-rank-max" class="control filter-input" type="number" min="1" step="1" placeholder="Any"></div>
+              <div class="field"><label for="elo-confidence-min">ELO confidence min %</label><input id="elo-confidence-min" class="control filter-input" type="number" min="0" max="100" step="5" placeholder="Any"></div>
+              <div class="field"><label for="p5-confidence-min">P5 confidence min %</label><input id="p5-confidence-min" class="control filter-input" type="number" min="0" max="100" step="5" placeholder="Any"></div>
+              <div class="field"><label for="match-mode">Combine filters</label><select id="match-mode" class="control filter-input"><option value="all">Match all</option><option value="any">Match any</option></select></div>
+            </div>
+            <div class="toggle-list" style="margin-top:9px">
+              <label class="toggle"><input id="model-positive" class="filter-input" type="checkbox">Model odds shorter than market</label>
+              <label class="toggle"><input id="raw-positive" class="filter-input" type="checkbox">Raw odds shorter than market</label>
+              <label class="toggle"><input id="handicap-only" class="filter-input" type="checkbox">Handicaps only</label>
+              <label class="toggle"><input id="extra-place-only" class="filter-input" type="checkbox">Extra-place races only</label>
+              <label class="toggle"><input id="p5-actionable" class="filter-input" type="checkbox">P5 actionable only</label>
+              <label class="toggle"><input id="elo-value" class="filter-input" type="checkbox">ELO value only</label>
+            </div>
+          </section>
+
+          <section class="filter-group">
+            <h2>Suitability, connections &amp; signals</h2>
+            <div class="mini-grid">
+              <div class="field"><label for="going-fit-min">Going fit</label><select id="going-fit-min" class="control filter-input"><option value="">Any</option><option value="1">Positive+</option><option value="2">Strong++</option><option value="3">Excellent+++</option></select></div>
+              <div class="field"><label for="distance-fit-min">Distance fit</label><select id="distance-fit-min" class="control filter-input"><option value="">Any</option><option value="1">Positive+</option><option value="2">Strong++</option><option value="3">Excellent+++</option></select></div>
+              <div class="field"><label for="class-fit-min">Class fit</label><select id="class-fit-min" class="control filter-input"><option value="">Any</option><option value="1">Positive+</option><option value="2">Strong++</option><option value="3">Excellent+++</option></select></div>
+              <div class="field"><label for="form-fit-min">Form fit</label><select id="form-fit-min" class="control filter-input"><option value="">Any</option><option value="1">Positive+</option><option value="2">Strong++</option><option value="3">Excellent+++</option></select></div>
+              <div class="field span-2"><label for="signal-match">Selected signals</label><select id="signal-match" class="control filter-input"><option value="any">Match any selected signal</option><option value="all">Match every selected signal</option></select></div>
+            </div>
+            <div id="signal-options" class="toggle-list signal-options" style="margin-top:9px"></div>
+          </section>
+        </div>
+      </details>
+    </section>
+
+    <div class="active-bar" aria-label="Active filters">
+      <span class="active-label">Active</span>
+      <div id="active-chips" class="active-chips"><span class="active-empty">No filters — showing Today’s Best Bets.</span></div>
+    </div>
+
+    <div id="data-warning" class="data-warning"></div>
+
+    <section aria-labelledby="results-title">
+      <div class="results-head">
+        <div>
+          <h2 id="results-title">Today’s Best Bets</h2>
+          <p id="results-copy" class="results-copy" aria-live="polite">Loading the latest model run…</p>
+        </div>
+        <div class="result-controls">
+          <select id="sort" class="small-control" aria-label="Sort results">
+            <option value="time">Sort: Race time</option><option value="rank">Sort: Model rank</option><option value="edge">Sort: Biggest edge</option><option value="score">Sort: Model score</option><option value="win">Sort: Win chance</option><option value="price-asc">Sort: Shortest price</option><option value="price-desc">Sort: Biggest price</option>
+          </select>
+          <select id="group" class="small-control" aria-label="Group results"><option value="race">Group by race</option><option value="none">One list</option></select>
+          <select id="odds-format" class="small-control" aria-label="Odds format"><option value="decimal">Decimal odds</option><option value="fractional">Fractional odds</option></select>
+        </div>
+      </div>
+
+      <div id="card-results"></div>
+      <div id="table-wrap" class="table-wrap">
+        <table class="results-table">
+          <thead><tr><th>Race</th><th>Horse</th><th>Market</th><th>Model</th><th>Raw</th><th>Rank</th><th>Win</th><th>Place</th><th>Edge</th><th>G/D/C/F</th><th>Trainer / Jockey</th><th>Signals</th></tr></thead>
+          <tbody id="table-results"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>Model research and analytical information only — not a guarantee of outcome or financial advice. Gambling involves risk. 18+ · GambleAware.org</footer>
+  </main>
+
+  <script>
+  (() => {
+    "use strict";
+    const $ = id => document.getElementById(id);
+    const numericIds = ["price-min","price-max","class-min","class-max","distance-min","distance-max","field-min","field-max","age-min","age-max","or-min","or-max","last-ran-max","model-odds-max","raw-odds-max","score-min","edge-min","win-min","place-min","coverage-min","race-confidence-min","elo-rank-max","elo-confidence-min","p5-confidence-min","going-fit-min","distance-fit-min","class-fit-min","form-fit-min"];
+    const checkIds = ["model-positive","raw-positive","handicap-only","extra-place-only","p5-actionable","elo-value"];
+    const textIds = ["search","trainer-search","jockey-search","rank-max","profile-filter","race-status","race-code","headgear","match-mode","signal-match"];
+    const knownSignals = [
+      ["value","Value Now"],["raw-value","Raw Value"],["top-rated-clear","Top Rated Clear"],["rank-overlay","Rank Overlay"],
+      ["ai-back","Back Candidate"],["raw-lay","Lay Candidate"],["sleeper","Sleeper"],["ELO","Has ELO"],
+      ["elo-value","ELO Value"],["P5 Support","P5 Support"],["ATR","ATR Evidence"],["Hot Jockey","Hot Jockey"],
+      ["Hot Trainer","Hot Trainer"],["Top Course Jockey","Top Course Jockey"],["Top Course Trainer","Top Course Trainer"],
+      ["Course Proven","Course Proven"],["Surface Specialist","Surface Specialist"],["Well Handicapped","Well Handicapped"],
+      ["Improver","Improver"],["Unexposed Improver","Unexposed Improver"],["Dark Horse","Dark Horse"],["Was Value","Was Value Earlier"]
+    ];
+    let payload = null;
+    let runners = [];
+    let mode = "best";
+    let view = localStorage.getItem("raceFinderView") === "table" ? "table" : "cards";
+    let renderTimer = null;
+    let limitedFallback = false;
+
+    const esc = value => String(value ?? "").replace(/[&<>'"]/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+    const num = (value, fallback = null) => {
+      const parsed = Number(String(value ?? "").replace("%", "").trim());
+      return Number.isFinite(parsed) ? parsed : fallback;
+    };
+    const clean = value => String(value ?? "").trim();
+    const normal = value => clean(value).toLowerCase().replace(/\s+/g," ");
+    const checkedValues = selector => [...document.querySelectorAll(selector)].filter(input => input.checked).map(input => input.value);
+    const hasValue = id => clean($(id)?.value) !== "";
+    const nvalue = id => hasValue(id) ? num($(id).value) : null;
+    const fitValues = runner => [runner.going_fit,runner.distance_fit,runner.class_fit,runner.form_fit].map(v => num(v,null)).filter(v => v !== null);
+
+    async function safeJSON(path) {
+      try {
+        const response = await fetch(`${path}?rf=${Date.now()}`, {cache:"no-store"});
+        if (!response.ok) throw new Error(`${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.warn(`Race Finder could not load ${path}:`, error);
+        return null;
+      }
+    }
+
+    function fallbackRunner(entry, index) {
+      const match = clean(entry.race_datetime).match(/(\d{1,2}\/\d{1,2}\/\d{4}).*?(\d{1,2}:\d{2})/);
+      const tags = Array.isArray(entry.tags) ? entry.tags : [];
+      return {
+        id:`fallback-${index}`, race_date:match?.[1] || "", race_time:match?.[2] || "", race_datetime:clean(entry.race_datetime),
+        course:clean(entry.course), horse:clean(entry.horse), market_odds:num(entry.bookie_odds), model_odds:num(entry.model_odds), raw_odds:num(entry.raw_odds),
+        model_rank:num(entry.rank_model), market_rank:num(entry.rank_market), rank_delta:num(entry.rank_delta), model_win_pct:num(entry.model_win_prob),
+        model_place_pct:num(entry.model_place_prob), direct_price_edge_pp:num(entry.model_edge_pts), data_coverage:num(entry.data_coverage), race_data_confidence:num(entry.race_data_confidence),
+        field_size:num(entry.field_size), estimated_places:num(entry.estimated_places), extra_places:num(entry.extra_places), signals:tags,
+        best_bet:Boolean(entry.shortlist_currently_live), shortlist_type:clean(entry.shortlist_type), reason:clean(entry.reason || entry.racing_reason),
+        action:clean(entry.action), currently_live:Boolean(entry.currently_live), was_value_earlier:Boolean(entry.was_value_earlier),
+        elo_rating:num(entry.elo_rating), elo_rank:num(entry.elo_rank), elo_confidence:num(entry.elo_confidence), elo_value:Boolean(entry.elo_value),
+        bf_back_odds:num(entry.bf_back_odds), bf_lay_odds:num(entry.bf_lay_odds), racecard_url:"", horse_anchor:""
+      };
+    }
+
+    async function loadData() {
+      payload = await safeJSON("race_finder_data.json");
+      runners = Array.isArray(payload?.runners) ? payload.runners.filter(row => row && row.horse) : [];
+      if (!runners.length) {
+        const valueData = await safeJSON("value_bets.json");
+        if (Array.isArray(valueData) && valueData.length) {
+          runners = valueData.filter(row => row && row.horse).map(fallbackRunner);
+          limitedFallback = true;
+          payload = {generated_at:"",run_id:"",summary:{runners:runners.length,races:new Set(runners.map(r => `${r.race_datetime}|${r.course}`)).size,courses:[...new Set(runners.map(r => r.course).filter(Boolean))],best_bets:runners.filter(r => r.best_bet).length}};
+        }
+      }
+      initialiseOptions();
+      updateStats();
+      render();
+    }
+
+    function updateStats() {
+      const summary = payload?.summary || {};
+      const courses = Array.isArray(summary.courses) ? summary.courses : [...new Set(runners.map(r => r.course).filter(Boolean))];
+      $("stat-runners").textContent = String(summary.runners ?? runners.length);
+      $("stat-races").textContent = String(summary.races ?? new Set(runners.map(r => `${r.race_datetime}|${r.course}`)).size);
+      $("stat-courses").textContent = String(courses.length);
+      $("stat-best").textContent = String(summary.best_bets ?? runners.filter(r => r.best_bet).length);
+      ["stat-runners","stat-races","stat-courses","stat-best"].forEach(id => $(id).classList.remove("loading"));
+      const generated = payload?.generated_at ? new Date(payload.generated_at) : null;
+      $("run-badge").textContent = generated && !Number.isNaN(generated.getTime())
+        ? `Updated ${generated.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · ${generated.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}`
+        : (runners.length ? "Latest available model" : "No runner data yet");
+      const warning = $("data-warning");
+      if (limitedFallback) {
+        warning.textContent = "Limited compatibility view: the new all-runner export has not been generated yet. Run the updated gitmodel.py once to unlock every race and filter field.";
+        warning.classList.add("is-visible");
+      } else if (!runners.length) {
+        warning.textContent = "No Race Finder data is available yet. Run the updated model; race_finder_data.json will be generated automatically before deployment.";
+        warning.classList.add("is-visible");
+      } else {
+        warning.classList.remove("is-visible");
+      }
+    }
+
+    function optionMarkup(values, name, selected = []) {
+      return values.map(value => `<label class="check-option"><input class="filter-input" type="checkbox" name="${esc(name)}" value="${esc(value)}" ${selected.includes(value)?"checked":""}>${esc(value)}</label>`).join("");
+    }
+
+    function initialiseOptions() {
+      const courses = [...new Set(runners.map(r => clean(r.course)).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+      const goings = [...new Set(runners.map(r => clean(r.going)).filter(Boolean))].sort((a,b) => a.localeCompare(b));
+      $("course-options").innerHTML = optionMarkup(courses,"course");
+      $("going-options").innerHTML = optionMarkup(goings,"going");
+      $("signal-options").innerHTML = knownSignals.map(([value,label]) => `<label class="toggle"><input class="filter-input" type="checkbox" name="signal" value="${esc(value)}">${esc(label)}</label>`).join("");
+      document.querySelectorAll(".filter-input").forEach(input => {
+        input.addEventListener(input.type === "search" || input.type === "number" ? "input" : "change", filterChanged);
+      });
+      updateMultiSummaries();
+    }
+
+    function updateMultiSummaries() {
+      const courses = checkedValues('input[name="course"]');
+      const goings = checkedValues('input[name="going"]');
+      $("course-summary").textContent = courses.length ? `${courses.length} course${courses.length===1?"":"s"}` : "All courses";
+      $("going-summary").textContent = goings.length ? `${goings.length} selected` : "All goings";
+    }
+
+    function activeCriteria(runner) {
+      const criteria = [];
+      const search = normal($("search").value);
+      if (search) criteria.push(normal([runner.horse,runner.trainer,runner.jockey,runner.course].join(" ")).includes(search));
+      const courses = checkedValues('input[name="course"]');
+      if (courses.length) criteria.push(courses.includes(clean(runner.course)));
+      const goings = checkedValues('input[name="going"]');
+      if (goings.length) criteria.push(goings.includes(clean(runner.going)));
+      const range = (minId,maxId,value) => {
+        const min = nvalue(minId), max = nvalue(maxId), actual = num(value,null);
+        if (min !== null) criteria.push(actual !== null && actual >= min);
+        if (max !== null) criteria.push(actual !== null && actual <= max);
+      };
+      range("price-min","price-max",runner.market_odds);
+      range("class-min","class-max",runner.race_class);
+      range("distance-min","distance-max",runner.distance_furlongs);
+      range("field-min","field-max",runner.field_size);
+      range("age-min","age-max",runner.age);
+      range("or-min","or-max",runner.official_rating);
+      const rankMax = nvalue("rank-max"); if (rankMax !== null) criteria.push(num(runner.model_rank,999) <= rankMax);
+      const profile = $("profile-filter").value;
+      if (profile) {
+        const fits = fitValues(runner);
+        if (profile === "no-red") criteria.push(fits.length > 0 && fits.every(v => v >= 1));
+        if (profile === "all-positive") criteria.push(fits.length === 4 && fits.every(v => v >= 1));
+        if (profile === "two-strong") criteria.push(fits.filter(v => v >= 2).length >= 2);
+        if (profile === "all-strong") criteria.push(fits.length === 4 && fits.every(v => v >= 2));
+      }
+      const status = $("race-status").value;
+      if (status) criteria.push(status === "upcoming" ? !raceStarted(runner) : raceStarted(runner));
+      const code = $("race-code").value; if (code) criteria.push(raceCode(runner) === code);
+      if (hasValue("last-ran-max")) criteria.push(num(runner.last_ran_days,null) !== null && num(runner.last_ran_days) <= nvalue("last-ran-max"));
+      const headgear = $("headgear").value; if (headgear) criteria.push(headgear === "yes" ? Boolean(clean(runner.headgear)) : !clean(runner.headgear));
+      const trainer = normal($("trainer-search").value); if (trainer) criteria.push(normal(runner.trainer).includes(trainer));
+      const jockey = normal($("jockey-search").value); if (jockey) criteria.push(normal(runner.jockey).includes(jockey));
+      const minimums = [["model-odds-max","model_odds","max"],["raw-odds-max","raw_odds","max"],["score-min","model_score","min"],["edge-min","direct_price_edge_pp","min"],["win-min","model_win_pct","min"],["place-min","model_place_pct","min"],["coverage-min","data_coverage","min"],["race-confidence-min","race_data_confidence","min"],["elo-rank-max","elo_rank","max"],["elo-confidence-min","elo_confidence","min"],["p5-confidence-min","p5_confidence","min"],["going-fit-min","going_fit","min"],["distance-fit-min","distance_fit","min"],["class-fit-min","class_fit","min"],["form-fit-min","form_fit","min"]];
+      minimums.forEach(([id,key,direction]) => {
+        if (!hasValue(id)) return;
+        const actual = num(runner[key],null), expected = nvalue(id);
+        criteria.push(actual !== null && (direction === "max" ? actual <= expected : actual >= expected));
+      });
+      if ($("model-positive").checked) criteria.push(num(runner.model_odds,null)!==null && num(runner.market_odds,null)!==null && num(runner.model_odds) < num(runner.market_odds));
+      if ($("raw-positive").checked) criteria.push(num(runner.raw_odds,null)!==null && num(runner.market_odds,null)!==null && num(runner.raw_odds) < num(runner.market_odds));
+      if ($("handicap-only").checked) criteria.push(/handicap/i.test(`${runner.race_name||""} ${runner.race_type||""}`));
+      if ($("extra-place-only").checked) criteria.push(num(runner.extra_places,0) > 0);
+      if ($("p5-actionable").checked) criteria.push(Boolean(runner.p5_actionable));
+      if ($("elo-value").checked) criteria.push(Boolean(runner.elo_value));
+      const signals = checkedValues('input[name="signal"]');
+      if (signals.length) {
+        const runnerSignals = (Array.isArray(runner.signals)?runner.signals:[]).map(normal);
+        const signalTest = value => value === "ELO" ? num(runner.elo_rank,null)!==null : value === "Was Value" ? Boolean(runner.was_value_earlier) : runnerSignals.includes(normal(value));
+        criteria.push($("signal-match").value === "all" ? signals.every(signalTest) : signals.some(signalTest));
+      }
+      return criteria;
+    }
+
+    function hasActiveFilters() {
+      return textIds.some(id => !["match-mode","signal-match"].includes(id) && hasValue(id)) || numericIds.some(hasValue) || checkIds.some(id => $(id).checked) || checkedValues('input[name="course"]').length || checkedValues('input[name="going"]').length || checkedValues('input[name="signal"]').length;
+    }
+
+    function runnerMatches(runner) {
+      if (mode === "best" && !hasActiveFilters()) return Boolean(runner.best_bet) && !raceStarted(runner);
+      if (mode === "all" && !hasActiveFilters()) return true;
+      const criteria = activeCriteria(runner);
+      if (!criteria.length) return true;
+      return $("match-mode").value === "any" ? criteria.some(Boolean) : criteria.every(Boolean);
+    }
+
+    function raceDate(runner) {
+      const date = clean(runner.race_date || runner.race_datetime.split(" ")[0]);
+      const time = clean(runner.race_time || runner.race_datetime.match(/\d{1,2}:\d{2}/)?.[0]);
+      const parts = date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      const clock = time.match(/(\d{1,2}):(\d{2})/);
+      return parts && clock ? new Date(Number(parts[3]),Number(parts[2])-1,Number(parts[1]),Number(clock[1]),Number(clock[2])) : new Date(8640000000000000);
+    }
+    function raceStarted(runner) { const date = raceDate(runner); return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now(); }
+    function raceCode(runner) {
+      const text = normal(`${runner.race_type||""} ${runner.going||""} ${runner.race_name||""}`);
+      if (/(hurdle|chase|national hunt|nh flat)/.test(text)) return "jumps";
+      if (/(standard|polytrack|tapeta|all-weather|all weather|aw)/.test(text)) return "aw";
+      return "flat";
+    }
+
+    function sortRows(rows) {
+      const type = $("sort").value;
+      const copy = [...rows];
+      const base = (a,b) => raceDate(a)-raceDate(b) || clean(a.course).localeCompare(clean(b.course)) || num(a.model_rank,999)-num(b.model_rank,999);
+      if (type === "rank") return copy.sort((a,b) => num(a.model_rank,999)-num(b.model_rank,999) || base(a,b));
+      if (type === "edge") return copy.sort((a,b) => num(b.direct_price_edge_pp,-999)-num(a.direct_price_edge_pp,-999) || base(a,b));
+      if (type === "score") return copy.sort((a,b) => num(b.model_score,-999)-num(a.model_score,-999) || base(a,b));
+      if (type === "win") return copy.sort((a,b) => num(b.model_win_pct,-999)-num(a.model_win_pct,-999) || base(a,b));
+      if (type === "price-asc") return copy.sort((a,b) => num(a.market_odds,9999)-num(b.market_odds,9999) || base(a,b));
+      if (type === "price-desc") return copy.sort((a,b) => num(b.market_odds,-1)-num(a.market_odds,-1) || base(a,b));
+      return copy.sort(base);
+    }
+
+    const fractions = [[1.1,"1/10"],[1.2,"1/5"],[1.25,"1/4"],[1.33,"1/3"],[1.5,"1/2"],[1.67,"4/6"],[1.8,"4/5"],[1.91,"10/11"],[2,"Evs"],[2.1,"11/10"],[2.25,"5/4"],[2.375,"11/8"],[2.5,"6/4"],[2.75,"7/4"],[3,"2/1"],[3.25,"9/4"],[3.5,"5/2"],[3.75,"11/4"],[4,"3/1"],[4.5,"7/2"],[5,"4/1"],[5.5,"9/2"],[6,"5/1"],[7,"6/1"],[8,"7/1"],[9,"8/1"],[10,"9/1"],[11,"10/1"],[13,"12/1"],[15,"14/1"],[17,"16/1"],[21,"20/1"],[26,"25/1"],[34,"33/1"],[41,"40/1"],[51,"50/1"],[67,"66/1"],[81,"80/1"],[101,"100/1"]];
+    function odds(value) {
+      const n = num(value,null); if (n === null || n <= 1) return "—";
+      if ($("odds-format").value === "decimal") return n.toFixed(2);
+      return fractions.reduce((best,current) => Math.abs(current[0]-n)<Math.abs(best[0]-n)?current:best,fractions[0])[1];
+    }
+    const pct = value => num(value,null)===null ? "—" : `${num(value).toFixed(1)}%`;
+    const signed = value => num(value,null)===null ? "—" : `${num(value)>0?"+":""}${num(value).toFixed(1)}pp`;
+    const fitSymbol = value => value===null?"—":value>=3?"✔✔✔":value>=2?"✔✔":value>=1?"✔":"✖";
+    const prettySignal = signal => new Map(knownSignals).get(signal) || String(signal).replace(/-/g," ").replace(/\b\w/g,char=>char.toUpperCase());
+    function fitChip(label,value) { const level=num(value,null); return `<span class="fit-chip ${level===null?"":"fit-"+Math.max(0,Math.min(3,level))}"><b>${label}</b>${fitSymbol(level)}</span>`; }
+    function signalHTML(runner) {
+      const values = Array.isArray(runner.signals)?runner.signals:[];
+      return values.slice(0,8).map(value => `<span class="signal ${/value|back|overlay/i.test(value)?"is-value":""}" title="${esc(prettySignal(value))}">${esc(prettySignal(value))}</span>`).join("");
+    }
+    function raceLink(runner) {
+      if (!runner.racecard_url) return '<span class="card-link" aria-disabled="true">Racecard unavailable</span>';
+      const href = `${runner.racecard_url}${runner.horse_anchor?"#"+runner.horse_anchor:""}`;
+      return `<a class="card-link" href="${esc(href)}">View full racecard →</a>`;
+    }
+
+    function cardHTML(runner) {
+      const edge = num(runner.direct_price_edge_pp,null);
+      const action = normal(runner.action || runner.shortlist_type);
+      const klass = `${runner.best_bet?" is-best":""}${action.includes("lay")?" is-lay":""}`;
+      return `<article class="runner-card${klass}">
+        <div>
+          <div class="runner-top"><div><div class="runner-race">${esc(runner.race_time||"—")} · ${esc(runner.course||"—")}</div><h3 class="runner-name">${runner.cloth?`<span class="runner-number">${esc(runner.cloth)}</span>`:""}${esc(runner.horse)}</h3></div>${runner.shortlist_type?`<span class="type-badge">${esc(runner.shortlist_type)}</span>`:""}</div>
+          <p class="connections"><b>T:</b> ${esc(runner.trainer||"—")} &nbsp; <b>J:</b> ${esc(runner.jockey||"—")}${runner.official_rating?` &nbsp; <b>OR:</b> ${esc(runner.official_rating)}`:""}${runner.stall?` &nbsp; <b>Draw:</b> ${esc(runner.stall)}`:""}</p>
+          <div class="price-grid">
+            <div class="price is-market"><span>Market</span><strong>${odds(runner.market_odds)}</strong></div>
+            <div class="price ${num(runner.model_odds,999)<num(runner.market_odds,-1)?"is-positive":""}"><span>Model</span><strong>${odds(runner.model_odds)}</strong></div>
+            <div class="price ${num(runner.raw_odds,999)<num(runner.market_odds,-1)?"is-positive":""}"><span>Raw</span><strong>${odds(runner.raw_odds)}</strong></div>
+          </div>
+          <div class="metric-row">
+            <div class="metric"><span>Model rank</span><b>${runner.model_rank?`${esc(runner.model_rank)}/${esc(runner.field_size||"—")}`:"—"}</b></div>
+            <div class="metric"><span>Win chance</span><b>${pct(runner.model_win_pct)}</b></div>
+            <div class="metric"><span>Place chance</span><b>${pct(runner.model_place_pct)}</b></div>
+            <div class="metric"><span>Price edge</span><b class="${edge>0?"positive":edge<0?"negative":""}">${signed(edge)}</b></div>
+          </div>
+          <div class="suitability">${fitChip("G",runner.going_fit)}${fitChip("D",runner.distance_fit)}${fitChip("C",runner.class_fit)}${fitChip("F",runner.form_fit)}${runner.data_coverage!==null&&runner.data_coverage!==undefined?`<span class="fit-chip"><b>Data</b>${pct(runner.data_coverage)}</span>`:""}</div>
+          <div class="signal-row">${signalHTML(runner)}</div>
+          ${runner.reason?`<p class="reason">${esc(runner.reason)}</p>`:""}
+        </div>
+        <aside class="runner-side">
+          <div class="race-meta">
+            <div class="meta-box"><span>Race</span><strong>${esc(runner.race_name||runner.race_type||"—")}</strong></div>
+            <div class="meta-box"><span>Conditions</span><strong>${esc([runner.race_distance,runner.going].filter(Boolean).join(" · ")||"—")}</strong></div>
+            <div class="meta-box"><span>Class / field</span><strong>${runner.race_class?`Class ${esc(runner.race_class)} · `:""}${esc(runner.field_size||"—")} runners</strong></div>
+            <div class="meta-box"><span>Places</span><strong>${runner.extra_places?`Extra ${esc(runner.extra_places)}`:esc(runner.estimated_places||"—")}</strong></div>
+            <div class="meta-box"><span>ELO</span><strong>${runner.elo_rank?`#${esc(runner.elo_rank)} · ${esc(Math.round(num(runner.elo_rating,0)))}`:"—"}</strong></div>
+            <div class="meta-box"><span>P5</span><strong>${runner.p5_confidence?pct(runner.p5_confidence):esc(runner.p5_signal||"—")}</strong></div>
+          </div>
+          <div class="card-actions">${raceLink(runner)}</div>
+        </aside>
+      </article>`;
+    }
+
+    function tableRow(runner) {
+      const edge=num(runner.direct_price_edge_pp,null);
+      const fits=[runner.going_fit,runner.distance_fit,runner.class_fit,runner.form_fit].map(v=>fitSymbol(num(v,null))).join("/");
+      return `<tr><td>${esc(runner.race_time)} ${esc(runner.course)}</td><td><span class="table-horse">${esc(runner.horse)}</span>${runner.shortlist_type?`<br><small>${esc(runner.shortlist_type)}</small>`:""}</td><td>${odds(runner.market_odds)}</td><td>${odds(runner.model_odds)}</td><td>${odds(runner.raw_odds)}</td><td>${esc(runner.model_rank||"—")}/${esc(runner.field_size||"—")}</td><td>${pct(runner.model_win_pct)}</td><td>${pct(runner.model_place_pct)}</td><td class="${edge>0?"positive":edge<0?"negative":""}">${signed(edge)}</td><td>${esc(fits)}</td><td>${esc(runner.trainer||"—")}<br><small>${esc(runner.jockey||"—")}</small></td><td>${esc((runner.signals||[]).slice(0,4).map(prettySignal).join(" · ")||"—")}</td></tr>`;
+    }
+
+    function descriptorData() {
+      const chips=[];
+      const add=(label,clear)=>chips.push({label,clear});
+      const field=(id,label)=>{ if(hasValue(id)) add(`${label}: ${$(id).value}`,()=>{$(id).value="";filterChanged();}); };
+      field("search","Search");
+      checkedValues('input[name="course"]').forEach(value=>add(value,()=>{const input=[...document.querySelectorAll('input[name="course"]')].find(i=>i.value===value);if(input)input.checked=false;filterChanged();}));
+      field("price-min","Price min"); field("price-max","Price max"); field("rank-max","Top rank"); field("profile-filter","Profile");
+      checkedValues('input[name="going"]').forEach(value=>add(`Going: ${value}`,()=>{const input=[...document.querySelectorAll('input[name="going"]')].find(i=>i.value===value);if(input)input.checked=false;filterChanged();}));
+      ["race-status","race-code","class-min","class-max","distance-min","distance-max","field-min","field-max","age-min","age-max","or-min","or-max","last-ran-max","headgear","trainer-search","jockey-search","model-odds-max","raw-odds-max","score-min","edge-min","win-min","place-min","coverage-min","race-confidence-min","elo-rank-max","elo-confidence-min","p5-confidence-min","going-fit-min","distance-fit-min","class-fit-min","form-fit-min"].forEach(id=>field(id,id.replace(/-/g," ")));
+      const checkLabels={"model-positive":"Model < market","raw-positive":"Raw < market","handicap-only":"Handicaps","extra-place-only":"Extra places","p5-actionable":"P5 actionable","elo-value":"ELO value"};
+      checkIds.forEach(id=>{if($(id).checked)add(checkLabels[id],()=>{$(id).checked=false;filterChanged();});});
+      checkedValues('input[name="signal"]').forEach(value=>add(prettySignal(value),()=>{const input=[...document.querySelectorAll('input[name="signal"]')].find(i=>i.value===value);if(input)input.checked=false;filterChanged();}));
+      return chips;
+    }
+
+    function renderActive() {
+      const chips=descriptorData();
+      $("active-chips").innerHTML=chips.length?chips.map((chip,index)=>`<span class="active-chip">${esc(chip.label)}<button type="button" data-chip="${index}" aria-label="Remove ${esc(chip.label)}">×</button></span>`).join(""):`<span class="active-empty">${mode==="best"?"No filters — showing Today’s Best Bets.":"No filters — showing every horse modelled today."}</span>`;
+      $("active-chips").querySelectorAll("button[data-chip]").forEach(button=>button.addEventListener("click",()=>chips[Number(button.dataset.chip)]?.clear()));
+    }
+
+    function render() {
+      updateMultiSummaries();
+      setModeButtons();
+      renderActive();
+      const filtered=sortRows(runners.filter(runnerMatches));
+      const custom=hasActiveFilters();
+      const title=custom?"Custom Race Finder Results":mode==="best"?"Today’s Best Bets":"All Horses Today";
+      $("results-title").textContent=title;
+      $("results-copy").textContent=`${filtered.length} matching runner${filtered.length===1?"":"s"} from ${runners.length} available${$("match-mode").value==="any"&&custom?" · matching any selected filter":""}.`;
+      if(!filtered.length){
+        $("card-results").innerHTML=`<div class="empty-state"><strong>No horses match these filters</strong>Remove one or two active filters, choose “Match any”, or reset to Today’s Best Bets.</div>`;
+        $("table-results").innerHTML="";
+      }else if($("group").value==="race"){
+        const groups=new Map();filtered.forEach(r=>{const key=`${r.race_datetime}|${r.course}`;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r);});
+        $("card-results").innerHTML=[...groups.values()].map(group=>`<section class="race-group"><div class="race-heading"><strong>${esc(group[0].race_time||"—")} ${esc(group[0].course||"")}</strong><span>${esc(group[0].race_distance||"")} ${group[0].going?`· ${esc(group[0].going)}`:""} · ${group.length} match${group.length===1?"":"es"}</span></div><div class="card-grid">${group.map(cardHTML).join("")}</div></section>`).join("");
+        $("table-results").innerHTML=filtered.map(tableRow).join("");
+      }else{
+        $("card-results").innerHTML=`<div class="card-grid">${filtered.map(cardHTML).join("")}</div>`;
+        $("table-results").innerHTML=filtered.map(tableRow).join("");
+      }
+      applyView();
+    }
+
+    function setModeButtons(){ $("mode-best").classList.toggle("is-active",mode==="best"&&!hasActiveFilters()); $("mode-all").classList.toggle("is-active",mode==="all"&&!hasActiveFilters()); }
+    function applyView(){
+      const table=view==="table"&&window.matchMedia("(min-width:821px)").matches;
+      $("card-results").style.display=table?"none":"block";
+      $("table-wrap").classList.toggle("is-visible",table);
+      $("view-cards").classList.toggle("is-active",!table); $("view-table").classList.toggle("is-active",table);
+    }
+    function filterChanged(){ mode="custom"; clearTimeout(renderTimer); renderTimer=setTimeout(render,80); }
+    function clearFilters(targetMode="best"){
+      [...document.querySelectorAll(".filter-input")].forEach(input=>{if(input.type==="checkbox")input.checked=false;else input.value="";});
+      $("match-mode").value="all"; $("signal-match").value="any"; mode=targetMode; render();
+    }
+    function signalCheck(value){const input=[...document.querySelectorAll('input[name="signal"]')].find(item=>item.value===value);if(input)input.checked=true;}
+    function preset(name){
+      clearFilters("custom"); mode="custom";
+      if(name==="strong-favourite"){$("rank-max").value="1";$("price-max").value="6";$("profile-filter").value="no-red";$("coverage-min").value="80";}
+      if(name==="big-ew"){$("price-min").value="15";$("price-max").value="51";$("rank-max").value="5";$("place-min").value="25";$("model-positive").checked=true;}
+      if(name==="value"){$("model-positive").checked=true;$("raw-positive").checked=true;$("edge-min").value="2";$("coverage-min").value="80";}
+      if(name==="extra-place"){$("extra-place-only").checked=true;$("place-min").value="25";}
+      if(name==="connections"){signalCheck("Hot Jockey");signalCheck("Hot Trainer");signalCheck("Top Course Jockey");signalCheck("Top Course Trainer");$("signal-match").value="any";}
+      if(name==="elo"){signalCheck("ELO");$("elo-confidence-min").value="45";}
+      if(name==="p5"){$("p5-confidence-min").value="65";signalCheck("P5 Support");}
+      if(name==="lay"){signalCheck("raw-lay");$("price-max").value="10";}
+      render(); $("results-title").scrollIntoView({behavior:"smooth",block:"start"});
+    }
+
+    $("more-filters").addEventListener("click",()=>{$("advanced").open=!$("advanced").open;});
+    $("reset").addEventListener("click",()=>clearFilters("best"));
+    $("mode-best").addEventListener("click",()=>clearFilters("best"));
+    $("mode-all").addEventListener("click",()=>clearFilters("all"));
+    $("view-cards").addEventListener("click",()=>{view="cards";localStorage.setItem("raceFinderView",view);applyView();});
+    $("view-table").addEventListener("click",()=>{view="table";localStorage.setItem("raceFinderView",view);applyView();});
+    ["sort","group","odds-format"].forEach(id=>$(id).addEventListener("change",render));
+    document.querySelectorAll("button[data-preset]").forEach(button=>button.addEventListener("click",()=>preset(button.dataset.preset)));
+    window.addEventListener("resize",applyView);
+    loadData();
+  })();
+  </script>
+</body>
+</html>
