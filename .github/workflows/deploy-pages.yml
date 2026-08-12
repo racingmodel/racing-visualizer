@@ -2,12 +2,14 @@ name: Deploy Pages
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
     paths:
       - 'value.html'
       - 'valueNEW.html'
+      - 'racefinder.html'
       - 'index.html'
       - 'AtoZ.html'
       - '2026-*.html'
@@ -37,7 +39,7 @@ jobs:
 
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment_attempt_3.outputs.page_url || steps.deployment_attempt_2.outputs.page_url || steps.deployment_attempt_1.outputs.page_url }}
 
     steps:
       - name: Settle rapid model pushes
@@ -57,6 +59,7 @@ jobs:
 
           cp -f value.html _site/ 2>/dev/null || true
           cp -f valueNEW.html _site/ 2>/dev/null || true
+          cp -f racefinder.html _site/ 2>/dev/null || true
           cp -f index.html _site/ 2>/dev/null || true
           cp -f AtoZ.html _site/ 2>/dev/null || true
           cp -f extra_places.txt _site/ 2>/dev/null || true
@@ -74,12 +77,23 @@ jobs:
 
           touch _site/.nojekyll
 
-          echo "Site artifact contents, first 80 files:"
-          find _site -maxdepth 2 -type f | sort | sed -n '1,80p'
+          echo "Site artifact contents, first 100 files:"
+          find _site -maxdepth 2 -type f | sort | sed -n '1,100p'
 
-          echo "Checking that the new page was included:"
+          echo "Checking required pages were included:"
+          test -f _site/index.html
+          test -f _site/value.html
           test -f _site/valueNEW.html
+          test -f _site/racefinder.html
+
+          ls -lh _site/index.html
+          ls -lh _site/value.html
           ls -lh _site/valueNEW.html
+          ls -lh _site/racefinder.html
+
+          echo "Checking Race Finder data:"
+          test -f _site/race_finder_data.json
+          ls -lh _site/race_finder_data.json
 
           echo "HTML count:"
           find _site -name "*.html" | wc -l
@@ -112,7 +126,8 @@ jobs:
       - name: Wait before retry 2
         if: steps.deployment_attempt_1.outcome == 'failure'
         run: |
-          echo "GitHub Pages deploy failed on attempt 1. Waiting 60 seconds before retry..."
+          echo "GitHub Pages deploy failed on attempt 1."
+          echo "Waiting 60 seconds before retry..."
           sleep 60
 
       - name: Deploy to GitHub Pages attempt 2
@@ -127,7 +142,8 @@ jobs:
       - name: Wait before retry 3
         if: steps.deployment_attempt_1.outcome == 'failure' && steps.deployment_attempt_2.outcome == 'failure'
         run: |
-          echo "GitHub Pages deploy failed on attempt 2. Waiting 120 seconds before retry..."
+          echo "GitHub Pages deploy failed on attempt 2."
+          echo "Waiting 120 seconds before retry..."
           sleep 120
 
       - name: Deploy to GitHub Pages attempt 3
