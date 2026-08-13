@@ -4464,7 +4464,7 @@
       }
     }
 
-    /* Independent horse ELO evidence: results-only ratings, separate from P4/P5. */
+    /* Independent Weight + Margin ELO evidence, separate from P4/P5. */
     details.section-card.section-elo {
       border-top: 4px solid #22d3ee;
       box-shadow: 0 10px 30px rgba(34,211,238,0.15);
@@ -4685,7 +4685,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">13 Aug 2026, 10:09</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">13 Aug 2026, 11:37</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4705,7 +4705,7 @@
       <a href="#my-bets-section">📝 My Bets <span id="nav-mybets-count" class="nav-count">0</span></a>
       <a href="#shortlist-backtest-card">📊 Live Record</a>
       <a href="#race-products-section">🧩 Race Products</a>
-      <a href="#elo-section">⚡ Horse ELO <span id="nav-elo-count" class="nav-count">0</span></a>
+      <a href="#elo-section">⚡ W+M ELO <span id="nav-elo-count" class="nav-count">0</span></a>
       <a href="#watchlist-section">🌑 Watchlist</a>
     </nav>
 
@@ -4881,18 +4881,18 @@
 
     <details id="elo-section" class="section-card section-elo">
       <summary class="section-title">
-        <span class="section-title-left">⚡ Horse ELO Ratings <span id="elo-section-count" class="section-count">0</span></span>
+        <span class="section-title-left">⚡ Weight + Margin Horse ELO <span id="elo-section-count" class="section-count">0</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
         <div class="section-note">
-          Strict view: shows confirmed main-shortlist ELO support; qualified shadow watches (top 3, confidence 65%+, edge 2.5pp+, 4+ prior runs); high-confidence leaders (rank 1, confidence 75%+, 5+ prior runs); or strong ELO value (top 3, confidence 65%+, edge 3.0pp+, 4+ prior runs). ELO remains independent and does not create a main-shortlist bet on its own.
+          Uses finishing order plus official winning/beaten margins and carried weight, scaled for race distance, Flat/jumps and going. Classic order-only ELO is retained alongside it for comparison. Missing margins fall back safely to classic ELO. This remains independent support and cannot create a main-shortlist bet on its own.
         </div>
         <div class="table-wrap">
           <table id="elo-table" class="elo-table">
             <thead><tr>
-              <th>Race</th><th>Horse</th><th>ELO Rating</th><th>Recent Change</th>
-              <th>ELO Price</th><th>Edge / Confidence</th><th>Evidence</th><th>My List</th>
+              <th>Race</th><th>Horse</th><th>W+M ELO</th><th>Recent Change</th>
+              <th>W+M Price</th><th>Edge / Confidence</th><th>Evidence</th><th>My List</th>
             </tr></thead>
             <tbody></tbody>
           </table>
@@ -5845,6 +5845,7 @@
     'machine-learning': '🤖 Machine Learning',
     'p5-place-support': 'P5 Place Support',
     'elo': '⚡ ELO',
+    'weight-margin-elo': '⚖️ Margin + Weight',
     'elo-leader': '🥇 ELO Leader',
     'elo-value': '💹 ELO Value',
     'elo-shortlist-ready': '✓ ELO Qualified',
@@ -6949,6 +6950,8 @@
   const eloRow = (entry) => {
     const rating = p5Num(entry?.elo_rating, 1500);
     const globalRating = p5Num(entry?.elo_global_rating, rating);
+    const classicRating = p5Num(entry?.elo_classic_rating, rating);
+    const classicRank = p5Num(entry?.elo_classic_rank, 0);
     const rank = p5Num(entry?.elo_rank, 0);
     const field = p5Num(entry?.elo_field_size ?? entry?.field_size, 0);
     const runs = p5Num(entry?.elo_runs, 0);
@@ -6960,6 +6963,8 @@
     const fairOdds = p5Num(entry?.elo_fair_odds, 0);
     const edge = p5Num(entry?.elo_edge_pp, 0);
     const confidence = p5Num(entry?.elo_confidence, 0);
+    const marginRuns = p5Num(entry?.elo_margin_runs, 0);
+    const weightMarginRuns = p5Num(entry?.elo_weight_margin_runs, 0);
     const changeClass = recentChange >= 0 ? "elo-change-positive" : "elo-change-negative";
     const edgeClass = edge > 0 ? "elo-edge-positive" : "elo-change-negative";
     const status = entry?.elo_confirmed_shortlist_support
@@ -6975,9 +6980,9 @@
         ${racecardHorseLinkHTML(entry, entry?.horse || "", "shortlist-horse-name shortlist-horse-link")}
         ${shortlistTagsHTML(entry?.tags || ["elo"])}
       </td>
-      <td data-label="ELO Rating"><span class="elo-metric"><strong class="elo-rating-pill">${rating.toFixed(0)}</strong><small>Global ${globalRating.toFixed(0)} · rank ${rank.toFixed(0)}/${field.toFixed(0)}</small></span></td>
+      <td data-label="W+M ELO"><span class="elo-metric"><strong class="elo-rating-pill">${rating.toFixed(0)}</strong><small>Rank ${rank.toFixed(0)}/${field.toFixed(0)} · classic ${classicRating.toFixed(0)} R${classicRank.toFixed(0)}</small></span></td>
       <td data-label="Recent Change"><span class="elo-metric"><strong class="${changeClass}">${recentChange >= 0 ? "+" : ""}${recentChange.toFixed(1)}</strong><small>Last ${lastChange >= 0 ? "+" : ""}${lastChange.toFixed(1)} · ${runs.toFixed(0)} runs · ${wins.toFixed(0)}W/${places.toFixed(0)}P</small></span></td>
-      <td data-label="ELO Price"><span class="elo-metric"><strong>${fairOdds > 0 ? fairOdds.toFixed(2) : "-"}</strong><small>${probability.toFixed(1)}% win · market ${escHTML(entry?.bookie_odds ?? "-")}</small></span></td>
+      <td data-label="W+M Price"><span class="elo-metric"><strong>${fairOdds > 0 ? fairOdds.toFixed(2) : "-"}</strong><small>${probability.toFixed(1)}% win · ${marginRuns.toFixed(0)} margin/${weightMarginRuns.toFixed(0)} weight runs</small></span></td>
       <td data-label="Edge / Confidence"><span class="elo-metric"><strong class="${edgeClass}">${edge >= 0 ? "+" : ""}${edge.toFixed(1)}pp</strong><small>${confidence.toFixed(0)}% confidence · ${escHTML(status)}</small></span></td>
       <td data-label="Evidence"><div class="elo-note">${escHTML(entry?.racing_reason || entry?.reason || "Independent ELO evidence.")}</div></td>
       <td data-label="My List">${myBetButtonHTML(entry, "Horse ELO", entry?.elo_confirmed_shortlist_support ? "ELO Support" : "ELO Watch")}</td>
