@@ -4487,23 +4487,44 @@
       color: #e8fbff !important;
       background: linear-gradient(90deg,#082f49 0%,#102b36 48%,#151b20 100%) !important;
     }
-    .elo-metric { display: flex; flex-direction: column; gap: 0.16rem; min-width: 76px; }
+    .elo-metric { display: flex; flex-direction: column; gap: 0.16rem; min-width: 0; }
     .elo-metric strong { color: #cffafe; font-size: 0.9rem; }
-    .elo-metric small { color: #9ecbd3; font-size: 0.63rem; line-height: 1.25; }
+    .elo-metric small {
+      color: #9ecbd3;
+      font-size: 0.63rem;
+      line-height: 1.35;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     .elo-change-positive { color: #86efac !important; }
     .elo-change-negative { color: #fca5a5 !important; }
     .elo-edge-positive { color: #67e8f9 !important; }
-    .elo-note { color: #c7e8ed; font-size: 0.69rem; line-height: 1.35; }
+    .elo-note {
+      color: #c7e8ed;
+      font-size: 0.69rem;
+      line-height: 1.45;
+      text-align: left;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
     @media (min-width: 721px) {
       #elo-table { min-width: 1120px; table-layout: fixed; }
-      #elo-table th:nth-child(1), #elo-table td:nth-child(1) { width: 11%; }
-      #elo-table th:nth-child(2), #elo-table td:nth-child(2) { width: 15%; }
-      #elo-table th:nth-child(3), #elo-table td:nth-child(3) { width: 10%; }
-      #elo-table th:nth-child(4), #elo-table td:nth-child(4) { width: 11%; }
-      #elo-table th:nth-child(5), #elo-table td:nth-child(5) { width: 11%; }
-      #elo-table th:nth-child(6), #elo-table td:nth-child(6) { width: 11%; }
-      #elo-table th:nth-child(7), #elo-table td:nth-child(7) { width: 23%; }
-      #elo-table th:nth-child(8), #elo-table td:nth-child(8) { width: 8%; }
+      #elo-table th,
+      #elo-table td {
+        vertical-align: middle;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+      #elo-table th:nth-child(1), #elo-table td:nth-child(1) { width: 9%; }
+      #elo-table th:nth-child(2), #elo-table td:nth-child(2) { width: 13%; }
+      #elo-table th:nth-child(3), #elo-table td:nth-child(3) { width: 8%; }
+      #elo-table th:nth-child(4), #elo-table td:nth-child(4) { width: 9%; }
+      #elo-table th:nth-child(5), #elo-table td:nth-child(5) { width: 9%; }
+      #elo-table th:nth-child(6), #elo-table td:nth-child(6) { width: 7%; }
+      #elo-table th:nth-child(7), #elo-table td:nth-child(7) { width: 10%; }
+      #elo-table th:nth-child(8), #elo-table td:nth-child(8) { width: 20%; }
+      #elo-table th:nth-child(9), #elo-table td:nth-child(9) { width: 7%; }
+      #elo-table th:nth-child(10), #elo-table td:nth-child(10) { width: 8%; }
     }
     @media (max-width: 720px) {
       #elo-table.mobile-card-table tbody tr:not(.date-divider) {
@@ -5064,7 +5085,7 @@
           <table id="elo-table" class="elo-table">
             <thead><tr>
               <th>Race</th><th>Horse</th><th>Classic ELO</th><th>Recent Change</th>
-              <th>Classic Price</th><th>Edge / Confidence</th><th>Evidence</th><th>My List</th>
+              <th>Classic Price</th><th>Real Odds</th><th>Edge / Confidence</th><th>Evidence</th><th>Result</th><th>My List</th>
             </tr></thead>
             <tbody></tbody>
           </table>
@@ -7164,6 +7185,9 @@
     const confidence = p5Num(entry?.elo_confidence, 0);
     const marginRuns = p5Num(entry?.elo_margin_runs, 0);
     const weightMarginRuns = p5Num(entry?.elo_weight_margin_runs, 0);
+    const liveResultEntry = findValueResult(entry?.race_datetime, entry?.course, entry?.horse) || entry;
+    const realOdds = liveResultEntry?.bookie_odds ?? liveResultEntry?.real_odds ?? entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const realOddsText = String(realOdds ?? "").trim() || "-";
     const changeClass = recentChange >= 0 ? "elo-change-positive" : "elo-change-negative";
     const edgeClass = edge > 0 ? "elo-edge-positive" : "elo-change-negative";
     const status = entry?.elo_confirmed_shortlist_support
@@ -7182,8 +7206,10 @@
       <td data-label="Classic ELO"><span class="elo-metric"><strong class="elo-rating-pill">${rating.toFixed(0)}</strong><small>Rank ${rank.toFixed(0)}/${field.toFixed(0)} · W+M shadow ${wmRating.toFixed(0)} R${wmRank.toFixed(0)}</small></span></td>
       <td data-label="Recent Change"><span class="elo-metric"><strong class="${changeClass}">${recentChange >= 0 ? "+" : ""}${recentChange.toFixed(1)}</strong><small>Last ${lastChange >= 0 ? "+" : ""}${lastChange.toFixed(1)} · ${runs.toFixed(0)} runs · ${wins.toFixed(0)}W/${places.toFixed(0)}P</small></span></td>
       <td data-label="Classic Price"><span class="elo-metric"><strong>${fairOdds > 0 ? fairOdds.toFixed(2) : "-"}</strong><small>${probability.toFixed(1)}% win · ${marginRuns.toFixed(0)} margin/${weightMarginRuns.toFixed(0)} W+M shadow runs</small></span></td>
+      <td data-label="Real Odds"><span class="elo-metric"><strong>${escHTML(realOddsText)}</strong><small>Current market</small></span></td>
       <td data-label="Edge / Confidence"><span class="elo-metric"><strong class="${edgeClass}">${edge >= 0 ? "+" : ""}${edge.toFixed(1)}pp</strong><small>${confidence.toFixed(0)}% confidence · ${escHTML(status)}</small></span></td>
       <td data-label="Evidence"><div class="elo-note">${escHTML(entry?.racing_reason || entry?.reason || "Independent ELO evidence.")}</div></td>
+      <td data-label="Result">${resultBadgeHTML(liveResultEntry)}</td>
       <td data-label="My List">${myBetButtonHTML(entry, "Horse ELO", entry?.elo_confirmed_shortlist_support ? "ELO Support" : "ELO Watch")}</td>
     </tr>`;
   };
@@ -8625,7 +8651,7 @@ const getShortlistType = (entry) => {
     shortlistDateHeading.textContent = `📅 ${dateLabel}`;
   }
   const machineLearning = buildGroupedRows(machineLearningItems, machineLearningRow, 8);
-  const eloHtml = buildGroupedRows(eloItems, eloRow, 8);
+  const eloHtml = buildGroupedRows(eloItems, eloRow, 10);
   const liveIntel = buildGroupedRows(liveIntelItems, e => shortlistRow(e, "shortlist-row"), 7);
   const multi = buildGroupedRows(multiItems, e => twoLineRow(e, tagSet(e), "multi-tag-row", "Big E/W - EP"), 5);
   const btew = buildGroupedRows(btewItems, e => twoLineRow(e, tagSet(e), "btew-row", e.shortlist_type || "BT E/W"), 5);
@@ -9006,7 +9032,7 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
-  setBody('#elo-table', eloHtml, 8);
+  setBody('#elo-table', eloHtml, 10);
   setBody('#machine-learning-table', machineLearning, 8);
   setBody('#live-intel-table', liveIntel, 7);
   setBody('#wasvalue-table', wasValueHtml, 6);
