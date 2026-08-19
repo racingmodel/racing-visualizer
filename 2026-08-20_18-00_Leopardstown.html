@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="race-data-confidence" content="97.6">
+  <meta name="race-runner-count" content="21">
+  <meta name="race-estimated-places" content="5">
+  <title>Unio Employee Benefits Handicap</title>
+  <style>
+    :root {
+      --ink: #142033; --muted: #607089; --line: #dfe5ec; --panel: #ffffff;
+      --navy: #13243c; --navy-2: #203858; --gold: #d6a800; --green: #087a45;
+      --red: #b42318; --blue: #0b67a3; --soft: #f3f6f9; --shadow: 0 12px 34px rgba(18,36,60,.10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: linear-gradient(180deg,#edf2f6 0,#f8fafc 300px);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .race-shell { width: min(96vw, 1540px); margin: 0 auto; padding: 18px 0 42px; }
+    .race-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .race-nav a { display: inline-flex; align-items: center; min-height: 42px; padding: 9px 14px; border-radius: 999px;
+      color: #fff; background: var(--navy); text-decoration: none; font-weight: 800; box-shadow: 0 5px 16px rgba(18,36,60,.14); }
+    .race-hero { padding: clamp(18px,3vw,34px); border-radius: 20px; color: #fff;
+      background: radial-gradient(circle at top right,rgba(255,215,0,.22),transparent 28%),linear-gradient(135deg,var(--navy),var(--navy-2));
+      box-shadow: var(--shadow); }
+    h1 { margin: 0; font-size: clamp(1.45rem,3vw,2.35rem); line-height: 1.12; }
+    .race-date { margin-top: 7px; color: #dbe7f6; font-weight: 650; }
+    .race-facts { display: grid; grid-template-columns: repeat(3,minmax(130px,1fr)); gap: 10px; margin-top: 18px; max-width: 620px; }
+    .race-fact { padding: 10px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgba(255,255,255,.09); }
+    .race-fact span { display: block; color: #c9d8eb; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .race-fact strong { display: block; margin-top: 3px; font-size: 1.08rem; }
+    .reader-note { margin: 14px 0; padding: 11px 14px; border-left: 4px solid var(--gold); border-radius: 10px; background: #fff8d8;
+      color: #4e4211; font-size: .9rem; line-height: 1.45; box-shadow: 0 5px 16px rgba(18,36,60,.06); }
+    .model-order-card { margin: 14px 0 16px; border: 1px solid #cfd9e4; border-radius: 18px; overflow: hidden; background: #fff;
+      box-shadow: var(--shadow); }
+    .model-order-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 15px 18px 13px;
+      color: #fff; background: linear-gradient(135deg,var(--navy),var(--navy-2)); }
+    .model-order-heading h2 { margin: 2px 0 0; font-size: clamp(1.15rem,2vw,1.55rem); line-height: 1.15; }
+    .model-order-kicker { color: #e9c941; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .model-order-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+    .model-order-heading p { max-width: 570px; margin: 0; color: #dbe7f6; font-size: .82rem; font-weight: 650; line-height: 1.4; text-align: right; }
+    .model-race-replay { display: none; flex: 0 0 auto; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px; color: var(--navy); background: #f3cf45; font: inherit; font-size: .74rem; font-weight: 900; cursor: pointer;
+      box-shadow: 0 3px 9px rgba(0,0,0,.16); }
+    .model-order-card.animation-enabled .model-race-replay { display: inline-flex; align-items: center; justify-content: center; }
+    .model-race-replay:hover, .model-race-replay:focus-visible { background: #ffe477; outline: 3px solid rgba(255,255,255,.65); outline-offset: 2px; }
+    .model-track-scroll { overflow: hidden; }
+    .model-track-scroll-many { max-height: 790px; overflow-y: auto; scrollbar-color: rgba(19,36,60,.45) rgba(255,255,255,.18); }
+    .model-track { position: relative; padding: 14px 0; overflow: hidden; background:
+      linear-gradient(90deg,rgba(255,255,255,.08),transparent 18%,transparent 82%,rgba(255,255,255,.08)),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0,rgba(255,255,255,.045) 1px,transparent 1px,transparent 15px),
+      #56a34f; box-shadow: inset 0 8px 18px rgba(21,74,35,.18), inset 0 -8px 18px rgba(21,74,35,.12); }
+    .model-track::before, .model-track::after { content: ""; position: absolute; z-index: 4; left: 0; right: 0; height: 5px;
+      background: #eef3f7; box-shadow: 0 1px 0 rgba(19,36,60,.28); pointer-events: none; }
+    .model-track::before { top: 0; } .model-track::after { bottom: 0; }
+    .finish-line { position: absolute; z-index: 1; top: 0; bottom: 0; right: 4.5%; width: 7px;
+      background: repeating-linear-gradient(0deg,#fff 0 7px,#172337 7px 14px); box-shadow: 0 0 0 2px rgba(255,255,255,.5); }
+    .finish-line span { position: sticky; z-index: 6; top: 8px; display: block; width: 34px; margin-left: -13px; font-size: 1.55rem;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
+    .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
+    .model-lane:last-child { border-bottom: 0; }
+    .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
+      transform: translateY(-50%); will-change: left; }
+    .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
+      transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
+    .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
+      max-width: min(225px,47vw); padding: 7px 9px 7px 7px; border: 1px solid rgba(19,36,60,.12); border-radius: 10px;
+      color: var(--navy); background: rgba(255,255,255,.97); text-decoration: none; box-shadow: 0 4px 10px rgba(16,46,25,.22); }
+    .runner-card::after { content: ""; position: absolute; top: 50%; right: -7px; width: 12px; height: 12px; background: #fff;
+      border-top: 1px solid rgba(19,36,60,.12); border-right: 1px solid rgba(19,36,60,.12); transform: translateY(-50%) rotate(45deg); }
+    .runner-card:hover, .runner-card:focus-visible { outline: 3px solid #f3d142; outline-offset: 2px; }
+    .runner-rank { position: relative; z-index: 1; flex: 0 0 auto; display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 5px;
+      border-radius: 50%; color: #fff; background: #31435b; font-size: .73rem; font-weight: 950; }
+    .podium-1 .runner-rank { color: #4c3600; background: #f3c63f; } .podium-2 .runner-rank { color: #354052; background: #dce2e8; }
+    .podium-3 .runner-rank { color: #fff; background: #b66a3c; }
+    .runner-copy { min-width: 0; } .runner-copy strong { display: block; overflow-wrap: anywhere; font-size: .9rem; line-height: 1.08; }
+    .runner-numbers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; color: #516075; font-size: .68rem; font-weight: 750; }
+    .runner-numbers span { padding: 2px 5px; border-radius: 5px; background: #edf2f6; white-space: nowrap; }
+    .runner-numbers span:first-child { color: #654c00; background: #fff2b8; } .runner-numbers b { color: inherit; font-weight: 950; }
+    .model-runner.is-selected .runner-card { outline: 4px solid #f3c63f; outline-offset: 2px; }
+    .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
+    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    @keyframes model-runner-race {
+      0%, 5% { left: 6%; }
+      28% { left: var(--race-quarter); }
+      55% { left: var(--race-mid); }
+      82% { left: var(--race-late); }
+      93% { left: var(--race-overshoot); }
+      100% { left: var(--track-position); }
+    }
+    @keyframes model-runner-card-arrival {
+      0%, 58% { opacity: 0; }
+      76%, 100% { opacity: 1; }
+    }
+    @keyframes model-horse-gallop {
+      0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+      50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
+    }
+    .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    #racecard-table { min-width: 1160px; }
+    th { position: sticky; top: 0; z-index: 2; padding: 12px 10px; color: #fff; background: var(--navy); font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .035em; white-space: nowrap; }
+    td { padding: 13px 10px; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; font-size: .88rem; }
+    tbody tr:nth-child(even) { background: #f7f9fb; }
+    tbody tr:hover { background: #fff8d8; }
+    tbody tr:last-child td { border-bottom: 0; }
+    #racecard-table th:nth-child(2), #racecard-table td:nth-child(2) { text-align: left; min-width: 160px; font-weight: 850; }
+    #racecard-table th:nth-child(10), #racecard-table td:nth-child(10) { text-align: left; min-width: 230px; max-width: 330px; }
+    .horse-anchor-target { scroll-margin-top: 95px; font-weight: 850; }
+    .edge-pill { display: inline-flex; min-width: 64px; justify-content: center; padding: 5px 8px; border-radius: 999px; font-weight: 900; }
+    .edge-positive { color: #075b37; background: #d7f5e6; } .edge-negative { color: #8f1d16; background: #ffe0dd; }
+    .edge-neutral { color: #4b5565; background: #e9edf2; }
+    .fit-list { display: grid; grid-template-columns: repeat(2,minmax(54px,1fr)); gap: 5px; min-width: 126px; }
+    .fit-chip { display: inline-flex; gap: 5px; align-items: center; justify-content: center; padding: 5px 6px; border-radius: 8px; white-space: nowrap; font-weight: 800; }
+    .fit-good { color: #087a45; background: #e1f5e9; }
+    .fit-bad { color: #b42318; background: #ffe5e1; }
+    .fit-mixed { color: #7a5700; background: #fff1bd; }
+    .fit-neutral { color: #536176; background: #edf3f8; }
+    .fit-chip b { color: inherit; } .model-view-cell { white-space: normal; line-height: 1.38; color: #3e4c61; }
+    tr.horse-highlight, tr.horse-highlight:nth-child(even) { background: #fff0a8 !important; outline: 3px solid #e0ad00; outline-offset: -3px; }
+    .technical-details { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; overflow: hidden; }
+    .technical-details summary { cursor: pointer; padding: 13px 15px; color: var(--navy); background: #edf3f8; font-weight: 850; }
+    .technical-note { margin: 0; padding: 12px 15px 0; color: var(--muted); font-size: .84rem; }
+    .technical-scroll { overflow-x: auto; padding: 0 14px 14px; }
+    #technical-table { min-width: 4200px; margin-top: 12px; font-size: .76rem; }
+    #technical-table th { position: static; } #technical-table td { padding: 9px 8px; }
+    @media (max-width: 720px) {
+      .race-shell { width: 100%; padding: 10px 10px calc(28px + env(safe-area-inset-bottom)); }
+      .race-nav a { flex: 1 1 140px; justify-content: center; }
+      .race-hero { border-radius: 16px; } .race-facts { grid-template-columns: repeat(3,1fr); gap: 6px; }
+      .race-fact { padding: 8px; } .race-fact strong { font-size: .94rem; }
+      .model-order-card { border-radius: 15px; }
+      .model-order-heading { display: block; padding: 13px 14px 12px; }
+      .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+      .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
+      .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
+      .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
+      .runner-numbers { gap: 3px; font-size: .61rem; } .runner-numbers span { padding: 2px 4px; }
+      .runner-horse { margin-left: 4px; font-size: 1.95rem; } .finish-line { right: 4%; }
+      .table-shell { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+      #racecard-table, #racecard-table tbody { display: block; min-width: 0; background: transparent; }
+      #racecard-table thead { display: none; }
+      #racecard-table tr { display: block; margin-bottom: 12px; border: 1px solid var(--line); border-left: 5px solid var(--gold);
+        border-radius: 14px; overflow: hidden; background: #fff !important; box-shadow: 0 8px 22px rgba(18,36,60,.09); }
+      #racecard-table td { display: grid; grid-template-columns: minmax(106px,38%) 1fr; gap: 9px; align-items: center; width: 100%; min-width: 0 !important;
+        max-width: none !important; padding: 9px 11px; text-align: left !important; border-bottom: 1px solid #edf0f3; white-space: normal; }
+      #racecard-table td::before { content: attr(data-label); color: var(--muted); font-size: .69rem; font-weight: 850; text-transform: uppercase; letter-spacing: .035em; }
+      #racecard-table td:nth-child(2) { font-size: 1.02rem; color: var(--navy); }
+      #racecard-table td:last-child { border-bottom: 0; }
+      .fit-list { min-width: 0; max-width: 190px; }
+      .technical-details { margin-top: 12px; }
+    }
+    @media (max-width: 390px) {
+      .race-facts { grid-template-columns: 1fr; }
+      #racecard-table td { grid-template-columns: 96px 1fr; padding-left: 9px; padding-right: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
+      .model-order-card.animation-enabled .model-race-replay { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="race-shell">
+    <nav class="race-nav" aria-label="Racecard navigation">
+      <a href="index.html">← All races</a><a href="value.html">⭐ Today’s best bets</a>
+    </nav>
+    <header class="race-hero" data-race-confidence="97.6" data-runner-count="21" data-estimated-places="5">
+      <h1>Unio Employee Benefits Handicap</h1>
+      <div class="race-date">20/08/2026</div>
+      <div class="race-facts">
+        <div class="race-fact"><span>Data confidence</span><strong>97.6%</strong></div>
+        <div class="race-fact"><span>Runners</span><strong>21</strong></div>
+        <div class="race-fact"><span>Estimated places</span><strong>5</strong></div>
+      </div>
+    </header>
+    <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll model-track-scroll-many"><div class="model-track" role="list" aria-label="Model ranking of 21 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="jazzit" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="19"><a class="runner-card" href="#horse-jazzit" aria-label="1st: Jazzit"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Jazzit</strong><span class="runner-numbers"><span>Real <b>9.00</b></span><span>Score <b>580</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="bear-right" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="11"><a class="runner-card" href="#horse-bear-right" aria-label="2nd: Bear Right"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Bear Right</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>580</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="brains" style="--track-position:81.81%;--race-quarter:24.95%;--race-mid:47.70%;--race-late:72.71%;--race-overshoot:82.36%" data-cloth="16"><a class="runner-card" href="#horse-brains" aria-label="3rd: Brains"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Brains</strong><span class="runner-numbers"><span>Real <b>19.00</b></span><span>Score <b>547</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="zheleznaya-dama" style="--track-position:79.49%;--race-quarter:24.37%;--race-mid:46.42%;--race-late:70.67%;--race-overshoot:80.04%" data-cloth="13"><a class="runner-card" href="#horse-zheleznaya-dama" aria-label="4th: Zheleznaya Dama"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Zheleznaya Dama</strong><span class="runner-numbers"><span>Real <b>8.50</b></span><span>Score <b>512</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="faoladh" style="--track-position:75.11%;--race-quarter:23.28%;--race-mid:44.01%;--race-late:66.81%;--race-overshoot:75.66%" data-cloth="1"><a class="runner-card" href="#horse-faoladh" aria-label="5th: Faoladh"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Faoladh</strong><span class="runner-numbers"><span>Real <b>6.50</b></span><span>Score <b>446</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="la-la-lucrative" style="--track-position:74.31%;--race-quarter:23.08%;--race-mid:43.57%;--race-late:66.11%;--race-overshoot:74.86%" data-cloth="5"><a class="runner-card" href="#horse-la-la-lucrative" aria-label="6th: La La Lucrative"><span class="runner-rank">6th</span><span class="runner-copy"><strong>La La Lucrative</strong><span class="runner-numbers"><span>Real <b>12.00</b></span><span>Score <b>434</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="altimara" style="--track-position:73.58%;--race-quarter:22.90%;--race-mid:43.17%;--race-late:65.47%;--race-overshoot:74.13%" data-cloth="2"><a class="runner-card" href="#horse-altimara" aria-label="7th: Altimara"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Altimara</strong><span class="runner-numbers"><span>Real <b>9.00</b></span><span>Score <b>423</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="kc-bear" style="--track-position:71.66%;--race-quarter:22.41%;--race-mid:42.11%;--race-late:63.78%;--race-overshoot:72.21%" data-cloth="12"><a class="runner-card" href="#horse-kc-bear" aria-label="8th: Kc Bear"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Kc Bear</strong><span class="runner-numbers"><span>Real <b>15.00</b></span><span>Score <b>394</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="rappell" style="--track-position:71.19%;--race-quarter:22.30%;--race-mid:41.86%;--race-late:63.37%;--race-overshoot:71.74%" data-cloth="4"><a class="runner-card" href="#horse-rappell" aria-label="9th: Rappell"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Rappell</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>387</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="mr-perth" style="--track-position:70.00%;--race-quarter:22.00%;--race-mid:41.20%;--race-late:62.32%;--race-overshoot:70.55%" data-cloth="10"><a class="runner-card" href="#horse-mr-perth" aria-label="10th: Mr Perth"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Mr Perth</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>369</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="oppenheimer" style="--track-position:69.14%;--race-quarter:21.78%;--race-mid:40.72%;--race-late:61.56%;--race-overshoot:69.69%" data-cloth="18"><a class="runner-card" href="#horse-oppenheimer" aria-label="11th: Oppenheimer"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Oppenheimer</strong><span class="runner-numbers"><span>Real <b>8.50</b></span><span>Score <b>356</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="sporting-hero" style="--track-position:61.64%;--race-quarter:19.91%;--race-mid:36.60%;--race-late:54.96%;--race-overshoot:62.19%" data-cloth="21"><a class="runner-card" href="#horse-sporting-hero" aria-label="12th: Sporting Hero"><span class="runner-rank">12th</span><span class="runner-copy"><strong>Sporting Hero</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>243</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="ballymagreehan" style="--track-position:61.50%;--race-quarter:19.88%;--race-mid:36.53%;--race-late:54.84%;--race-overshoot:62.05%" data-cloth="8"><a class="runner-card" href="#horse-ballymagreehan" aria-label="13th: Ballymagreehan"><span class="runner-rank">13th</span><span class="runner-copy"><strong>Ballymagreehan</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>241</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="free-solo" style="--track-position:60.31%;--race-quarter:19.58%;--race-mid:35.87%;--race-late:53.79%;--race-overshoot:60.86%" data-cloth="7"><a class="runner-card" href="#horse-free-solo" aria-label="14th: Free Solo"><span class="runner-rank">14th</span><span class="runner-copy"><strong>Free Solo</strong><span class="runner-numbers"><span>Real <b>29.00</b></span><span>Score <b>223</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="all-hail" style="--track-position:57.65%;--race-quarter:18.91%;--race-mid:34.41%;--race-late:51.46%;--race-overshoot:58.20%" data-cloth="6"><a class="runner-card" href="#horse-all-hail" aria-label="15th: All Hail"><span class="runner-rank">15th</span><span class="runner-copy"><strong>All Hail</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>183</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="gordon-bennett" style="--track-position:56.26%;--race-quarter:18.57%;--race-mid:33.64%;--race-late:50.23%;--race-overshoot:56.81%" data-cloth="17"><a class="runner-card" href="#horse-gordon-bennett" aria-label="16th: Gordon Bennett"><span class="runner-rank">16th</span><span class="runner-copy"><strong>Gordon Bennett</strong><span class="runner-numbers"><span>Real <b>29.00</b></span><span>Score <b>162</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="hazrama" style="--track-position:55.66%;--race-quarter:18.42%;--race-mid:33.31%;--race-late:49.70%;--race-overshoot:56.21%" data-cloth="14"><a class="runner-card" href="#horse-hazrama" aria-label="17th: Hazrama"><span class="runner-rank">17th</span><span class="runner-copy"><strong>Hazrama</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>153</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="ninth-crusade" style="--track-position:55.60%;--race-quarter:18.40%;--race-mid:33.28%;--race-late:49.65%;--race-overshoot:56.15%" data-cloth="20"><a class="runner-card" href="#horse-ninth-crusade" aria-label="18th: Ninth Crusade"><span class="runner-rank">18th</span><span class="runner-copy"><strong>Ninth Crusade</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>152</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="naoi" style="--track-position:55.60%;--race-quarter:18.40%;--race-mid:33.28%;--race-late:49.65%;--race-overshoot:56.15%" data-cloth="3"><a class="runner-card" href="#horse-naoi" aria-label="19th: Naoi"><span class="runner-rank">19th</span><span class="runner-copy"><strong>Naoi</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>152</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="phoenix-pairc" style="--track-position:55.46%;--race-quarter:18.37%;--race-mid:33.21%;--race-late:49.53%;--race-overshoot:56.01%" data-cloth="9"><a class="runner-card" href="#horse-phoenix-pairc" aria-label="20th: Phoenix Pairc"><span class="runner-rank">20th</span><span class="runner-copy"><strong>Phoenix Pairc</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>150</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="shamanka" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="15"><a class="runner-card" href="#horse-shamanka" aria-label="21st: Shamanka"><span class="runner-rank">21st</span><span class="runner-copy"><strong>Shamanka</strong><span class="runner-numbers"><span>Real <b>41.00</b></span><span>Score <b>143</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>Market Odds</th>
+      <th>Model Odds</th>
+      <th>Raw Odds</th>
+      <th>Price Edge</th>
+      <th>Model Rating</th>
+      <th>Suitability</th>
+      <th>Place Chance</th>
+      <th>Model View</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>19</td>
+      <td><span id="horse-jazzit" class="horse-anchor-target">Jazzit</span></td>
+      <td>9.00</td>
+      <td>11.45</td>
+      <td>8.36</td>
+      <td><span class="edge-pill edge-negative">-2.4pp</span></td>
+      <td>1st · 580</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>40.1%</td>
+      <td><div class="model-view-cell">🏟️ Leopardstown proven 🧠 Model-history +1% (n=8, avg 6.31) context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td><span id="horse-bear-right" class="horse-anchor-target">Bear Right</span></td>
+      <td>4.50</td>
+      <td>8.43</td>
+      <td>8.38</td>
+      <td><span class="edge-pill edge-negative">-10.4pp</span></td>
+      <td>2nd · 580</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>51.4%</td>
+      <td><div class="model-view-cell">💰 Value · 📘 ATR+ 🏟️ Leopardstown proven 🧠 Model-history +2% (n=10, avg 5.91) context-edge context-fitness context-trip context-connection-risk</div></td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td><span id="horse-brains" class="horse-anchor-target">Brains</span></td>
+      <td>19.00</td>
+      <td>17.19</td>
+      <td>9.75</td>
+      <td><span class="edge-pill edge-positive">+0.6pp</span></td>
+      <td>3rd · 547</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>29.9%</td>
+      <td><div class="model-view-cell">📘 ATR 🧠 Model-history +0% (n=12, avg 4.94) context-trip context-pace-risk</div></td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td><span id="horse-zheleznaya-dama" class="horse-anchor-target">Zheleznaya Dama</span></td>
+      <td>8.50</td>
+      <td>12.98</td>
+      <td>11.43</td>
+      <td><span class="edge-pill edge-negative">-4.1pp</span></td>
+      <td>4th · 512</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>37.1%</td>
+      <td><div class="model-view-cell">📘 ATR 🧠 Model-history +1% (n=7, avg 6.53) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><span id="horse-faoladh" class="horse-anchor-target">Faoladh</span></td>
+      <td>6.50</td>
+      <td>13.33</td>
+      <td>15.50</td>
+      <td><span class="edge-pill edge-negative">-7.9pp</span></td>
+      <td>5th · 446</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>36.8%</td>
+      <td><div class="model-view-cell">💰 Value · 🔻 Badly Handicapped 🧠 Model-history +0% (n=11, avg 4.6) context-trip context-pace-risk</div></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span id="horse-la-la-lucrative" class="horse-anchor-target">La La Lucrative</span></td>
+      <td>12.00</td>
+      <td>17.94</td>
+      <td>16.34</td>
+      <td><span class="edge-pill edge-negative">-2.8pp</span></td>
+      <td>6th · 434</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>28.2%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +2% (n=12, avg 5.51) context-edge context-connection context-fitness context-trip context-pace-risk</div></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span id="horse-altimara" class="horse-anchor-target">Altimara</span></td>
+      <td>9.00</td>
+      <td>16.19</td>
+      <td>17.23</td>
+      <td><span class="edge-pill edge-negative">-4.9pp</span></td>
+      <td>7th · 423</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>31.1%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=6, avg 6.08) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><span id="horse-kc-bear" class="horse-anchor-target">Kc Bear</span></td>
+      <td>15.00</td>
+      <td>21.63</td>
+      <td>19.67</td>
+      <td><span class="edge-pill edge-negative">-2.0pp</span></td>
+      <td>8th · 394</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>23.7%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=8, avg 5.83) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span id="horse-rappell" class="horse-anchor-target">Rappell</span></td>
+      <td>13.00</td>
+      <td>20.61</td>
+      <td>20.29</td>
+      <td><span class="edge-pill edge-negative">-2.8pp</span></td>
+      <td>9th · 387</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>24.9%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +0% (n=13, avg 4.92) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><span id="horse-mr-perth" class="horse-anchor-target">Mr Perth</span></td>
+      <td>5.00</td>
+      <td>13.98</td>
+      <td>21.94</td>
+      <td><span class="edge-pill edge-negative">-12.8pp</span></td>
+      <td>10th · 369</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>35.0%</td>
+      <td><div class="model-view-cell">💰 Value · 🔻 Badly Handicapped 🧠 Model-history +0% (n=4, avg 5.33) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td><span id="horse-oppenheimer" class="horse-anchor-target">Oppenheimer</span></td>
+      <td>8.50</td>
+      <td>18.22</td>
+      <td>23.32</td>
+      <td><span class="edge-pill edge-negative">-6.3pp</span></td>
+      <td>11th · 356</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>27.8%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=5, avg 5.58) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td><span id="horse-sporting-hero" class="horse-anchor-target">Sporting Hero</span></td>
+      <td>21.00</td>
+      <td>34.52</td>
+      <td>38.79</td>
+      <td><span class="edge-pill edge-negative">-1.9pp</span></td>
+      <td>12th · 243</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>16.1%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −1% (n=6, avg 4.17)</div></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><span id="horse-ballymagreehan" class="horse-anchor-target">Ballymagreehan</span></td>
+      <td>17.00</td>
+      <td>31.53</td>
+      <td>39.06</td>
+      <td><span class="edge-pill edge-negative">-2.7pp</span></td>
+      <td>13th · 241</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>17.1%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −2% (n=9, avg 4.77) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><span id="horse-free-solo" class="horse-anchor-target">Free Solo</span></td>
+      <td>29.00</td>
+      <td>41.50</td>
+      <td>42.39</td>
+      <td><span class="edge-pill edge-negative">-1.0pp</span></td>
+      <td>14th · 223</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>13.3%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=11, avg 4.51) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><span id="horse-all-hail" class="horse-anchor-target">All Hail</span></td>
+      <td>26.00</td>
+      <td>42.80</td>
+      <td>50.44</td>
+      <td><span class="edge-pill edge-negative">-1.5pp</span></td>
+      <td>15th · 183</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>12.6%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=5, avg 6.23) context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td><span id="horse-gordon-bennett" class="horse-anchor-target">Gordon Bennett</span></td>
+      <td>29.00</td>
+      <td>46.87</td>
+      <td>55.40</td>
+      <td><span class="edge-pill edge-negative">-1.3pp</span></td>
+      <td>16th · 162</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>11.9%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −1% (n=8, avg 4.44) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td><span id="horse-hazrama" class="horse-anchor-target">Hazrama</span></td>
+      <td>21.00</td>
+      <td>41.28</td>
+      <td>57.44</td>
+      <td><span class="edge-pill edge-negative">-2.3pp</span></td>
+      <td>17th · 153</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>13.3%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=3, avg 3.96) context-risk context-connection-risk context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td><span id="horse-ninth-crusade" class="horse-anchor-target">Ninth Crusade</span></td>
+      <td>17.00</td>
+      <td>37.69</td>
+      <td>57.80</td>
+      <td><span class="edge-pill edge-negative">-3.2pp</span></td>
+      <td>18th · 152</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>14.0%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=4, avg 6.82) context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><span id="horse-naoi" class="horse-anchor-target">Naoi</span></td>
+      <td>21.00</td>
+      <td>41.42</td>
+      <td>57.88</td>
+      <td><span class="edge-pill edge-negative">-2.3pp</span></td>
+      <td>19th · 152</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>13.6%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history −1% (n=1, avg 1.82)</div></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><span id="horse-phoenix-pairc" class="horse-anchor-target">Phoenix Pairc</span></td>
+      <td>23.00</td>
+      <td>43.29</td>
+      <td>58.37</td>
+      <td><span class="edge-pill edge-negative">-2.0pp</span></td>
+      <td>20th · 150</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>12.7%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −1% (n=9, avg 4.61) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td><span id="horse-shamanka" class="horse-anchor-target">Shamanka</span></td>
+      <td>41.00</td>
+      <td>56.65</td>
+      <td>59.97</td>
+      <td><span class="edge-pill edge-negative">-0.7pp</span></td>
+      <td>21st · 143</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>9.7%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +0% (n=3, avg 5.41) context-trip</div></td>
+    </tr>
+  </tbody>
+</table></div>
+    <details class="technical-details">
+      <summary>Advanced model details</summary>
+      <p class="technical-note">Full diagnostic output for deeper auditing. Swipe horizontally on smaller screens.</p>
+      <div class="technical-scroll"><table border="1" class="dataframe technical-table" id="technical-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>🎯 Real Odds</th>
+      <th>Fundamental Odds</th>
+      <th>Fundamental Win %</th>
+      <th>Market Fair Odds</th>
+      <th>Market Anchored Odds</th>
+      <th>Model 100%</th>
+      <th>📉 Raw Odds</th>
+      <th>Model Win %</th>
+      <th>Quote Implied %</th>
+      <th>Market Fair %</th>
+      <th>Model Edge pp</th>
+      <th>Model Edge vs Fair pp</th>
+      <th>Market Overround %</th>
+      <th>Model Fundamental Weight %</th>
+      <th>Model Place %</th>
+      <th>Market Place %</th>
+      <th>Place Edge pp</th>
+      <th>EW EV 1/5</th>
+      <th>Model Book %</th>
+      <th>Raw Book %</th>
+      <th>_model_market_blend_alpha</th>
+      <th>_market_anchor_alpha</th>
+      <th>_race_competitiveness</th>
+      <th>_race_entropy</th>
+      <th>_race_top_gap</th>
+      <th>_model_temperature</th>
+      <th>Estimated Places</th>
+      <th>📈 Score</th>
+      <th>_course_key</th>
+      <th>_course_code</th>
+      <th>_course_surface</th>
+      <th>_course_adjustment_pct</th>
+      <th>_course_track_bias_pct</th>
+      <th>_course_profile_version</th>
+      <th>Pre-Context Composite Score</th>
+      <th>World Context Adjustment %</th>
+      <th>World Context Score Delta</th>
+      <th>World Context Confidence</th>
+      <th>World Context Positive Families</th>
+      <th>World Context Negative Families</th>
+      <th>World Context Evidence</th>
+      <th>World Context Version</th>
+      <th>Trip Fit %</th>
+      <th>Trip Confidence %</th>
+      <th>Trip Evidence Runs</th>
+      <th>Trip Delta Furlongs</th>
+      <th>Pace Setup Fit</th>
+      <th>Race Pace Pressure</th>
+      <th>Fresh/Second-Up Edge</th>
+      <th>Connection Edge</th>
+      <th>Previous Run Reliability %</th>
+      <th>Ordinal Rank Zone</th>
+      <th>Ordinal Rank Score</th>
+      <th>Leader Profile</th>
+      <th>Place Profile</th>
+      <th>Ordinal Uncertainty</th>
+      <th>Sleeper Score</th>
+      <th>Sleeper Confidence</th>
+      <th>Sleeper Evidence</th>
+      <th>Sleeper Plot Watch</th>
+      <th>Sleeper Best Match</th>
+      <th>Sleeper Reason Codes</th>
+      <th>Sleeper Mark Advantage</th>
+      <th>Sleeper Engine Version</th>
+      <th>Going</th>
+      <th>Distance</th>
+      <th>Class</th>
+      <th>Form</th>
+      <th>ATR</th>
+      <th>ATR Adj</th>
+      <th>ATR Pick</th>
+      <th>💰 Value</th>
+      <th>🔖 Tags</th>
+      <th>_data_coverage</th>
+      <th>model_version</th>
+      <th>policy_version</th>
+      <th>run_id</th>
+      <th>run_ts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>19</td>
+      <td>Jazzit</td>
+      <td>9.00</td>
+      <td>9.29</td>
+      <td>10.76</td>
+      <td>15.74</td>
+      <td>14.38</td>
+      <td>11.45</td>
+      <td>8.36</td>
+      <td>8.73</td>
+      <td>11.11</td>
+      <td>6.35</td>
+      <td>-2.38</td>
+      <td>2.38</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>40.08</td>
+      <td>32.42</td>
+      <td>7.67</td>
+      <td>-0.172</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>580</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.554</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>580.282390</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>69.230769</td>
+      <td></td>
+      <td>fitness</td>
+      <td>fresh-yard A/E edge -0.034 (125)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>84.790567</td>
+      <td>100.000000</td>
+      <td>12.0</td>
+      <td>1.148863</td>
+      <td>-0.022025</td>
+      <td>1.326714</td>
+      <td>-0.034001</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>90.9</td>
+      <td>67.6</td>
+      <td>81.8</td>
+      <td>19.7</td>
+      <td>52.8</td>
+      <td>Low</td>
+      <td>Historic matching run 2/17 at Leopardstown on 06/08/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. Today's mark is within 1 lb of that proven mark. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '06/08/26', 'course': 'Leopardstown', 'class': None, 'distance': '7f 42y', 'going': 'Good (Good to Firm in places)', 'or': 50.0, 'position': 2, 'runners': 17, 'condition_similarity': 1.0, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, course_return]</td>
+      <td>-1.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🏟️ Leopardstown proven 🧠 Model-history +1% (n=8, avg 6.31) context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Bear Right</td>
+      <td>4.50</td>
+      <td>9.32</td>
+      <td>10.73</td>
+      <td>7.87</td>
+      <td>7.97</td>
+      <td>8.43</td>
+      <td>8.38</td>
+      <td>11.87</td>
+      <td>22.22</td>
+      <td>12.71</td>
+      <td>-10.36</td>
+      <td>-0.84</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>51.36</td>
+      <td>54.18</td>
+      <td>-2.82</td>
+      <td>-0.593</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>580</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.660</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>569.600332</td>
+      <td>1.765058</td>
+      <td>10.053774</td>
+      <td>94.642857</td>
+      <td>fitness,trip</td>
+      <td>connection</td>
+      <td>optimal trip 98%; fresh-yard A/E edge +0.019 (243); rider-yard A/E -0.015 (254)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.507485</td>
+      <td>100.000000</td>
+      <td>11.0</td>
+      <td>-0.449364</td>
+      <td>-0.088345</td>
+      <td>1.326714</td>
+      <td>0.018899</td>
+      <td>-0.014897</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>92.7</td>
+      <td>58.6</td>
+      <td>88.8</td>
+      <td>15.8</td>
+      <td>50.9</td>
+      <td>Low</td>
+      <td>Historic matching run 2/16 at Naas on 03/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is within 1 lb of that proven mark. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '03/08/26', 'course': 'Naas', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 64.0, 'position': 2, 'runners': 16, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark]</td>
+      <td>-1.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 1st pick</td>
+      <td>+4.5%</td>
+      <td>ATR 1</td>
+      <td>✖️</td>
+      <td>📘 ATR+ 🏟️ Leopardstown proven 🧠 Model-history +2% (n=10, avg 5.91) context-edge context-fitness context-trip context-connection-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>Brains</td>
+      <td>19.00</td>
+      <td>10.63</td>
+      <td>9.41</td>
+      <td>33.23</td>
+      <td>27.73</td>
+      <td>17.19</td>
+      <td>9.75</td>
+      <td>5.82</td>
+      <td>5.26</td>
+      <td>3.01</td>
+      <td>0.55</td>
+      <td>2.81</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>29.90</td>
+      <td>16.37</td>
+      <td>13.53</td>
+      <td>0.480</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>547</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.290</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>546.692318</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>70.312500</td>
+      <td>trip</td>
+      <td>pace</td>
+      <td>optimal trip 98%; pace risk -0.48</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.715927</td>
+      <td>100.000000</td>
+      <td>13.0</td>
+      <td>-0.429936</td>
+      <td>-0.481560</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>79.0</td>
+      <td>50.3</td>
+      <td>67.3</td>
+      <td>45.6</td>
+      <td>49.4</td>
+      <td>Low</td>
+      <td>Historic matching run 5/17 at Leopardstown on 06/08/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. Today's mark is 0 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '06/08/26', 'course': 'Leopardstown', 'class': None, 'distance': '7f 42y', 'going': 'Good (Good to Firm in places)', 'or': 56.0, 'position': 5, 'runners': 17, 'condition_similarity': 1.0, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, course_return]</td>
+      <td>0.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR chance</td>
+      <td>+1.0%</td>
+      <td></td>
+      <td></td>
+      <td>📘 ATR 🧠 Model-history +0% (n=12, avg 4.94) context-trip context-pace-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>Zheleznaya Dama</td>
+      <td>8.50</td>
+      <td>12.18</td>
+      <td>8.21</td>
+      <td>14.87</td>
+      <td>14.25</td>
+      <td>12.98</td>
+      <td>11.43</td>
+      <td>7.71</td>
+      <td>11.76</td>
+      <td>6.73</td>
+      <td>-4.06</td>
+      <td>0.98</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>37.07</td>
+      <td>32.67</td>
+      <td>4.40</td>
+      <td>-0.418</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>512</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>512.291832</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>50.875000</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 99%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.374776</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>-0.223998</td>
+      <td>-0.227193</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>81.1</td>
+      <td>41.0</td>
+      <td>79.0</td>
+      <td>41.2</td>
+      <td>38.1</td>
+      <td>Low</td>
+      <td>Historic matching run 1/16 at Naas on 03/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '03/08/26', 'course': 'Naas', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 62.0, 'position': 1, 'runners': 16, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run]</td>
+      <td>-3.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 2nd pick</td>
+      <td>+3.0%</td>
+      <td>ATR 2</td>
+      <td></td>
+      <td>📘 ATR 🧠 Model-history +1% (n=7, avg 6.53) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Faoladh</td>
+      <td>6.50</td>
+      <td>15.84</td>
+      <td>6.31</td>
+      <td>11.37</td>
+      <td>11.79</td>
+      <td>13.33</td>
+      <td>15.50</td>
+      <td>7.50</td>
+      <td>15.38</td>
+      <td>8.80</td>
+      <td>-7.88</td>
+      <td>-1.29</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>36.81</td>
+      <td>41.29</td>
+      <td>-4.48</td>
+      <td>-0.739</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>446</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>445.697757</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>69.230769</td>
+      <td>trip</td>
+      <td>pace</td>
+      <td>optimal trip 94%; pace risk -0.46</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>94.077395</td>
+      <td>100.000000</td>
+      <td>13.0</td>
+      <td>-0.698870</td>
+      <td>-0.455769</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>74.1</td>
+      <td>35.5</td>
+      <td>75.9</td>
+      <td>56.3</td>
+      <td>33.0</td>
+      <td>Low</td>
+      <td>Historic matching run 1/14 at Down Royal on 29/05/26 matched going, distance. 1 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '29/05/26', 'course': 'Down Royal', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 67.0, 'position': 1, 'runners': 14, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, matched_condition_performance_uplift, recent_poor_matching_conditions_penalty]</td>
+      <td>-4.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td>✖️</td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=11, avg 4.6) context-trip context-pace-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>La La Lucrative</td>
+      <td>12.00</td>
+      <td>16.56</td>
+      <td>6.04</td>
+      <td>20.99</td>
+      <td>20.01</td>
+      <td>17.94</td>
+      <td>16.34</td>
+      <td>5.57</td>
+      <td>8.33</td>
+      <td>4.76</td>
+      <td>-2.76</td>
+      <td>0.81</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>28.17</td>
+      <td>25.16</td>
+      <td>3.01</td>
+      <td>-0.430</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>434</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>423.671652</td>
+      <td>2.500000</td>
+      <td>10.591791</td>
+      <td>83.588235</td>
+      <td>connection,fitness,trip</td>
+      <td>pace</td>
+      <td>optimal trip 100%; fresh-yard A/E edge +0.060 (31); rider-yard A/E +0.040 (36); pace risk -0.47</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.997050</td>
+      <td>100.000000</td>
+      <td>15.0</td>
+      <td>0.015363</td>
+      <td>-0.469702</td>
+      <td>1.326714</td>
+      <td>0.059922</td>
+      <td>0.039968</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>68.6</td>
+      <td>38.1</td>
+      <td>67.7</td>
+      <td>68.3</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +2% (n=12, avg 5.51) context-edge context-connection context-fitness context-trip context-pace-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Altimara</td>
+      <td>9.00</td>
+      <td>17.34</td>
+      <td>5.77</td>
+      <td>15.74</td>
+      <td>15.77</td>
+      <td>16.19</td>
+      <td>17.23</td>
+      <td>6.17</td>
+      <td>11.11</td>
+      <td>6.35</td>
+      <td>-4.94</td>
+      <td>-0.18</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>31.07</td>
+      <td>31.77</td>
+      <td>-0.70</td>
+      <td>-0.637</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>423</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>422.575977</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>88.392857</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 99%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.314234</td>
+      <td>100.000000</td>
+      <td>11.0</td>
+      <td>-0.234628</td>
+      <td>-0.021700</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>-0.001772</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>66.9</td>
+      <td>34.6</td>
+      <td>67.6</td>
+      <td>71.9</td>
+      <td>43.3</td>
+      <td>Low</td>
+      <td>Historic matching run 5/16 at Naas on 03/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is 2 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '03/08/26', 'course': 'Naas', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 70.0, 'position': 5, 'runners': 16, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark]</td>
+      <td>2.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 3rd pick</td>
+      <td>+2.0%</td>
+      <td>ATR 3</td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=6, avg 6.08) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>Kc Bear</td>
+      <td>15.00</td>
+      <td>19.41</td>
+      <td>5.15</td>
+      <td>26.23</td>
+      <td>24.78</td>
+      <td>21.63</td>
+      <td>19.67</td>
+      <td>4.62</td>
+      <td>6.67</td>
+      <td>3.81</td>
+      <td>-2.04</td>
+      <td>0.81</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>23.67</td>
+      <td>20.92</td>
+      <td>2.75</td>
+      <td>-0.407</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>394</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>385.475218</td>
+      <td>2.100000</td>
+      <td>8.094980</td>
+      <td>68.181818</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 100%; fresh-yard A/E edge +0.039 (92)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.788061</td>
+      <td>100.000000</td>
+      <td>8.0</td>
+      <td>0.130281</td>
+      <td>0.045019</td>
+      <td>1.326714</td>
+      <td>0.039271</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>60.5</td>
+      <td>30.5</td>
+      <td>60.9</td>
+      <td>85.8</td>
+      <td>55.6</td>
+      <td>Low</td>
+      <td>Historic matching run 4/13 at Fairyhouse on 28/05/26 matched going, distance. 1 newer poor run(s) came under materially different conditions. Today's mark is 0 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '28/05/26', 'course': 'Fairyhouse', 'class': None, 'distance': '7f', 'going': 'Good', 'or': 65.0, 'position': 4, 'runners': 13, 'condition_similarity': 0.7975, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, matched_condition_performance_uplift, proven_or_lower_mark]</td>
+      <td>0.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR beaten far recently</td>
+      <td>-1.2%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=8, avg 5.83) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Rappell</td>
+      <td>13.00</td>
+      <td>19.93</td>
+      <td>5.02</td>
+      <td>22.74</td>
+      <td>22.02</td>
+      <td>20.61</td>
+      <td>20.29</td>
+      <td>4.85</td>
+      <td>7.69</td>
+      <td>4.40</td>
+      <td>-2.84</td>
+      <td>0.45</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>24.88</td>
+      <td>22.80</td>
+      <td>2.07</td>
+      <td>-0.523</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>387</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>386.668164</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>72.678571</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 89%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>89.309483</td>
+      <td>100.000000</td>
+      <td>18.0</td>
+      <td>0.951052</td>
+      <td>-0.082024</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>59.7</td>
+      <td>36.3</td>
+      <td>61.6</td>
+      <td>87.6</td>
+      <td>24.8</td>
+      <td>Low</td>
+      <td>Historic matching run 2/15 at Fairyhouse on 08/07/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '08/07/26', 'course': 'Fairyhouse', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 57.0, 'position': 2, 'runners': 15, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, recent_poor_matching_conditions_penalty]</td>
+      <td>-9.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=13, avg 4.92) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Mr Perth</td>
+      <td>5.00</td>
+      <td>21.30</td>
+      <td>4.70</td>
+      <td>8.74</td>
+      <td>9.85</td>
+      <td>13.98</td>
+      <td>21.94</td>
+      <td>7.15</td>
+      <td>20.00</td>
+      <td>11.44</td>
+      <td>-12.85</td>
+      <td>-4.28</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>35.00</td>
+      <td>51.18</td>
+      <td>-16.18</td>
+      <td>-1.012</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>369</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>369.466584</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>50.660714</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 95%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>94.613302</td>
+      <td>66.666667</td>
+      <td>4.0</td>
+      <td>-0.665565</td>
+      <td>0.140020</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>61.7</td>
+      <td>37.6</td>
+      <td>69.6</td>
+      <td>83.4</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td>✖️</td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=4, avg 5.33) context-trip</td>
+      <td>87.5</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>Oppenheimer</td>
+      <td>8.50</td>
+      <td>22.43</td>
+      <td>4.46</td>
+      <td>14.87</td>
+      <td>15.60</td>
+      <td>18.22</td>
+      <td>23.32</td>
+      <td>5.49</td>
+      <td>11.76</td>
+      <td>6.73</td>
+      <td>-6.28</td>
+      <td>-1.24</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>27.75</td>
+      <td>32.98</td>
+      <td>-5.23</td>
+      <td>-0.840</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>356</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>350.030970</td>
+      <td>1.697181</td>
+      <td>5.940660</td>
+      <td>58.791667</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 95%; fresh-yard A/E edge +0.020 (38)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>94.913965</td>
+      <td>100.000000</td>
+      <td>6.0</td>
+      <td>0.646216</td>
+      <td>-0.073519</td>
+      <td>1.326714</td>
+      <td>0.020019</td>
+      <td>0.000000</td>
+      <td>44.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>56.8</td>
+      <td>24.1</td>
+      <td>64.5</td>
+      <td>93.8</td>
+      <td>39.9</td>
+      <td>Low</td>
+      <td>Historic matching run 4/14 at Gowran Park on 07/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is 1 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '07/08/26', 'course': 'Gowran Park', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': 60.0, 'position': 4, 'runners': 14, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark]</td>
+      <td>1.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=5, avg 5.58) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>21</td>
+      <td>Sporting Hero</td>
+      <td>21.00</td>
+      <td>34.37</td>
+      <td>2.91</td>
+      <td>36.73</td>
+      <td>35.92</td>
+      <td>34.52</td>
+      <td>38.79</td>
+      <td>2.90</td>
+      <td>4.76</td>
+      <td>2.72</td>
+      <td>-1.86</td>
+      <td>0.17</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>16.07</td>
+      <td>15.38</td>
+      <td>0.69</td>
+      <td>-0.588</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>243</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>242.617735</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>49.750000</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>69.625694</td>
+      <td>100.000000</td>
+      <td>19.0</td>
+      <td>1.701850</td>
+      <td>-0.250567</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>36.0</td>
+      <td>14.8</td>
+      <td>40.4</td>
+      <td>60.8</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −1% (n=6, avg 4.17)</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Ballymagreehan</td>
+      <td>17.00</td>
+      <td>34.57</td>
+      <td>2.89</td>
+      <td>29.73</td>
+      <td>30.02</td>
+      <td>31.53</td>
+      <td>39.06</td>
+      <td>3.17</td>
+      <td>5.88</td>
+      <td>3.36</td>
+      <td>-2.71</td>
+      <td>-0.19</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>17.08</td>
+      <td>18.03</td>
+      <td>-0.95</td>
+      <td>-0.743</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>241</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>237.034074</td>
+      <td>1.702695</td>
+      <td>4.035967</td>
+      <td>89.500000</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 96%; fresh-yard A/E edge +0.019 (39)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>96.167967</td>
+      <td>100.000000</td>
+      <td>13.0</td>
+      <td>-0.559098</td>
+      <td>-0.225275</td>
+      <td>1.326714</td>
+      <td>0.018624</td>
+      <td>-0.002131</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>38.4</td>
+      <td>14.7</td>
+      <td>46.8</td>
+      <td>66.2</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −2% (n=9, avg 4.77) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Free Solo</td>
+      <td>29.00</td>
+      <td>36.99</td>
+      <td>2.70</td>
+      <td>50.72</td>
+      <td>47.80</td>
+      <td>41.50</td>
+      <td>42.39</td>
+      <td>2.41</td>
+      <td>3.45</td>
+      <td>1.97</td>
+      <td>-1.04</td>
+      <td>0.44</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>13.34</td>
+      <td>10.97</td>
+      <td>2.37</td>
+      <td>-0.421</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>223</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.290</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>222.607327</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>61.713235</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 97%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.357045</td>
+      <td>100.000000</td>
+      <td>14.0</td>
+      <td>-0.462905</td>
+      <td>-0.135196</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>26.1</td>
+      <td>17.0</td>
+      <td>27.4</td>
+      <td>39.4</td>
+      <td>32.7</td>
+      <td>Low</td>
+      <td>Historic matching run 5/15 at Leopardstown on 18/06/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. Today's mark is 3 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '18/06/26', 'course': 'Leopardstown', 'class': None, 'distance': '7f 45y', 'going': 'Good (Good to Firm in places)', 'or': 66.0, 'position': 5, 'runners': 15, 'condition_similarity': 1.0, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, course_return, recent_poor_matching_conditions_penalty]</td>
+      <td>3.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=11, avg 4.51) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>All Hail</td>
+      <td>26.00</td>
+      <td>42.66</td>
+      <td>2.34</td>
+      <td>45.47</td>
+      <td>44.48</td>
+      <td>42.80</td>
+      <td>50.44</td>
+      <td>2.34</td>
+      <td>3.85</td>
+      <td>2.20</td>
+      <td>-1.51</td>
+      <td>0.14</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>12.56</td>
+      <td>12.97</td>
+      <td>-0.41</td>
+      <td>-0.639</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>183</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>183.124184</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>62.750000</td>
+      <td></td>
+      <td>fitness</td>
+      <td>fresh-yard A/E edge -0.030 (38)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>82.947160</td>
+      <td>83.333333</td>
+      <td>5.0</td>
+      <td>1.223001</td>
+      <td>-0.155246</td>
+      <td>1.326714</td>
+      <td>-0.029915</td>
+      <td>-0.001471</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>21.8</td>
+      <td>6.5</td>
+      <td>26.1</td>
+      <td>36.1</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=5, avg 6.23) context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Gordon Bennett</td>
+      <td>29.00</td>
+      <td>46.05</td>
+      <td>2.17</td>
+      <td>50.72</td>
+      <td>49.38</td>
+      <td>46.87</td>
+      <td>55.40</td>
+      <td>2.13</td>
+      <td>3.45</td>
+      <td>1.97</td>
+      <td>-1.31</td>
+      <td>0.16</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>11.89</td>
+      <td>10.63</td>
+      <td>1.26</td>
+      <td>-0.596</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>162</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>161.612170</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>69.642857</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 93%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>92.552093</td>
+      <td>100.000000</td>
+      <td>11.0</td>
+      <td>0.786885</td>
+      <td>0.173275</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>17.5</td>
+      <td>5.7</td>
+      <td>22.6</td>
+      <td>26.7</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −1% (n=8, avg 4.44) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>Hazrama</td>
+      <td>21.00</td>
+      <td>47.42</td>
+      <td>2.11</td>
+      <td>36.73</td>
+      <td>37.66</td>
+      <td>41.28</td>
+      <td>57.44</td>
+      <td>2.42</td>
+      <td>4.76</td>
+      <td>2.72</td>
+      <td>-2.34</td>
+      <td>-0.30</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>13.30</td>
+      <td>15.32</td>
+      <td>-2.02</td>
+      <td>-0.826</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>153</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>155.328060</td>
+      <td>-1.322223</td>
+      <td>-2.053783</td>
+      <td>71.875000</td>
+      <td></td>
+      <td>connection,fitness</td>
+      <td>fresh-yard A/E edge -0.024 (55); rider-yard A/E -0.021 (103); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.752066</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>-0.140923</td>
+      <td>0.055133</td>
+      <td>1.326714</td>
+      <td>-0.023926</td>
+      <td>-0.021408</td>
+      <td>80.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>21.7</td>
+      <td>11.4</td>
+      <td>32.9</td>
+      <td>29.8</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR no extra ATR beaten far recently</td>
+      <td>-2.4%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=3, avg 3.96) context-risk context-connection-risk context-fitness-risk</td>
+      <td>75.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>20</td>
+      <td>Ninth Crusade</td>
+      <td>17.00</td>
+      <td>47.66</td>
+      <td>2.10</td>
+      <td>29.73</td>
+      <td>31.48</td>
+      <td>37.69</td>
+      <td>57.80</td>
+      <td>2.65</td>
+      <td>5.88</td>
+      <td>3.36</td>
+      <td>-3.23</td>
+      <td>-0.71</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>13.97</td>
+      <td>18.29</td>
+      <td>-4.33</td>
+      <td>-0.962</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>152</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>151.839708</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>56.250000</td>
+      <td></td>
+      <td>fitness</td>
+      <td>second-up A/E edge -0.036 (31)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>72.342119</td>
+      <td>83.333333</td>
+      <td>5.0</td>
+      <td>1.609382</td>
+      <td>-0.096492</td>
+      <td>1.326714</td>
+      <td>-0.035886</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>23.5</td>
+      <td>5.4</td>
+      <td>38.0</td>
+      <td>39.6</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=4, avg 6.82) context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Naoi</td>
+      <td>21.00</td>
+      <td>47.72</td>
+      <td>2.10</td>
+      <td>36.73</td>
+      <td>37.70</td>
+      <td>41.42</td>
+      <td>57.88</td>
+      <td>2.41</td>
+      <td>4.76</td>
+      <td>2.72</td>
+      <td>-2.35</td>
+      <td>-0.31</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>13.64</td>
+      <td>15.51</td>
+      <td>-1.87</td>
+      <td>-0.811</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>152</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>151.523826</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>16.375000</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>91.076056</td>
+      <td>16.666667</td>
+      <td>1.0</td>
+      <td>-0.864755</td>
+      <td>0.027566</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>18.1</td>
+      <td>5.3</td>
+      <td>29.8</td>
+      <td>28.1</td>
+      <td>54.6</td>
+      <td>Low</td>
+      <td>Historic matching run 3/11 at Cork on 06/04/25 matched going, distance. 1 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '06/04/25', 'course': 'Cork', 'class': None, 'distance': '7f', 'going': 'Good (Good to Firm in places)', 'or': None, 'position': 3, 'runners': 11, 'condition_similarity': 0.9375, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, matched_condition_performance_uplift]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR long absence</td>
+      <td>-1.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history −1% (n=1, avg 1.82)</td>
+      <td>87.5</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Phoenix Pairc</td>
+      <td>23.00</td>
+      <td>48.04</td>
+      <td>2.08</td>
+      <td>40.23</td>
+      <td>40.78</td>
+      <td>43.29</td>
+      <td>58.37</td>
+      <td>2.31</td>
+      <td>4.35</td>
+      <td>2.49</td>
+      <td>-2.04</td>
+      <td>-0.18</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>12.68</td>
+      <td>13.29</td>
+      <td>-0.61</td>
+      <td>-0.784</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>150</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>147.191084</td>
+      <td>1.640619</td>
+      <td>2.414845</td>
+      <td>68.750000</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 99%; fresh-yard A/E edge +0.014 (125)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.475026</td>
+      <td>100.000000</td>
+      <td>9.0</td>
+      <td>0.205204</td>
+      <td>-0.259347</td>
+      <td>1.326714</td>
+      <td>0.013769</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>14.1</td>
+      <td>5.3</td>
+      <td>24.1</td>
+      <td>19.3</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −1% (n=9, avg 4.61) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>Shamanka</td>
+      <td>41.00</td>
+      <td>49.10</td>
+      <td>2.04</td>
+      <td>71.71</td>
+      <td>66.96</td>
+      <td>56.65</td>
+      <td>59.97</td>
+      <td>1.77</td>
+      <td>2.44</td>
+      <td>1.39</td>
+      <td>-0.67</td>
+      <td>0.37</td>
+      <td>174.89</td>
+      <td>55.57</td>
+      <td>9.72</td>
+      <td>7.88</td>
+      <td>1.83</td>
+      <td>-0.402</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.555714</td>
+      <td>0.147619</td>
+      <td>0.8039</td>
+      <td>0.8598</td>
+      <td>0.6283</td>
+      <td>1.51117</td>
+      <td>5</td>
+      <td>143</td>
+      <td>leopardstown</td>
+      <td>flat</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>143.332721</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>39.875000</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 89%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>89.441740</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>0.944808</td>
+      <td>-0.220993</td>
+      <td>1.326714</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>6.5</td>
+      <td>8.0</td>
+      <td>12.2</td>
+      <td>6.0</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=3, avg 5.41) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260819_212858</td>
+      <td>2026-08-19 21:28:58</td>
+    </tr>
+  </tbody>
+</table></div>
+    </details>
+  </main>
+  <script>
+    (function () {
+      const modelOrderCard = document.querySelector(".model-order-card");
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let modelRaceTimer = null;
+      let modelRaceStarted = false;
+
+      function finishModelRace() {
+        if (!modelOrderCard) return;
+        modelOrderCard.classList.add("race-finished");
+        modelOrderCard.classList.remove("race-running");
+      }
+
+      function runModelRace() {
+        if (!modelOrderCard || reduceMotion) return;
+        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelOrderCard.classList.remove("race-running", "race-finished");
+        // Force the shared straight-line starting frame before replaying.
+        void modelOrderCard.offsetWidth;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            modelOrderCard.classList.add("race-running");
+            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+          });
+        });
+      }
+
+      if (modelOrderCard && !reduceMotion) {
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        const replayButton = modelOrderCard.querySelector(".model-race-replay");
+        if (replayButton) replayButton.addEventListener("click", runModelRace);
+        const startFirstModelRace = () => {
+          if (modelRaceStarted) return;
+          modelRaceStarted = true;
+          runModelRace();
+        };
+        if ("IntersectionObserver" in window) {
+          const raceObserver = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.18)) {
+              raceObserver.disconnect();
+              startFirstModelRace();
+            }
+          }, {threshold: [0.18]});
+          raceObserver.observe(modelOrderCard);
+        } else {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
+        }
+      }
+
+      const table = document.getElementById("racecard-table");
+      if (table) {
+        const labels = Array.from(table.querySelectorAll("thead th")).map(cell => cell.textContent.trim());
+        table.querySelectorAll("tbody tr").forEach(row => {
+          Array.from(row.children).forEach((cell, index) => cell.setAttribute("data-label", labels[index] || ""));
+        });
+      }
+      function slug(name) {
+        return String(name || "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").replace(/-+$/, "") || "runner";
+      }
+      function highlightHorse() {
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const requested = params.get("horse") || "";
+          const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+          const target = document.getElementById(hash || (requested ? "horse-" + slug(requested) : ""));
+          if (!target) return;
+          document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+          document.querySelectorAll(".model-runner.is-selected").forEach(runner => runner.classList.remove("is-selected"));
+          const row = target.closest("tr");
+          if (row) row.classList.add("horse-highlight");
+          const horseSlug = String(target.id || "").replace(/^horse-/, "");
+          const visualRunner = document.querySelector('.model-runner[data-horse-slug="' + horseSlug + '"]');
+          if (visualRunner) visualRunner.classList.add("is-selected");
+          setTimeout(() => (row || target).scrollIntoView({behavior: "smooth", block: "center"}), 60);
+        } catch (error) {}
+      }
+      highlightHorse();
+      window.addEventListener("hashchange", highlightHorse);
+    })();
+  </script>
+</body>
+</html>
