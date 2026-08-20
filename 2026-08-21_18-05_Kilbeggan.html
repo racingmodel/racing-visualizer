@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="race-data-confidence" content="98.7">
+  <meta name="race-runner-count" content="19">
+  <meta name="race-estimated-places" content="5">
+  <title>Tom Lynam Memorial Handicap Hurdle</title>
+  <style>
+    :root {
+      --ink: #142033; --muted: #607089; --line: #dfe5ec; --panel: #ffffff;
+      --navy: #13243c; --navy-2: #203858; --gold: #d6a800; --green: #087a45;
+      --red: #b42318; --blue: #0b67a3; --soft: #f3f6f9; --shadow: 0 12px 34px rgba(18,36,60,.10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: linear-gradient(180deg,#edf2f6 0,#f8fafc 300px);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .race-shell { width: min(96vw, 1540px); margin: 0 auto; padding: 18px 0 42px; }
+    .race-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .race-nav a { display: inline-flex; align-items: center; min-height: 42px; padding: 9px 14px; border-radius: 999px;
+      color: #fff; background: var(--navy); text-decoration: none; font-weight: 800; box-shadow: 0 5px 16px rgba(18,36,60,.14); }
+    .race-hero { padding: clamp(18px,3vw,34px); border-radius: 20px; color: #fff;
+      background: radial-gradient(circle at top right,rgba(255,215,0,.22),transparent 28%),linear-gradient(135deg,var(--navy),var(--navy-2));
+      box-shadow: var(--shadow); }
+    h1 { margin: 0; font-size: clamp(1.45rem,3vw,2.35rem); line-height: 1.12; }
+    .race-date { margin-top: 7px; color: #dbe7f6; font-weight: 650; }
+    .race-facts { display: grid; grid-template-columns: repeat(3,minmax(130px,1fr)); gap: 10px; margin-top: 18px; max-width: 620px; }
+    .race-fact { padding: 10px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; background: rgba(255,255,255,.09); }
+    .race-fact span { display: block; color: #c9d8eb; font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+    .race-fact strong { display: block; margin-top: 3px; font-size: 1.08rem; }
+    .reader-note { margin: 14px 0; padding: 11px 14px; border-left: 4px solid var(--gold); border-radius: 10px; background: #fff8d8;
+      color: #4e4211; font-size: .9rem; line-height: 1.45; box-shadow: 0 5px 16px rgba(18,36,60,.06); }
+    .model-order-card { margin: 14px 0 16px; border: 1px solid #cfd9e4; border-radius: 18px; overflow: hidden; background: #fff;
+      box-shadow: var(--shadow); }
+    .model-order-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 15px 18px 13px;
+      color: #fff; background: linear-gradient(135deg,var(--navy),var(--navy-2)); }
+    .model-order-heading h2 { margin: 2px 0 0; font-size: clamp(1.15rem,2vw,1.55rem); line-height: 1.15; }
+    .model-order-kicker { color: #e9c941; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .model-order-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+    .model-order-heading p { max-width: 570px; margin: 0; color: #dbe7f6; font-size: .82rem; font-weight: 650; line-height: 1.4; text-align: right; }
+    .model-race-replay { display: none; flex: 0 0 auto; min-height: 36px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px; color: var(--navy); background: #f3cf45; font: inherit; font-size: .74rem; font-weight: 900; cursor: pointer;
+      box-shadow: 0 3px 9px rgba(0,0,0,.16); }
+    .model-order-card.animation-enabled .model-race-replay { display: inline-flex; align-items: center; justify-content: center; }
+    .model-race-replay:hover, .model-race-replay:focus-visible { background: #ffe477; outline: 3px solid rgba(255,255,255,.65); outline-offset: 2px; }
+    .model-track-scroll { overflow: hidden; }
+    .model-track-scroll-many { max-height: 790px; overflow-y: auto; scrollbar-color: rgba(19,36,60,.45) rgba(255,255,255,.18); }
+    .model-track { position: relative; padding: 14px 0; overflow: hidden; background:
+      linear-gradient(90deg,rgba(255,255,255,.08),transparent 18%,transparent 82%,rgba(255,255,255,.08)),
+      repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0,rgba(255,255,255,.045) 1px,transparent 1px,transparent 15px),
+      #56a34f; box-shadow: inset 0 8px 18px rgba(21,74,35,.18), inset 0 -8px 18px rgba(21,74,35,.12); }
+    .model-track::before, .model-track::after { content: ""; position: absolute; z-index: 4; left: 0; right: 0; height: 5px;
+      background: #eef3f7; box-shadow: 0 1px 0 rgba(19,36,60,.28); pointer-events: none; }
+    .model-track::before { top: 0; } .model-track::after { bottom: 0; }
+    .finish-line { position: absolute; z-index: 1; top: 0; bottom: 0; right: 4.5%; width: 7px;
+      background: repeating-linear-gradient(0deg,#fff 0 7px,#172337 7px 14px); box-shadow: 0 0 0 2px rgba(255,255,255,.5); }
+    .finish-line span { position: sticky; z-index: 6; top: 8px; display: block; width: 34px; margin-left: -13px; font-size: 1.55rem;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
+    .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
+    .model-lane:last-child { border-bottom: 0; }
+    .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
+      transform: translateY(-50%); will-change: left; }
+    .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
+      transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
+    .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
+      max-width: min(225px,47vw); padding: 7px 9px 7px 7px; border: 1px solid rgba(19,36,60,.12); border-radius: 10px;
+      color: var(--navy); background: rgba(255,255,255,.97); text-decoration: none; box-shadow: 0 4px 10px rgba(16,46,25,.22); }
+    .runner-card::after { content: ""; position: absolute; top: 50%; right: -7px; width: 12px; height: 12px; background: #fff;
+      border-top: 1px solid rgba(19,36,60,.12); border-right: 1px solid rgba(19,36,60,.12); transform: translateY(-50%) rotate(45deg); }
+    .runner-card:hover, .runner-card:focus-visible { outline: 3px solid #f3d142; outline-offset: 2px; }
+    .runner-rank { position: relative; z-index: 1; flex: 0 0 auto; display: grid; place-items: center; min-width: 36px; height: 36px; padding: 0 5px;
+      border-radius: 50%; color: #fff; background: #31435b; font-size: .73rem; font-weight: 950; }
+    .podium-1 .runner-rank { color: #4c3600; background: #f3c63f; } .podium-2 .runner-rank { color: #354052; background: #dce2e8; }
+    .podium-3 .runner-rank { color: #fff; background: #b66a3c; }
+    .runner-copy { min-width: 0; } .runner-copy strong { display: block; overflow-wrap: anywhere; font-size: .9rem; line-height: 1.08; }
+    .runner-numbers { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; color: #516075; font-size: .68rem; font-weight: 750; }
+    .runner-numbers span { padding: 2px 5px; border-radius: 5px; background: #edf2f6; white-space: nowrap; }
+    .runner-numbers span:first-child { color: #654c00; background: #fff2b8; } .runner-numbers b { color: inherit; font-weight: 950; }
+    .model-runner.is-selected .runner-card { outline: 4px solid #f3c63f; outline-offset: 2px; }
+    .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
+    .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
+    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    @keyframes model-runner-race {
+      0%, 5% { left: 6%; }
+      28% { left: var(--race-quarter); }
+      55% { left: var(--race-mid); }
+      82% { left: var(--race-late); }
+      93% { left: var(--race-overshoot); }
+      100% { left: var(--track-position); }
+    }
+    @keyframes model-runner-card-arrival {
+      0%, 58% { opacity: 0; }
+      76%, 100% { opacity: 1; }
+    }
+    @keyframes model-horse-gallop {
+      0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
+      50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
+    }
+    .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    #racecard-table { min-width: 1160px; }
+    th { position: sticky; top: 0; z-index: 2; padding: 12px 10px; color: #fff; background: var(--navy); font-size: .75rem;
+      text-transform: uppercase; letter-spacing: .035em; white-space: nowrap; }
+    td { padding: 13px 10px; border-bottom: 1px solid var(--line); text-align: center; vertical-align: middle; font-size: .88rem; }
+    tbody tr:nth-child(even) { background: #f7f9fb; }
+    tbody tr:hover { background: #fff8d8; }
+    tbody tr:last-child td { border-bottom: 0; }
+    #racecard-table th:nth-child(2), #racecard-table td:nth-child(2) { text-align: left; min-width: 160px; font-weight: 850; }
+    #racecard-table th:nth-child(10), #racecard-table td:nth-child(10) { text-align: left; min-width: 230px; max-width: 330px; }
+    .horse-anchor-target { scroll-margin-top: 95px; font-weight: 850; }
+    .edge-pill { display: inline-flex; min-width: 64px; justify-content: center; padding: 5px 8px; border-radius: 999px; font-weight: 900; }
+    .edge-positive { color: #075b37; background: #d7f5e6; } .edge-negative { color: #8f1d16; background: #ffe0dd; }
+    .edge-neutral { color: #4b5565; background: #e9edf2; }
+    .fit-list { display: grid; grid-template-columns: repeat(2,minmax(54px,1fr)); gap: 5px; min-width: 126px; }
+    .fit-chip { display: inline-flex; gap: 5px; align-items: center; justify-content: center; padding: 5px 6px; border-radius: 8px; white-space: nowrap; font-weight: 800; }
+    .fit-good { color: #087a45; background: #e1f5e9; }
+    .fit-bad { color: #b42318; background: #ffe5e1; }
+    .fit-mixed { color: #7a5700; background: #fff1bd; }
+    .fit-neutral { color: #536176; background: #edf3f8; }
+    .fit-chip b { color: inherit; } .model-view-cell { white-space: normal; line-height: 1.38; color: #3e4c61; }
+    tr.horse-highlight, tr.horse-highlight:nth-child(even) { background: #fff0a8 !important; outline: 3px solid #e0ad00; outline-offset: -3px; }
+    .technical-details { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fff; overflow: hidden; }
+    .technical-details summary { cursor: pointer; padding: 13px 15px; color: var(--navy); background: #edf3f8; font-weight: 850; }
+    .technical-note { margin: 0; padding: 12px 15px 0; color: var(--muted); font-size: .84rem; }
+    .technical-scroll { overflow-x: auto; padding: 0 14px 14px; }
+    #technical-table { min-width: 4200px; margin-top: 12px; font-size: .76rem; }
+    #technical-table th { position: static; } #technical-table td { padding: 9px 8px; }
+    @media (max-width: 720px) {
+      .race-shell { width: 100%; padding: 10px 10px calc(28px + env(safe-area-inset-bottom)); }
+      .race-nav a { flex: 1 1 140px; justify-content: center; }
+      .race-hero { border-radius: 16px; } .race-facts { grid-template-columns: repeat(3,1fr); gap: 6px; }
+      .race-fact { padding: 8px; } .race-fact strong { font-size: .94rem; }
+      .model-order-card { border-radius: 15px; }
+      .model-order-heading { display: block; padding: 13px 14px 12px; }
+      .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
+      .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
+      .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
+      .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
+      .runner-numbers { gap: 3px; font-size: .61rem; } .runner-numbers span { padding: 2px 4px; }
+      .runner-horse { margin-left: 4px; font-size: 1.95rem; } .finish-line { right: 4%; }
+      .table-shell { overflow: visible; border: 0; background: transparent; box-shadow: none; }
+      #racecard-table, #racecard-table tbody { display: block; min-width: 0; background: transparent; }
+      #racecard-table thead { display: none; }
+      #racecard-table tr { display: block; margin-bottom: 12px; border: 1px solid var(--line); border-left: 5px solid var(--gold);
+        border-radius: 14px; overflow: hidden; background: #fff !important; box-shadow: 0 8px 22px rgba(18,36,60,.09); }
+      #racecard-table td { display: grid; grid-template-columns: minmax(106px,38%) 1fr; gap: 9px; align-items: center; width: 100%; min-width: 0 !important;
+        max-width: none !important; padding: 9px 11px; text-align: left !important; border-bottom: 1px solid #edf0f3; white-space: normal; }
+      #racecard-table td::before { content: attr(data-label); color: var(--muted); font-size: .69rem; font-weight: 850; text-transform: uppercase; letter-spacing: .035em; }
+      #racecard-table td:nth-child(2) { font-size: 1.02rem; color: var(--navy); }
+      #racecard-table td:last-child { border-bottom: 0; }
+      .fit-list { min-width: 0; max-width: 190px; }
+      .technical-details { margin-top: 12px; }
+    }
+    @media (max-width: 390px) {
+      .race-facts { grid-template-columns: 1fr; }
+      #racecard-table td { grid-template-columns: 96px 1fr; padding-left: 9px; padding-right: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
+      .model-order-card.animation-enabled .model-race-replay { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="race-shell">
+    <nav class="race-nav" aria-label="Racecard navigation">
+      <a href="index.html">← All races</a><a href="value.html">⭐ Today’s best bets</a>
+    </nav>
+    <header class="race-hero" data-race-confidence="98.7" data-runner-count="19" data-estimated-places="5">
+      <h1>Tom Lynam Memorial Handicap Hurdle</h1>
+      <div class="race-date">21/08/2026</div>
+      <div class="race-facts">
+        <div class="race-fact"><span>Data confidence</span><strong>98.7%</strong></div>
+        <div class="race-fact"><span>Runners</span><strong>19</strong></div>
+        <div class="race-fact"><span>Estimated places</span><strong>5</strong></div>
+      </div>
+    </header>
+    <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll model-track-scroll-many"><div class="model-track" role="list" aria-label="Model ranking of 19 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="mysilverriverfeale" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="3"><a class="runner-card" href="#horse-mysilverriverfeale" aria-label="1st: Mysilverriverfeale"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Mysilverriverfeale</strong><span class="runner-numbers"><span>Real <b>6.50</b></span><span>Score <b>637</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="blue-reed" style="--track-position:82.43%;--race-quarter:25.11%;--race-mid:48.04%;--race-late:73.26%;--race-overshoot:82.98%" data-cloth="15"><a class="runner-card" href="#horse-blue-reed" aria-label="2nd: Blue Reed"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Blue Reed</strong><span class="runner-numbers"><span>Real <b>7.00</b></span><span>Score <b>611</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="parkgarve" style="--track-position:75.78%;--race-quarter:23.45%;--race-mid:44.38%;--race-late:67.41%;--race-overshoot:76.33%" data-cloth="13"><a class="runner-card" href="#horse-parkgarve" aria-label="3rd: Parkgarve"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Parkgarve</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>501</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="steps-in-the-sand" style="--track-position:74.82%;--race-quarter:23.20%;--race-mid:43.85%;--race-late:66.56%;--race-overshoot:75.37%" data-cloth="18"><a class="runner-card" href="#horse-steps-in-the-sand" aria-label="4th: Steps In The Sand"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Steps In The Sand</strong><span class="runner-numbers"><span>Real <b>7.00</b></span><span>Score <b>485</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="diamond-tipp" style="--track-position:74.09%;--race-quarter:23.02%;--race-mid:43.45%;--race-late:65.92%;--race-overshoot:74.64%" data-cloth="11"><a class="runner-card" href="#horse-diamond-tipp" aria-label="5th: Diamond Tipp"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Diamond Tipp</strong><span class="runner-numbers"><span>Real <b>7.50</b></span><span>Score <b>473</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="emesteraye" style="--track-position:74.03%;--race-quarter:23.01%;--race-mid:43.42%;--race-late:65.87%;--race-overshoot:74.58%" data-cloth="9"><a class="runner-card" href="#horse-emesteraye" aria-label="6th: Emesteraye"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Emesteraye</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>472</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="magic-day" style="--track-position:72.28%;--race-quarter:22.57%;--race-mid:42.45%;--race-late:64.33%;--race-overshoot:72.83%" data-cloth="2"><a class="runner-card" href="#horse-magic-day" aria-label="7th: Magic Day"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Magic Day</strong><span class="runner-numbers"><span>Real <b>7.50</b></span><span>Score <b>443</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="andyourbirdcansing" style="--track-position:71.86%;--race-quarter:22.46%;--race-mid:42.22%;--race-late:63.95%;--race-overshoot:72.41%" data-cloth="19"><a class="runner-card" href="#horse-andyourbirdcansing" aria-label="8th: Andyourbirdcansing"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Andyourbirdcansing</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>436</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="bhean-saibhre" style="--track-position:71.80%;--race-quarter:22.45%;--race-mid:42.19%;--race-late:63.90%;--race-overshoot:72.35%" data-cloth="5"><a class="runner-card" href="#horse-bhean-saibhre" aria-label="9th: Bhean Saibhre"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Bhean Saibhre</strong><span class="runner-numbers"><span>Real <b>12.00</b></span><span>Score <b>435</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="cocovic" style="--track-position:67.63%;--race-quarter:21.41%;--race-mid:39.89%;--race-late:60.23%;--race-overshoot:68.18%" data-cloth="6"><a class="runner-card" href="#horse-cocovic" aria-label="10th: Cocovic"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Cocovic</strong><span class="runner-numbers"><span>Real <b>11.00</b></span><span>Score <b>366</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="pride-of-place" style="--track-position:64.85%;--race-quarter:20.71%;--race-mid:38.37%;--race-late:57.79%;--race-overshoot:65.40%" data-cloth="7"><a class="runner-card" href="#horse-pride-of-place" aria-label="11th: Pride Of Place"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Pride Of Place</strong><span class="runner-numbers"><span>Real <b>6.50</b></span><span>Score <b>320</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="the-monkey-pole" style="--track-position:63.28%;--race-quarter:20.32%;--race-mid:37.50%;--race-late:56.40%;--race-overshoot:63.83%" data-cloth="12"><a class="runner-card" href="#horse-the-monkey-pole" aria-label="12th: The Monkey Pole"><span class="runner-rank">12th</span><span class="runner-copy"><strong>The Monkey Pole</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>294</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="somersby-roost" style="--track-position:62.61%;--race-quarter:20.15%;--race-mid:37.14%;--race-late:55.82%;--race-overshoot:63.16%" data-cloth="4"><a class="runner-card" href="#horse-somersby-roost" aria-label="13th: Somersby Roost"><span class="runner-rank">13th</span><span class="runner-copy"><strong>Somersby Roost</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>283</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="secret-rock" style="--track-position:62.19%;--race-quarter:20.05%;--race-mid:36.90%;--race-late:55.45%;--race-overshoot:62.74%" data-cloth="8"><a class="runner-card" href="#horse-secret-rock" aria-label="14th: Secret Rock"><span class="runner-rank">14th</span><span class="runner-copy"><strong>Secret Rock</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>276</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="malikanna" style="--track-position:60.56%;--race-quarter:19.64%;--race-mid:36.01%;--race-late:54.01%;--race-overshoot:61.11%" data-cloth="14"><a class="runner-card" href="#horse-malikanna" aria-label="15th: Malikanna"><span class="runner-rank">15th</span><span class="runner-copy"><strong>Malikanna</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>249</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="cloonainra" style="--track-position:58.08%;--race-quarter:19.02%;--race-mid:34.64%;--race-late:51.83%;--race-overshoot:58.63%" data-cloth="1"><a class="runner-card" href="#horse-cloonainra" aria-label="16th: Cloonainra"><span class="runner-rank">16th</span><span class="runner-copy"><strong>Cloonainra</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>208</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="solar-generation" style="--track-position:56.99%;--race-quarter:18.75%;--race-mid:34.05%;--race-late:50.87%;--race-overshoot:57.54%" data-cloth="16"><a class="runner-card" href="#horse-solar-generation" aria-label="17th: Solar Generation"><span class="runner-rank">17th</span><span class="runner-copy"><strong>Solar Generation</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>190</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="kome-dans-un-reve" style="--track-position:55.06%;--race-quarter:18.27%;--race-mid:32.98%;--race-late:49.17%;--race-overshoot:55.61%" data-cloth="17"><a class="runner-card" href="#horse-kome-dans-un-reve" aria-label="18th: Kome Dans Un Reve"><span class="runner-rank">18th</span><span class="runner-copy"><strong>Kome Dans Un Reve</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>158</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="paul-collins" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="10"><a class="runner-card" href="#horse-paul-collins" aria-label="19th: Paul Collins"><span class="runner-rank">19th</span><span class="runner-copy"><strong>Paul Collins</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>157</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>Market Odds</th>
+      <th>Model Odds</th>
+      <th>Raw Odds</th>
+      <th>Price Edge</th>
+      <th>Model Rating</th>
+      <th>Suitability</th>
+      <th>Place Chance</th>
+      <th>Model View</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3</td>
+      <td><span id="horse-mysilverriverfeale" class="horse-anchor-target">Mysilverriverfeale</span></td>
+      <td>6.50</td>
+      <td>8.70</td>
+      <td>6.21</td>
+      <td><span class="edge-pill edge-negative">-3.9pp</span></td>
+      <td>1st · 637</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>50.4%</td>
+      <td><div class="model-view-cell">📘 ATR+ 🏟️ Kilbeggan proven 🧠 Model-history +1% (n=7, avg 6.12) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td><span id="horse-blue-reed" class="horse-anchor-target">Blue Reed</span></td>
+      <td>7.00</td>
+      <td>9.60</td>
+      <td>7.11</td>
+      <td><span class="edge-pill edge-negative">-3.9pp</span></td>
+      <td>2nd · 611</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>46.9%</td>
+      <td><div class="model-view-cell">🏟️ Kilbeggan proven 🧠 Model-history +1% (n=12, avg 5.68) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td><span id="horse-parkgarve" class="horse-anchor-target">Parkgarve</span></td>
+      <td>8.00</td>
+      <td>13.45</td>
+      <td>12.57</td>
+      <td><span class="edge-pill edge-negative">-5.1pp</span></td>
+      <td>3rd · 501</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>36.6%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=12, avg 4.28) context-edge context-fitness context-trip</div></td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td><span id="horse-steps-in-the-sand" class="horse-anchor-target">Steps In The Sand</span></td>
+      <td>7.00</td>
+      <td>13.28</td>
+      <td>13.69</td>
+      <td><span class="edge-pill edge-negative">-6.8pp</span></td>
+      <td>4th · 485</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>36.1%</td>
+      <td><div class="model-view-cell">💰 Value · 🔻 Badly Handicapped 🧠 Model-history +1% (n=10, avg 5.66) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td><span id="horse-diamond-tipp" class="horse-anchor-target">Diamond Tipp</span></td>
+      <td>7.50</td>
+      <td>14.07</td>
+      <td>14.55</td>
+      <td><span class="edge-pill edge-negative">-6.2pp</span></td>
+      <td>5th · 473</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>35.5%</td>
+      <td><div class="model-view-cell">💰 Value · 🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=3, avg 5.68) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td><span id="horse-emesteraye" class="horse-anchor-target">Emesteraye</span></td>
+      <td>8.00</td>
+      <td>14.48</td>
+      <td>14.61</td>
+      <td><span class="edge-pill edge-negative">-5.6pp</span></td>
+      <td>6th · 472</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>34.4%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=6, avg 5.6) context-connection</div></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><span id="horse-magic-day" class="horse-anchor-target">Magic Day</span></td>
+      <td>7.50</td>
+      <td>15.17</td>
+      <td>16.96</td>
+      <td><span class="edge-pill edge-negative">-6.7pp</span></td>
+      <td>7th · 443</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>33.5%</td>
+      <td><div class="model-view-cell">💰 Value · 🏟️ Kilbeggan proven 🔻 Badly Handicapped 🧠 Model-history +2% (n=6, avg 5.46) context-edge context-connection context-trip context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td><span id="horse-andyourbirdcansing" class="horse-anchor-target">Andyourbirdcansing</span></td>
+      <td>8.00</td>
+      <td>15.85</td>
+      <td>17.56</td>
+      <td><span class="edge-pill edge-negative">-6.2pp</span></td>
+      <td>8th · 436</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>32.0%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=7, avg 4.41) context-trip context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><span id="horse-bhean-saibhre" class="horse-anchor-target">Bhean Saibhre</span></td>
+      <td>12.00</td>
+      <td>18.78</td>
+      <td>17.64</td>
+      <td><span class="edge-pill edge-negative">-3.0pp</span></td>
+      <td>9th · 435</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>28.0%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +0% (n=10, avg 5.22)</div></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><span id="horse-cocovic" class="horse-anchor-target">Cocovic</span></td>
+      <td>11.00</td>
+      <td>21.52</td>
+      <td>25.14</td>
+      <td><span class="edge-pill edge-negative">-4.4pp</span></td>
+      <td>10th · 366</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>24.0%</td>
+      <td><div class="model-view-cell">🏟️ Kilbeggan proven 🔻 Badly Handicapped 🧠 Model-history +0% (n=5, avg 5.05) context-trip context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><span id="horse-pride-of-place" class="horse-anchor-target">Pride Of Place</span></td>
+      <td>6.50</td>
+      <td>19.38</td>
+      <td>31.73</td>
+      <td><span class="edge-pill edge-negative">-10.2pp</span></td>
+      <td>11th · 320</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>27.0%</td>
+      <td><div class="model-view-cell">💰 Value · ⚠️ One-Dimensional 🏟️ Kilbeggan proven 🧠 Model-history +0% (n=13, avg 5.29) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td><span id="horse-the-monkey-pole" class="horse-anchor-target">The Monkey Pole</span></td>
+      <td>26.00</td>
+      <td>36.47</td>
+      <td>36.04</td>
+      <td><span class="edge-pill edge-negative">-1.1pp</span></td>
+      <td>12th · 294</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>15.2%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +0% (n=7, avg 4.84) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><span id="horse-somersby-roost" class="horse-anchor-target">Somersby Roost</span></td>
+      <td>17.00</td>
+      <td>31.47</td>
+      <td>38.19</td>
+      <td><span class="edge-pill edge-negative">-2.7pp</span></td>
+      <td>13th · 283</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔</span></span></div></td>
+      <td>17.0%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −2% (n=8, avg 4.12) context-edge context-connection context-trip</div></td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td><span id="horse-secret-rock" class="horse-anchor-target">Secret Rock</span></td>
+      <td>26.00</td>
+      <td>38.12</td>
+      <td>39.55</td>
+      <td><span class="edge-pill edge-negative">-1.2pp</span></td>
+      <td>14th · 276</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>14.3%</td>
+      <td><div class="model-view-cell">🏟️ Kilbeggan proven 🔻 Badly Handicapped 📘 ATR 🧠 Model-history −0% (n=3, avg 5.05) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td><span id="horse-malikanna" class="horse-anchor-target">Malikanna</span></td>
+      <td>13.00</td>
+      <td>30.49</td>
+      <td>45.15</td>
+      <td><span class="edge-pill edge-negative">-4.4pp</span></td>
+      <td>15th · 249</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>18.5%</td>
+      <td><div class="model-view-cell">📘 ATR+ 🔻 Badly Handicapped 🧠 Model-history +0% (n=9, avg 5.32) context-fitness</div></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td><span id="horse-cloonainra" class="horse-anchor-target">Cloonainra</span></td>
+      <td>23.00</td>
+      <td>42.37</td>
+      <td>55.21</td>
+      <td><span class="edge-pill edge-negative">-2.0pp</span></td>
+      <td>16th · 208</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>12.8%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +1% (n=8, avg 5.67) context-trip context-fitness-risk</div></td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td><span id="horse-solar-generation" class="horse-anchor-target">Solar Generation</span></td>
+      <td>17.00</td>
+      <td>38.93</td>
+      <td>60.22</td>
+      <td><span class="edge-pill edge-negative">-3.3pp</span></td>
+      <td>17th · 190</td>
+      <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>14.1%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=3, avg 6.96) context-connection</div></td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td><span id="horse-kome-dans-un-reve" class="horse-anchor-target">Kome Dans Un Reve</span></td>
+      <td>21.00</td>
+      <td>45.52</td>
+      <td>70.05</td>
+      <td><span class="edge-pill edge-negative">-2.6pp</span></td>
+      <td>18th · 158</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>12.0%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history −1% (n=4, avg 4.57) context-trip</div></td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td><span id="horse-paul-collins" class="horse-anchor-target">Paul Collins</span></td>
+      <td>23.00</td>
+      <td>47.35</td>
+      <td>70.34</td>
+      <td><span class="edge-pill edge-negative">-2.2pp</span></td>
+      <td>19th · 157</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>11.8%</td>
+      <td><div class="model-view-cell">🔻 Badly Handicapped 🧠 Model-history +0% (n=9, avg 4.77) context-trip context-fitness-risk</div></td>
+    </tr>
+  </tbody>
+</table></div>
+    <details class="technical-details">
+      <summary>Advanced model details</summary>
+      <p class="technical-note">Full diagnostic output for deeper auditing. Swipe horizontally on smaller screens.</p>
+      <div class="technical-scroll"><table border="1" class="dataframe technical-table" id="technical-table">
+  <thead>
+    <tr style="text-align: right;">
+      <th>🎽 No.</th>
+      <th>🏇 Horse Name</th>
+      <th>🎯 Real Odds</th>
+      <th>Fundamental Odds</th>
+      <th>Fundamental Win %</th>
+      <th>Market Fair Odds</th>
+      <th>Market Anchored Odds</th>
+      <th>Model 100%</th>
+      <th>📉 Raw Odds</th>
+      <th>Model Win %</th>
+      <th>Quote Implied %</th>
+      <th>Market Fair %</th>
+      <th>Model Edge pp</th>
+      <th>Model Edge vs Fair pp</th>
+      <th>Market Overround %</th>
+      <th>Model Fundamental Weight %</th>
+      <th>Model Place %</th>
+      <th>Market Place %</th>
+      <th>Place Edge pp</th>
+      <th>EW EV 1/5</th>
+      <th>Model Book %</th>
+      <th>Raw Book %</th>
+      <th>_model_market_blend_alpha</th>
+      <th>_market_anchor_alpha</th>
+      <th>_race_competitiveness</th>
+      <th>_race_entropy</th>
+      <th>_race_top_gap</th>
+      <th>_model_temperature</th>
+      <th>Estimated Places</th>
+      <th>📈 Score</th>
+      <th>_course_key</th>
+      <th>_course_code</th>
+      <th>_course_surface</th>
+      <th>_course_adjustment_pct</th>
+      <th>_course_track_bias_pct</th>
+      <th>_course_profile_version</th>
+      <th>Pre-Context Composite Score</th>
+      <th>World Context Adjustment %</th>
+      <th>World Context Score Delta</th>
+      <th>World Context Confidence</th>
+      <th>World Context Positive Families</th>
+      <th>World Context Negative Families</th>
+      <th>World Context Evidence</th>
+      <th>World Context Version</th>
+      <th>Trip Fit %</th>
+      <th>Trip Confidence %</th>
+      <th>Trip Evidence Runs</th>
+      <th>Trip Delta Furlongs</th>
+      <th>Pace Setup Fit</th>
+      <th>Race Pace Pressure</th>
+      <th>Fresh/Second-Up Edge</th>
+      <th>Connection Edge</th>
+      <th>Previous Run Reliability %</th>
+      <th>Ordinal Rank Zone</th>
+      <th>Ordinal Rank Score</th>
+      <th>Leader Profile</th>
+      <th>Place Profile</th>
+      <th>Ordinal Uncertainty</th>
+      <th>Sleeper Score</th>
+      <th>Sleeper Confidence</th>
+      <th>Sleeper Evidence</th>
+      <th>Sleeper Plot Watch</th>
+      <th>Sleeper Best Match</th>
+      <th>Sleeper Reason Codes</th>
+      <th>Sleeper Mark Advantage</th>
+      <th>Sleeper Engine Version</th>
+      <th>Going</th>
+      <th>Distance</th>
+      <th>Class</th>
+      <th>Form</th>
+      <th>ATR</th>
+      <th>ATR Adj</th>
+      <th>ATR Pick</th>
+      <th>💰 Value</th>
+      <th>🔖 Tags</th>
+      <th>_data_coverage</th>
+      <th>model_version</th>
+      <th>policy_version</th>
+      <th>run_id</th>
+      <th>run_ts</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3</td>
+      <td>Mysilverriverfeale</td>
+      <td>6.50</td>
+      <td>7.20</td>
+      <td>13.89</td>
+      <td>11.80</td>
+      <td>10.88</td>
+      <td>8.70</td>
+      <td>6.21</td>
+      <td>11.50</td>
+      <td>15.38</td>
+      <td>8.47</td>
+      <td>-3.89</td>
+      <td>3.02</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>50.39</td>
+      <td>39.57</td>
+      <td>10.82</td>
+      <td>-0.194</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>637</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.832</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>637.491115</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>58.916667</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 94%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>93.930188</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>-1.061664</td>
+      <td>-0.086741</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>95.5</td>
+      <td>84.6</td>
+      <td>89.6</td>
+      <td>9.9</td>
+      <td>40.0</td>
+      <td>Low</td>
+      <td>Historic matching run 1/15 at Kilbeggan on 24/07/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '24/07/26', 'course': 'Kilbeggan', 'class': None, 'distance': '2m 2f 200y', 'going': 'Good', 'or': 102.0, 'position': 1, 'runners': 15, 'condition_similarity': 1.0, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, course_return]</td>
+      <td>-4.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR progressive ATR strong finish ATR close recent run</td>
+      <td>+4.4%</td>
+      <td></td>
+      <td></td>
+      <td>📘 ATR+ 🏟️ Kilbeggan proven 🧠 Model-history +1% (n=7, avg 6.12) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>Blue Reed</td>
+      <td>7.00</td>
+      <td>8.08</td>
+      <td>12.37</td>
+      <td>12.71</td>
+      <td>11.79</td>
+      <td>9.60</td>
+      <td>7.11</td>
+      <td>10.42</td>
+      <td>14.29</td>
+      <td>7.87</td>
+      <td>-3.86</td>
+      <td>2.55</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>46.87</td>
+      <td>38.20</td>
+      <td>8.67</td>
+      <td>-0.239</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>611</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.990</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>598.995468</td>
+      <td>2.050556</td>
+      <td>12.282736</td>
+      <td>57.312500</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 97%; fresh-yard A/E edge +0.059 (24)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.263892</td>
+      <td>100.000000</td>
+      <td>14.0</td>
+      <td>0.706656</td>
+      <td>-0.227582</td>
+      <td>1.380812</td>
+      <td>0.059462</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R1 Win/Leader</td>
+      <td>88.3</td>
+      <td>50.7</td>
+      <td>83.6</td>
+      <td>25.3</td>
+      <td>38.0</td>
+      <td>Low</td>
+      <td>Historic matching run 1/14 at Kilbeggan on 31/05/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '31/05/26', 'course': 'Kilbeggan', 'class': None, 'distance': '2m 3f 20y', 'going': 'Good to Yielding (Good in places)', 'or': 87.0, 'position': 1, 'runners': 14, 'condition_similarity': 0.86, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, course_return]</td>
+      <td>-8.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🏟️ Kilbeggan proven 🧠 Model-history +1% (n=12, avg 5.68) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>Parkgarve</td>
+      <td>8.00</td>
+      <td>13.07</td>
+      <td>7.65</td>
+      <td>14.52</td>
+      <td>14.18</td>
+      <td>13.45</td>
+      <td>12.57</td>
+      <td>7.44</td>
+      <td>12.50</td>
+      <td>6.89</td>
+      <td>-5.06</td>
+      <td>0.55</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>36.61</td>
+      <td>34.46</td>
+      <td>2.15</td>
+      <td>-0.526</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>501</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>492.801963</td>
+      <td>1.731225</td>
+      <td>8.531512</td>
+      <td>81.458333</td>
+      <td>fitness,trip</td>
+      <td></td>
+      <td>optimal trip 99%; fresh-yard A/E edge +0.017 (61)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>98.988556</td>
+      <td>100.000000</td>
+      <td>15.0</td>
+      <td>-0.427770</td>
+      <td>-0.208939</td>
+      <td>1.380812</td>
+      <td>0.016601</td>
+      <td>0.000000</td>
+      <td>72.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>74.1</td>
+      <td>38.9</td>
+      <td>70.5</td>
+      <td>56.3</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=12, avg 4.28) context-edge context-fitness context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>Steps In The Sand</td>
+      <td>7.00</td>
+      <td>14.04</td>
+      <td>7.12</td>
+      <td>12.71</td>
+      <td>12.80</td>
+      <td>13.28</td>
+      <td>13.69</td>
+      <td>7.53</td>
+      <td>14.29</td>
+      <td>7.87</td>
+      <td>-6.75</td>
+      <td>-0.34</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>36.09</td>
+      <td>37.65</td>
+      <td>-1.56</td>
+      <td>-0.679</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>485</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>484.690974</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>70.833333</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.035 (134)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>78.554002</td>
+      <td>100.000000</td>
+      <td>16.0</td>
+      <td>2.849555</td>
+      <td>-0.104787</td>
+      <td>1.380812</td>
+      <td>0.034605</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>74.3</td>
+      <td>35.3</td>
+      <td>75.6</td>
+      <td>55.8</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td>✖️</td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=10, avg 5.66) context-fitness</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Diamond Tipp</td>
+      <td>7.50</td>
+      <td>14.77</td>
+      <td>6.77</td>
+      <td>13.62</td>
+      <td>13.67</td>
+      <td>14.07</td>
+      <td>14.55</td>
+      <td>7.11</td>
+      <td>13.33</td>
+      <td>7.34</td>
+      <td>-6.23</td>
+      <td>-0.24</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>35.55</td>
+      <td>35.98</td>
+      <td>-0.43</td>
+      <td>-0.649</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>473</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>472.927366</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>70.480769</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 93%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>93.445436</td>
+      <td>100.000000</td>
+      <td>11.0</td>
+      <td>1.104656</td>
+      <td>-0.173097</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>70.0</td>
+      <td>34.9</td>
+      <td>70.0</td>
+      <td>65.2</td>
+      <td>40.2</td>
+      <td>Low</td>
+      <td>Historic matching run 2/18 at Cork on 03/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is 0 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '03/08/26', 'course': 'Cork', 'class': None, 'distance': '2m 2f', 'going': 'Good (Good to Yielding in places)', 'or': 102.0, 'position': 2, 'runners': 18, 'condition_similarity': 0.7188, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark]</td>
+      <td>0.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 2nd pick</td>
+      <td>+3.0%</td>
+      <td>ATR 2</td>
+      <td>✖️</td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +0% (n=3, avg 5.68) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Emesteraye</td>
+      <td>8.00</td>
+      <td>14.82</td>
+      <td>6.75</td>
+      <td>14.52</td>
+      <td>14.45</td>
+      <td>14.48</td>
+      <td>14.61</td>
+      <td>6.91</td>
+      <td>12.50</td>
+      <td>6.89</td>
+      <td>-5.59</td>
+      <td>0.02</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>34.36</td>
+      <td>33.59</td>
+      <td>0.77</td>
+      <td>-0.623</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>472</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>472.109562</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>84.375000</td>
+      <td>connection</td>
+      <td></td>
+      <td>rider-yard A/E +0.013 (53)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>74.353181</td>
+      <td>100.000000</td>
+      <td>6.0</td>
+      <td>2.309586</td>
+      <td>0.080328</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.013102</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>67.2</td>
+      <td>34.9</td>
+      <td>66.4</td>
+      <td>71.4</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 3rd pick</td>
+      <td>+2.0%</td>
+      <td>ATR 3</td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=6, avg 5.6) context-connection</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Magic Day</td>
+      <td>7.50</td>
+      <td>16.79</td>
+      <td>5.96</td>
+      <td>13.62</td>
+      <td>13.93</td>
+      <td>15.17</td>
+      <td>16.96</td>
+      <td>6.59</td>
+      <td>13.33</td>
+      <td>7.34</td>
+      <td>-6.74</td>
+      <td>-0.75</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>33.52</td>
+      <td>35.45</td>
+      <td>-1.92</td>
+      <td>-0.735</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>443</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.832</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>435.297608</td>
+      <td>1.783132</td>
+      <td>7.761930</td>
+      <td>92.500000</td>
+      <td>connection,trip</td>
+      <td>fitness</td>
+      <td>optimal trip 99%; rider-yard A/E +0.022 (353); fresh-yard A/E edge -0.020 (256)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.203052</td>
+      <td>100.000000</td>
+      <td>8.0</td>
+      <td>0.379507</td>
+      <td>-0.172337</td>
+      <td>1.380812</td>
+      <td>-0.019903</td>
+      <td>0.022428</td>
+      <td>72.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>64.5</td>
+      <td>33.9</td>
+      <td>66.4</td>
+      <td>77.2</td>
+      <td>47.9</td>
+      <td>Low</td>
+      <td>Historic matching run 2/10 at Kilbeggan on 24/07/26 matched going, distance, course. 0 newer poor run(s) came under materially different conditions. Today's mark is 0 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '24/07/26', 'course': 'Kilbeggan', 'class': None, 'distance': '2m 2f 200y', 'going': 'Good', 'or': 110.0, 'position': 2, 'runners': 10, 'condition_similarity': 1.0, 'condition_matches': ['going', 'distance', 'course']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, course_return]</td>
+      <td>0.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td>✖️</td>
+      <td>🏟️ Kilbeggan proven 🔻 Badly Handicapped 🧠 Model-history +2% (n=6, avg 5.46) context-edge context-connection context-trip context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>Andyourbirdcansing</td>
+      <td>8.00</td>
+      <td>17.28</td>
+      <td>5.79</td>
+      <td>14.52</td>
+      <td>14.79</td>
+      <td>15.85</td>
+      <td>17.56</td>
+      <td>6.31</td>
+      <td>12.50</td>
+      <td>6.89</td>
+      <td>-6.19</td>
+      <td>-0.58</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>31.98</td>
+      <td>34.15</td>
+      <td>-2.17</td>
+      <td>-0.728</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>436</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>436.269810</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>70.000000</td>
+      <td>trip</td>
+      <td>fitness</td>
+      <td>optimal trip 100%; fresh-yard A/E edge -0.012 (153)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.886086</td>
+      <td>100.000000</td>
+      <td>13.0</td>
+      <td>-0.143235</td>
+      <td>-0.293585</td>
+      <td>1.380812</td>
+      <td>-0.012295</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>61.8</td>
+      <td>33.7</td>
+      <td>64.3</td>
+      <td>83.1</td>
+      <td>24.3</td>
+      <td>Low</td>
+      <td>Historic matching run 5/16 at Clonmel on 14/05/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is within 1 lb of that proven mark. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '14/05/26', 'course': 'Clonmel', 'class': None, 'distance': '2m 3f 116y', 'going': 'Good to Yielding', 'or': 90.0, 'position': 5, 'runners': 16, 'condition_similarity': 0.7188, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, recent_poor_matching_conditions_penalty]</td>
+      <td>-1.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=7, avg 4.41) context-trip context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Bhean Saibhre</td>
+      <td>12.00</td>
+      <td>17.35</td>
+      <td>5.76</td>
+      <td>21.78</td>
+      <td>20.89</td>
+      <td>18.78</td>
+      <td>17.64</td>
+      <td>5.33</td>
+      <td>8.33</td>
+      <td>4.59</td>
+      <td>-3.01</td>
+      <td>0.74</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>28.00</td>
+      <td>23.93</td>
+      <td>4.07</td>
+      <td>-0.465</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>435</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.436</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>435.343089</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>48.250000</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>49.331236</td>
+      <td>100.000000</td>
+      <td>11.0</td>
+      <td>3.709791</td>
+      <td>-0.190056</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>72.0</td>
+      <td>R2 Prominent/Place</td>
+      <td>56.6</td>
+      <td>31.6</td>
+      <td>55.6</td>
+      <td>94.4</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=10, avg 5.22)</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Cocovic</td>
+      <td>11.00</td>
+      <td>23.26</td>
+      <td>4.30</td>
+      <td>19.97</td>
+      <td>20.27</td>
+      <td>21.52</td>
+      <td>25.14</td>
+      <td>4.65</td>
+      <td>9.09</td>
+      <td>5.01</td>
+      <td>-4.44</td>
+      <td>-0.36</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>23.99</td>
+      <td>25.48</td>
+      <td>-1.48</td>
+      <td>-0.769</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>366</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.832</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>365.825854</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>64.375000</td>
+      <td>trip</td>
+      <td>fitness</td>
+      <td>optimal trip 100%; fresh-yard A/E edge -0.024 (77)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.634404</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>-0.256764</td>
+      <td>-0.161443</td>
+      <td>1.380812</td>
+      <td>-0.024259</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>48.9</td>
+      <td>12.2</td>
+      <td>52.0</td>
+      <td>95.0</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🏟️ Kilbeggan proven 🔻 Badly Handicapped 🧠 Model-history +0% (n=5, avg 5.05) context-trip context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>Pride Of Place</td>
+      <td>6.50</td>
+      <td>28.15</td>
+      <td>3.55</td>
+      <td>11.80</td>
+      <td>13.32</td>
+      <td>19.38</td>
+      <td>31.73</td>
+      <td>5.16</td>
+      <td>15.38</td>
+      <td>8.47</td>
+      <td>-10.22</td>
+      <td>-3.31</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>26.96</td>
+      <td>40.72</td>
+      <td>-13.77</td>
+      <td>-1.098</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>320</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.832</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>319.711452</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>61.588235</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.065 (32)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>62.057385</td>
+      <td>100.000000</td>
+      <td>15.0</td>
+      <td>-3.796124</td>
+      <td>-0.170619</td>
+      <td>1.380812</td>
+      <td>0.065291</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>51.4</td>
+      <td>25.6</td>
+      <td>63.5</td>
+      <td>100.0</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td>✖️</td>
+      <td>⚠️ One-Dimensional 🏟️ Kilbeggan proven 🧠 Model-history +0% (n=13, avg 5.29) context-fitness</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>The Monkey Pole</td>
+      <td>26.00</td>
+      <td>31.22</td>
+      <td>3.20</td>
+      <td>47.20</td>
+      <td>44.03</td>
+      <td>36.47</td>
+      <td>36.04</td>
+      <td>2.74</td>
+      <td>3.85</td>
+      <td>2.12</td>
+      <td>-1.10</td>
+      <td>0.62</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>15.24</td>
+      <td>11.84</td>
+      <td>3.40</td>
+      <td>-0.373</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>294</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>294.246858</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>39.541667</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 97%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>97.303994</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>0.701386</td>
+      <td>-0.135328</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>31.0</td>
+      <td>18.8</td>
+      <td>29.9</td>
+      <td>50.0</td>
+      <td>39.1</td>
+      <td>Low</td>
+      <td>Historic matching run 3/18 at Cork on 03/08/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is 2 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '03/08/26', 'course': 'Cork', 'class': None, 'distance': '2m 2f', 'going': 'Good (Good to Yielding in places)', 'or': 104.0, 'position': 3, 'runners': 18, 'condition_similarity': 0.7188, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark]</td>
+      <td>2.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=7, avg 4.84) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Somersby Roost</td>
+      <td>17.00</td>
+      <td>32.72</td>
+      <td>3.06</td>
+      <td>30.86</td>
+      <td>30.88</td>
+      <td>31.47</td>
+      <td>38.19</td>
+      <td>3.18</td>
+      <td>5.88</td>
+      <td>3.24</td>
+      <td>-2.70</td>
+      <td>-0.06</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>17.01</td>
+      <td>16.98</td>
+      <td>0.03</td>
+      <td>-0.745</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>283</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>278.395034</td>
+      <td>1.513263</td>
+      <td>4.212848</td>
+      <td>90.500000</td>
+      <td>connection,trip</td>
+      <td></td>
+      <td>optimal trip 99%; rider-yard A/E +0.012 (118)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.299349</td>
+      <td>100.000000</td>
+      <td>9.0</td>
+      <td>0.355754</td>
+      <td>-0.126443</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.012049</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>34.9</td>
+      <td>15.4</td>
+      <td>40.1</td>
+      <td>58.4</td>
+      <td>32.1</td>
+      <td>Low</td>
+      <td>Historic matching run 1/15 at Cork on 10/05/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '10/05/26', 'course': 'Cork', 'class': None, 'distance': '2m 3f 50y', 'going': 'Good (Good to Yielding in places)', 'or': 98.0, 'position': 1, 'runners': 15, 'condition_similarity': 0.7975, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run]</td>
+      <td>-8.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −2% (n=8, avg 4.12) context-edge context-connection context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Secret Rock</td>
+      <td>26.00</td>
+      <td>33.65</td>
+      <td>2.97</td>
+      <td>47.20</td>
+      <td>44.53</td>
+      <td>38.12</td>
+      <td>39.55</td>
+      <td>2.62</td>
+      <td>3.85</td>
+      <td>2.12</td>
+      <td>-1.22</td>
+      <td>0.50</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>14.32</td>
+      <td>11.76</td>
+      <td>2.57</td>
+      <td>-0.458</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>276</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.832</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>275.610527</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>56.166667</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.059 (24)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>44.162776</td>
+      <td>100.000000</td>
+      <td>7.0</td>
+      <td>4.668511</td>
+      <td>0.083276</td>
+      <td>1.380812</td>
+      <td>0.059462</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>26.5</td>
+      <td>18.1</td>
+      <td>27.0</td>
+      <td>40.2</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR ran to form ATR close recent run</td>
+      <td>+2.0%</td>
+      <td></td>
+      <td></td>
+      <td>🏟️ Kilbeggan proven 🔻 Badly Handicapped 📘 ATR 🧠 Model-history −0% (n=3, avg 5.05) context-fitness</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>Malikanna</td>
+      <td>13.00</td>
+      <td>37.43</td>
+      <td>2.67</td>
+      <td>23.60</td>
+      <td>25.07</td>
+      <td>30.49</td>
+      <td>45.15</td>
+      <td>3.28</td>
+      <td>7.69</td>
+      <td>4.24</td>
+      <td>-4.41</td>
+      <td>-0.96</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>18.46</td>
+      <td>22.05</td>
+      <td>-3.59</td>
+      <td>-0.946</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>249</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>248.823230</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>71.931818</td>
+      <td>fitness</td>
+      <td></td>
+      <td>fresh-yard A/E edge +0.020 (35)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>85.247496</td>
+      <td>100.000000</td>
+      <td>9.0</td>
+      <td>1.694994</td>
+      <td>0.009536</td>
+      <td>1.380812</td>
+      <td>0.019516</td>
+      <td>0.000000</td>
+      <td>72.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>31.4</td>
+      <td>14.2</td>
+      <td>40.7</td>
+      <td>50.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 1st pick</td>
+      <td>+4.5%</td>
+      <td>ATR 1</td>
+      <td></td>
+      <td>📘 ATR+ 🔻 Badly Handicapped 🧠 Model-history +0% (n=9, avg 5.32) context-fitness</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Cloonainra</td>
+      <td>23.00</td>
+      <td>43.90</td>
+      <td>2.28</td>
+      <td>41.75</td>
+      <td>41.73</td>
+      <td>42.37</td>
+      <td>55.21</td>
+      <td>2.36</td>
+      <td>4.35</td>
+      <td>2.39</td>
+      <td>-1.99</td>
+      <td>-0.03</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>12.78</td>
+      <td>12.59</td>
+      <td>0.18</td>
+      <td>-0.767</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>208</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>207.759194</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>68.181818</td>
+      <td>trip</td>
+      <td>fitness</td>
+      <td>optimal trip 99%; fresh-yard A/E edge -0.014 (245)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>98.958548</td>
+      <td>100.000000</td>
+      <td>8.0</td>
+      <td>0.434102</td>
+      <td>-0.087847</td>
+      <td>1.380812</td>
+      <td>-0.014377</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>19.6</td>
+      <td>6.8</td>
+      <td>25.8</td>
+      <td>31.2</td>
+      <td>27.0</td>
+      <td>Low</td>
+      <td>Historic matching run 5/24 at Punchestown on 29/04/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is 7 lb below the mark recorded for that run. The complete Sleeper evidence gate was not reached.</td>
+      <td>False</td>
+      <td>{'date': '29/04/26', 'course': 'Punchestown', 'class': None, 'distance': '2m 3f 58y', 'going': 'Yielding', 'or': 117.0, 'position': 5, 'runners': 24, 'condition_similarity': 0.7975, 'condition_matches': ['going', 'distance']}</td>
+      <td>[historic_matching_good_run, proven_or_lower_mark, recent_poor_matching_conditions_penalty]</td>
+      <td>7.0</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +1% (n=8, avg 5.67) context-trip context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>Solar Generation</td>
+      <td>17.00</td>
+      <td>47.00</td>
+      <td>2.13</td>
+      <td>30.86</td>
+      <td>32.59</td>
+      <td>38.93</td>
+      <td>60.22</td>
+      <td>2.57</td>
+      <td>5.88</td>
+      <td>3.24</td>
+      <td>-3.31</td>
+      <td>-0.67</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>14.14</td>
+      <td>18.08</td>
+      <td>-3.93</td>
+      <td>-0.969</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>190</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.387</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>189.827028</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>39.750000</td>
+      <td>connection</td>
+      <td></td>
+      <td>rider-yard A/E +0.058 (27); positive overlay blocked by low coverage</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>86.002058</td>
+      <td>50.000000</td>
+      <td>3.0</td>
+      <td>1.647538</td>
+      <td>0.049244</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.058176</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>21.8</td>
+      <td>6.2</td>
+      <td>34.1</td>
+      <td>29.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#a020f0;font-weight:bold;"&gt;❔&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR ran to form ATR beaten far recently</td>
+      <td>-0.4%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 📘 ATR 🧠 Model-history +1% (n=3, avg 6.96) context-connection</td>
+      <td>75.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Kome Dans Un Reve</td>
+      <td>21.00</td>
+      <td>52.88</td>
+      <td>1.89</td>
+      <td>38.12</td>
+      <td>39.71</td>
+      <td>45.52</td>
+      <td>70.05</td>
+      <td>2.20</td>
+      <td>4.76</td>
+      <td>2.62</td>
+      <td>-2.57</td>
+      <td>-0.43</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>11.98</td>
+      <td>14.40</td>
+      <td>-2.42</td>
+      <td>-0.940</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>158</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>158.280223</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>31.750000</td>
+      <td>trip</td>
+      <td></td>
+      <td>optimal trip 89%</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>88.643964</td>
+      <td>83.333333</td>
+      <td>5.0</td>
+      <td>1.473011</td>
+      <td>0.076943</td>
+      <td>1.380812</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>14.2</td>
+      <td>5.1</td>
+      <td>24.9</td>
+      <td>19.4</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history −1% (n=4, avg 4.57) context-trip</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Paul Collins</td>
+      <td>23.00</td>
+      <td>53.04</td>
+      <td>1.89</td>
+      <td>41.75</td>
+      <td>42.92</td>
+      <td>47.35</td>
+      <td>70.34</td>
+      <td>2.11</td>
+      <td>4.35</td>
+      <td>2.39</td>
+      <td>-2.24</td>
+      <td>-0.28</td>
+      <td>181.54</td>
+      <td>58.76</td>
+      <td>11.75</td>
+      <td>13.12</td>
+      <td>-1.37</td>
+      <td>-0.880</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.587632</td>
+      <td>0.148684</td>
+      <td>0.5096</td>
+      <td>0.8493</td>
+      <td>26.2129</td>
+      <td>1.44288</td>
+      <td>5</td>
+      <td>157</td>
+      <td>kilbeggan</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.000</td>
+      <td>0.0</td>
+      <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
+      <td>157.421339</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>71.625000</td>
+      <td>trip</td>
+      <td>fitness</td>
+      <td>optimal trip 89%; fresh-yard A/E edge -0.012 (47)</td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>88.753627</td>
+      <td>100.000000</td>
+      <td>12.0</td>
+      <td>-1.465437</td>
+      <td>0.069696</td>
+      <td>1.380812</td>
+      <td>-0.012050</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R4 Weak/Lay</td>
+      <td>10.9</td>
+      <td>5.0</td>
+      <td>20.2</td>
+      <td>12.2</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>No strong historic run matched enough of today's known conditions.</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[no_strong_matching_run]</td>
+      <td>NaN</td>
+      <td>2026.07.17-sleeper-p1.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td></td>
+      <td>+0.0%</td>
+      <td></td>
+      <td></td>
+      <td>🔻 Badly Handicapped 🧠 Model-history +0% (n=9, avg 4.77) context-trip context-fitness-risk</td>
+      <td>100.0</td>
+      <td>2026.08.13-p4.17-classic-elo-primary</td>
+      <td>2026.08.13-p4.17-win-pocket-audit</td>
+      <td>20260820_215247</td>
+      <td>2026-08-20 21:52:47</td>
+    </tr>
+  </tbody>
+</table></div>
+    </details>
+  </main>
+  <script>
+    (function () {
+      const modelOrderCard = document.querySelector(".model-order-card");
+      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let modelRaceTimer = null;
+      let modelRaceStarted = false;
+
+      function finishModelRace() {
+        if (!modelOrderCard) return;
+        modelOrderCard.classList.add("race-finished");
+        modelOrderCard.classList.remove("race-running");
+      }
+
+      function runModelRace() {
+        if (!modelOrderCard || reduceMotion) return;
+        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelOrderCard.classList.remove("race-running", "race-finished");
+        // Force the shared straight-line starting frame before replaying.
+        void modelOrderCard.offsetWidth;
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(() => {
+            modelOrderCard.classList.add("race-running");
+            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+          });
+        });
+      }
+
+      if (modelOrderCard && !reduceMotion) {
+        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        const replayButton = modelOrderCard.querySelector(".model-race-replay");
+        if (replayButton) replayButton.addEventListener("click", runModelRace);
+        const startFirstModelRace = () => {
+          if (modelRaceStarted) return;
+          modelRaceStarted = true;
+          runModelRace();
+        };
+        if ("IntersectionObserver" in window) {
+          const raceObserver = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.18)) {
+              raceObserver.disconnect();
+              startFirstModelRace();
+            }
+          }, {threshold: [0.18]});
+          raceObserver.observe(modelOrderCard);
+        } else {
+          window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
+        }
+      }
+
+      const table = document.getElementById("racecard-table");
+      if (table) {
+        const labels = Array.from(table.querySelectorAll("thead th")).map(cell => cell.textContent.trim());
+        table.querySelectorAll("tbody tr").forEach(row => {
+          Array.from(row.children).forEach((cell, index) => cell.setAttribute("data-label", labels[index] || ""));
+        });
+      }
+      function slug(name) {
+        return String(name || "").toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+/, "").replace(/-+$/, "") || "runner";
+      }
+      function highlightHorse() {
+        try {
+          const params = new URLSearchParams(window.location.search || "");
+          const requested = params.get("horse") || "";
+          const hash = decodeURIComponent((window.location.hash || "").replace(/^#/, ""));
+          const target = document.getElementById(hash || (requested ? "horse-" + slug(requested) : ""));
+          if (!target) return;
+          document.querySelectorAll("tr.horse-highlight").forEach(row => row.classList.remove("horse-highlight"));
+          document.querySelectorAll(".model-runner.is-selected").forEach(runner => runner.classList.remove("is-selected"));
+          const row = target.closest("tr");
+          if (row) row.classList.add("horse-highlight");
+          const horseSlug = String(target.id || "").replace(/^horse-/, "");
+          const visualRunner = document.querySelector('.model-runner[data-horse-slug="' + horseSlug + '"]');
+          if (visualRunner) visualRunner.classList.add("is-selected");
+          setTimeout(() => (row || target).scrollIntoView({behavior: "smooth", block: "center"}), 60);
+        } catch (error) {}
+      }
+      highlightHorse();
+      window.addEventListener("hashchange", highlightHorse);
+    })();
+  </script>
+</body>
+</html>
