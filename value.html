@@ -4845,7 +4845,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Aug 2026, 21:13</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">22 Aug 2026, 22:37</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4983,38 +4983,6 @@
           </table>
         </div>
         <div id="mobile-shortlist-list" class="mobile-shortlist-list" aria-label="Today's mobile bet and lay shortlist"></div>
-      </div>
-    </details>
-
-    <details id="historic-systems-section" class="section-card section-historic-systems">
-      <summary class="section-title">
-        <span class="section-title-left">🏛️ Historic Systems Lab <span id="historic-systems-section-count" class="section-count">0</span></span>
-        <span class="section-chevron">▶</span>
-      </summary>
-      <div class="section-body">
-        <div class="section-note historic-safety-note">
-          Shadow confirmation only. These adapted historic methods can confirm an existing official shortlist runner, but a system-only horse remains research and cannot create, promote or change a bet.
-        </div>
-        <div id="historic-summary-grid" class="historic-summary-grid" aria-live="polite">
-          <div class="historic-summary-card"><span>Status</span><strong>Loading…</strong></div>
-        </div>
-        <div id="historic-training-note" class="historic-training-note"></div>
-
-        <details class="historic-subsection" open>
-          <summary>⭐ Today’s Shortlist Cross-Check <span id="historic-shortlist-count" class="historic-inline-count">0</span></summary>
-          <div class="section-note">Consensus means at least three systems from two independent evidence families. It is a confirmation label, never an automatic betting instruction.</div>
-          <div class="table-wrap">
-            <table id="historic-shortlist-table" class="historic-table">
-              <thead><tr>
-                <th>Race</th><th>Horse</th><th>Official Type</th><th>Market / Model</th>
-                <th>Historic Support</th><th>Families</th><th>Cross-Check</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </details>
-
-        <div id="historic-system-sections" class="historic-system-sections"></div>
       </div>
     </details>
 
@@ -5427,6 +5395,38 @@
         </div>
       </div>
     </details>
+
+    <details id="historic-systems-section" class="section-card section-historic-systems">
+      <summary class="section-title">
+        <span class="section-title-left">🏛️ Historic Systems Lab <span id="historic-systems-section-count" class="section-count">0</span></span>
+        <span class="section-chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="section-note historic-safety-note">
+          Shadow confirmation only. These adapted historic methods can confirm an existing official shortlist runner, but a system-only horse remains research and cannot create, promote or change a bet.
+        </div>
+        <div id="historic-summary-grid" class="historic-summary-grid" aria-live="polite">
+          <div class="historic-summary-card"><span>Status</span><strong>Loading…</strong></div>
+        </div>
+        <div id="historic-training-note" class="historic-training-note"></div>
+
+        <details class="historic-subsection" open>
+          <summary>⭐ Today’s Shortlist Cross-Check <span id="historic-shortlist-count" class="historic-inline-count">0</span></summary>
+          <div class="section-note">Consensus means at least three systems from two independent evidence families. It is a confirmation label, never an automatic betting instruction.</div>
+          <div class="table-wrap">
+            <table id="historic-shortlist-table" class="historic-table">
+              <thead><tr>
+                <th>Race</th><th>Horse</th><th>Official Type</th><th>Market / Model</th>
+                <th>Historic Support</th><th>Families</th><th>Cross-Check</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+
+        <div id="historic-system-sections" class="historic-system-sections"></div>
+      </div>
+    </details>
   </div>
 
   <a class="mobile-mybets-dock" href="#my-bets-section" aria-label="Open My Bets Today">
@@ -5637,11 +5637,16 @@
     return { updated_at: "", summary: {}, rows: [] };
   };
 
+  const ACTIVE_BACKTEST_TYPES = new Set([
+    "Must Win", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
+  ]);
+
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
     if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Strong Win B", "Mid-Price Win"].includes(t)) return "Win";
+    if (t === "Must Win") return "Win";
     return "Other";
   };
 
@@ -5749,7 +5754,7 @@
     const payload = backtestPayload(raw);
     const summary = payload.summary || {};
     const rows = (Array.isArray(payload.rows) ? payload.rows : [])
-      .filter(row => ["Win", "EW", "Lay"].includes(backtestGroupForType(row?.type)));
+      .filter(row => ACTIVE_BACKTEST_TYPES.has(String(row?.type || "").trim()));
     const updatedEl = document.getElementById("backtest-updated");
     const gridEl = document.getElementById("backtest-summary-grid");
     const typeEl = document.getElementById("backtest-type-row");
@@ -5779,9 +5784,6 @@
 
     const groups = summariseBacktestGroups(rows);
     const winA = summariseBacktestTypes(rows, ["Must Win"]);
-    const winB = summariseBacktestTypes(rows, ["Strong Win B"]);
-    const midPriceWin = summariseBacktestTypes(rows, ["Mid-Price Win"]);
-    const longshotEwB = summariseBacktestTypes(rows, ["Longshot BT E/W B"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
@@ -5789,10 +5791,7 @@
       `<span class="backtest-heading-pill"><b>Overall P/L</b> <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`,
       `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
       backtestPillHTML("Must Win A", winA),
-      backtestPillHTML("Strong Win B", winB),
-      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
-      backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
       backtestPillHTML("Place Lay", placeLay)
@@ -5809,10 +5808,7 @@
 
     if (typeEl) typeEl.innerHTML = [
       backtestPillHTML("Must Win A", winA),
-      backtestPillHTML("Strong Win B", winB),
-      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
-      backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
       backtestPillHTML("Place Lay", placeLay)
@@ -8156,7 +8152,8 @@ const getShortlistType = (entry) => {
     ]);
     const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
-    if (["Must Win", "Strong Win B", "Mid-Price Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
+    if (["Strong Win B", "Mid-Price Win"].includes(backendType)) return "";
+    if (["Must Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
       return backendType;
     }
     if (backendType === "Each Way") {
@@ -8205,7 +8202,7 @@ const getShortlistType = (entry) => {
       }
     }
 
-    const backendTypes = new Set(["Place Lay", "Place Lay A", "Must Lay", "Must Lay A", "Value Lay B", "Lay Watch", "Must Win", "Must Win A", "Strong Win B", "Win Value A"]);
+    const backendTypes = new Set(["Place Lay", "Place Lay A", "Must Lay", "Must Lay A", "Value Lay B", "Lay Watch", "Must Win", "Must Win A", "Win Value A"]);
     if (backendTypes.has(backendType)) {
       if (backendType === "Place Lay A") return "Place Lay";
       if (backendType === "Must Lay A") return "Must Lay";
@@ -8422,7 +8419,6 @@ const getShortlistType = (entry) => {
   let ewnotepItems = [];
   let btewItems = [];
   let mustwinItems = [];
-  let midPriceItems = [];
   let strongValueItems = [];
   let winvalueItems = [];
   let rawvItems = [];
@@ -8441,8 +8437,13 @@ const getShortlistType = (entry) => {
     const runs = p5Num(entry?.elo_runs, 0);
     const confidence = p5Num(entry?.elo_confidence, 0);
     const edge = p5Num(entry?.elo_edge_pp, 0);
-    const fairOdds = p5Num(entry?.elo_fair_odds, 0);
+    const fairOdds = p5Num(entry?.elo_classic_fair_odds, p5Num(entry?.elo_fair_odds, 0));
     const marketOdds = p5Num(entry?.bookie_odds, 0);
+    const recentChange = p5Num(entry?.elo_recent_change_3, -Infinity);
+    const meetsUserFloor = (
+      recentChange >= 0 && edge >= 0 && confidence >= 0 &&
+      fairOdds > 1 && marketOdds >= fairOdds
+    );
 
     const confirmedShortlistSupport = entry?.elo_confirmed_shortlist_support === true;
     const qualifiedShadowWatch = (
@@ -8466,7 +8467,7 @@ const getShortlistType = (entry) => {
       marketOdds > 1
     );
 
-    return confirmedShortlistSupport || qualifiedShadowWatch || highConfidenceLeader || strongValue;
+    return meetsUserFloor && (confirmedShortlistSupport || qualifiedShadowWatch || highConfidenceLeader || strongValue);
   };
 
   liveEntries.forEach(entry => {
@@ -8484,8 +8485,6 @@ const getShortlistType = (entry) => {
       shortlist_type: 'Longshot BT E/W B'
     });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
-    if (shortlistType === 'Strong Win B') mustwinItems.push({ ...entry, shortlist_type: 'Strong Win B' });
-    if (shortlistType === 'Mid-Price Win') midPriceItems.push({ ...entry, shortlist_type: 'Mid-Price Win' });
     if (shortlistType === 'Strong Value E/W') strongValueItems.push({ ...entry, shortlist_type: 'Strong Value E/W' });
     if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
@@ -8553,7 +8552,6 @@ const getShortlistType = (entry) => {
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
-    ...midPriceItems,
     ...strongValueItems,
     ...rawlayItems,
     ...placelayItems
@@ -9091,6 +9089,10 @@ const getShortlistType = (entry) => {
   const SIGNATURE_KEY = "racing_shortlist_signature_v2";
   const ALERTS_ON_KEY = "racing_shortlist_alerts_enabled_v2";
   const BASELINE_SET_KEY = "racing_shortlist_baseline_set_v2";
+  const ACTIVE_BACKTEST_TYPES = new Set([
+    "Must Win", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
+  ]);
 
   const normCourse = s => (s || "").toString().trim().toLowerCase();
   const normDT = s => (s || "").toString().trim();
@@ -9215,7 +9217,7 @@ const getShortlistType = (entry) => {
     const t = String(type || "").trim();
     if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Strong Win B", "Mid-Price Win"].includes(t)) return "Win";
+    if (t === "Must Win") return "Win";
     return "Other";
   };
 
@@ -9323,7 +9325,7 @@ const getShortlistType = (entry) => {
     const payload = backtestPayload(raw);
     const summary = payload.summary || {};
     const rows = (Array.isArray(payload.rows) ? payload.rows : [])
-      .filter(row => ["Win", "EW", "Lay"].includes(backtestGroupForType(row?.type)));
+      .filter(row => ACTIVE_BACKTEST_TYPES.has(String(row?.type || "").trim()));
     const updatedEl = document.getElementById("backtest-updated");
     const gridEl = document.getElementById("backtest-summary-grid");
     const typeEl = document.getElementById("backtest-type-row");
@@ -9353,18 +9355,14 @@ const getShortlistType = (entry) => {
 
     const groups = summariseBacktestGroups(rows);
     const winA = summariseBacktestTypes(rows, ["Must Win"]);
-    const winB = summariseBacktestTypes(rows, ["Strong Win B"]);
-    const midPriceWin = summariseBacktestTypes(rows, ["Mid-Price Win"]);
-    const longshotEwB = summariseBacktestTypes(rows, ["Longshot BT E/W B"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
     if (headingPillsEl) headingPillsEl.innerHTML = [
+      `<span class="backtest-heading-pill"><b>Overall P/L</b> <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`,
+      `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
       backtestPillHTML("Must Win A", winA),
-      backtestPillHTML("Strong Win B", winB),
-      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
-      backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
       backtestPillHTML("Place Lay", placeLay)
@@ -9381,10 +9379,7 @@ const getShortlistType = (entry) => {
 
     if (typeEl) typeEl.innerHTML = [
       backtestPillHTML("Must Win A", winA),
-      backtestPillHTML("Strong Win B", winB),
-      backtestPillHTML("Mid-Price Win B", midPriceWin),
       backtestPillHTML("EW", groups.EW),
-      backtestPillHTML("Longshot E/W B", longshotEwB),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
       backtestPillHTML("Place Lay", placeLay)
@@ -10048,6 +10043,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
       ["Big EW - EP", "Big E/W - EP"], ["BT EW", "BT E/W"]
     ]);
     const type = alias.get(raw) || raw;
+    if (["Strong Win B", "Mid-Price Win"].includes(type)) return "";
     const bfTopFinishN = Number(entry?.bf_top_finish_best_n || entry?.bf_top_finish_n || 0);
     const isExtra = epMap.has(raceKey(entry.race_datetime, entry.course)) ||
       (Number.isFinite(bfTopFinishN) && bfTopFinishN > 0);
@@ -10057,7 +10053,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
       if (isExtra) return "Big E/W - EP";
       return "Each Way";
     }
-    if (["Must Win", "Strong Win B", "Mid-Price Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
+    if (["Must Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
       return type;
     }
     if (raw) return "";
