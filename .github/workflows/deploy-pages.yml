@@ -10,6 +10,7 @@ on:
       - 'value.html'
       - 'valueNEW.html'
       - 'racefinder.html'
+      - 'race_lab.html'
       - 'index.html'
       - 'AtoZ.html'
       - '2026-*.html'
@@ -60,6 +61,7 @@ jobs:
           cp -f value.html _site/ 2>/dev/null || true
           cp -f valueNEW.html _site/ 2>/dev/null || true
           cp -f racefinder.html _site/ 2>/dev/null || true
+          cp -f race_lab.html _site/ 2>/dev/null || true
           cp -f index.html _site/ 2>/dev/null || true
           cp -f AtoZ.html _site/ 2>/dev/null || true
           cp -f extra_places.txt _site/ 2>/dev/null || true
@@ -77,23 +79,29 @@ jobs:
 
           touch _site/.nojekyll
 
-          echo "Site artifact contents, first 100 files:"
-          find _site -maxdepth 2 -type f | sort | sed -n '1,100p'
+          echo "Site artifact contents, first 120 files:"
+          find _site -maxdepth 2 -type f | sort | sed -n '1,120p'
 
           echo "Checking required pages were included:"
           test -f _site/index.html
           test -f _site/value.html
           test -f _site/valueNEW.html
           test -f _site/racefinder.html
+          test -f _site/race_lab.html
 
           ls -lh _site/index.html
           ls -lh _site/value.html
           ls -lh _site/valueNEW.html
           ls -lh _site/racefinder.html
+          ls -lh _site/race_lab.html
 
           echo "Checking Race Finder data:"
           test -f _site/race_finder_data.json
           ls -lh _site/race_finder_data.json
+
+          echo "Checking Pace and Scenario Lab data:"
+          test -f _site/race_simulation_insights.json
+          ls -lh _site/race_simulation_insights.json
 
           echo "HTML count:"
           find _site -name "*.html" | wc -l
