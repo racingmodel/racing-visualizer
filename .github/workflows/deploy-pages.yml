@@ -29,9 +29,13 @@ permissions:
   pages: write
   id-token: write
 
+# Only one Pages deployment runs at a time.
+# Do NOT cancel a deployment already in progress.
+# If the model makes several rapid pushes, GitHub will keep the
+# newest pending deployment and run it after the current one.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -43,13 +47,10 @@ jobs:
       url: ${{ steps.deployment_attempt_3.outputs.page_url || steps.deployment_attempt_2.outputs.page_url || steps.deployment_attempt_1.outputs.page_url }}
 
     steps:
-      - name: Settle rapid model pushes
-        run: |
-          echo "Waiting 90 seconds so rapid model file commits can finish..."
-          sleep 90
-
-      - name: Checkout
+      - name: Checkout latest repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Build clean Pages artifact
         run: |
@@ -79,10 +80,16 @@ jobs:
 
           touch _site/.nojekyll
 
+          echo "----------------------------------------"
           echo "Site artifact contents, first 120 files:"
+          echo "----------------------------------------"
           find _site -maxdepth 2 -type f | sort | sed -n '1,120p'
 
+          echo ""
+          echo "----------------------------------------"
           echo "Checking required pages were included:"
+          echo "----------------------------------------"
+
           test -f _site/index.html
           test -f _site/value.html
           test -f _site/valueNEW.html
@@ -95,13 +102,26 @@ jobs:
           ls -lh _site/racefinder.html
           ls -lh _site/race_lab.html
 
+          echo ""
+          echo "----------------------------------------"
           echo "Checking Race Finder data:"
+          echo "----------------------------------------"
+
           test -f _site/race_finder_data.json
           ls -lh _site/race_finder_data.json
 
+          echo ""
+          echo "----------------------------------------"
           echo "Checking Pace and Scenario Lab data:"
+          echo "----------------------------------------"
+
           test -f _site/race_simulation_insights.json
           ls -lh _site/race_simulation_insights.json
+
+          echo ""
+          echo "----------------------------------------"
+          echo "Artifact statistics:"
+          echo "----------------------------------------"
 
           echo "HTML count:"
           find _site -name "*.html" | wc -l
@@ -114,6 +134,9 @@ jobs:
 
           echo "Total artifact size:"
           du -sh _site
+
+          echo ""
+          echo "✅ Clean Pages artifact successfully built."
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -165,6 +188,10 @@ jobs:
       - name: Deployment summary
         if: always()
         run: |
+          echo "=========================================="
+          echo "GitHub Pages Deployment Summary"
+          echo "=========================================="
           echo "Attempt 1: ${{ steps.deployment_attempt_1.outcome }}"
           echo "Attempt 2: ${{ steps.deployment_attempt_2.outcome }}"
           echo "Attempt 3: ${{ steps.deployment_attempt_3.outcome }}"
+          echo "=========================================="
