@@ -4635,9 +4635,11 @@
       }
       .mobile-selection-race {
         display: grid !important;
-        grid-template-columns: auto auto minmax(0,1fr);
-        gap: 9px !important;
+        grid-template-columns: auto auto auto minmax(0,1fr);
+        gap: 7px !important;
+        align-items: center;
       }
+      .mobile-selection-date { color: #b8c1cf; font-size: 0.72rem; white-space: nowrap; }
       .mobile-selection-time,
       .mobile-selection-course,
       .mobile-selection-horse { font-size: 0.95rem !important; }
@@ -4649,6 +4651,25 @@
         overflow: visible !important;
         white-space: normal !important;
         line-height: 1.25;
+        font-size: 1.08rem !important;
+        font-weight: 900;
+      }
+      .mobile-selection-real {
+        min-width: 78px;
+        padding: 6px 8px;
+        background: #12281d;
+        border: 1px solid #2e8b57;
+        border-radius: 8px;
+        text-align: right;
+      }
+      .mobile-selection-real small {
+        display: block;
+        color: #9fd4b5;
+        font-size: 0.62rem;
+      }
+      .mobile-selection-real strong {
+        color: #dcffe8;
+        font-size: 1.12rem;
       }
       .mobile-selection-prices,
       .mobile-selection-exchange {
@@ -4657,6 +4678,7 @@
         gap: 7px !important;
       }
       .mobile-selection-exchange { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .mobile-selection-supporting { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .mobile-selection-price {
         display: flex !important;
         flex-direction: column;
@@ -4686,6 +4708,12 @@
         font-size: 0.78rem;
         line-height: 1.45;
       }
+      .mobile-selection-reason summary {
+        color: #dce4ef;
+        cursor: pointer;
+        font-weight: 800;
+      }
+      .mobile-selection-reason div { margin-top: 7px; }
       .mobile-selection-footer {
         display: grid !important;
         grid-template-columns: minmax(0,1fr) auto;
@@ -4845,7 +4873,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">28 Aug 2026, 22:28</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">29 Aug 2026, 00:56</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -5171,11 +5199,11 @@
 
     <details class="section-card section-win">
       <summary class="section-title">
-        <span class="section-title-left">✅ Must Win</span>
+        <span class="section-title-left">✅ Win Selections</span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">Strict decimal 2.10 or shorter: 95/95 data, model rank 1/R1, strong leader and place profiles, 100+ score gap, and both model prices materially shorter than market.</div>
+        <div class="section-note">Must Win remains the strict 2.10-or-shorter route. Elite Win is separately tracked and only appears at 2.51–3.00 or 3.51–4.00 when model and market rank one, a clear score gap, dual value, 95/95 data and strong leader/place/rank profiles all agree.</div>
         <div class="table-wrap">
           <table id="mustwin-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
@@ -5233,9 +5261,9 @@
     </details>
 
     <details id="watchlist-section" class="section-card">
-      <summary class="section-title"><span class="section-title-left">🌑 Sleeper &amp; Plot Watch</span><span class="section-chevron">▶</span></summary>
+      <summary class="section-title"><span class="section-title-left">🌒 Revival Watch</span><span class="section-chevron">▶</span></summary>
       <div class="section-body">
-        <div class="section-note">Returning-conditions watchlist: a strong historic run matched today's going/distance/class profile, followed by poorer runs under materially different conditions. “Possible Plot Watch” is a cautious pattern label, not proof of trainer/owner intent and never an automatic bet.</div>
+        <div class="section-note">Strict watch-only pattern: a historic top-two/top-20% effort closely matches today's race type, two newer poor runs came under different conditions, no newer matching-condition failure exists, the price is 8.0–50.0, and at least two current model/value/rank signals corroborate it. It never creates a bet by itself.</div>
         <div class="table-wrap"><table id="sleepers-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Score / Evidence</th><th>Why Flagged</th><th>My List</th></tr></thead><tbody></tbody></table></div>
       </div>
     </details>
@@ -5642,15 +5670,15 @@
   };
 
   const ACTIVE_BACKTEST_TYPES = new Set([
-    "Must Win", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Must Win", "Elite Win", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
     "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
   ]);
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
+    if (["ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (t === "Must Win") return "Win";
+    if (["Must Win", "Elite Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -5787,14 +5815,14 @@
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    const winA = summariseBacktestTypes(rows, ["Must Win"]);
+    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
     if (headingPillsEl) headingPillsEl.innerHTML = [
       `<span class="backtest-heading-pill"><b>Overall P/L</b> <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`,
       `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
-      backtestPillHTML("Must Win A", winA),
+      backtestPillHTML("Win routes", winA),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
@@ -5811,7 +5839,7 @@
     `;
 
     if (typeEl) typeEl.innerHTML = [
-      backtestPillHTML("Must Win A", winA),
+      backtestPillHTML("Win routes", winA),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
@@ -6012,7 +6040,12 @@
 
   const iconMap = {
     'top-rated-clear': '🥇',
-    'sleeper': '🌑',
+    'revival-watch': '🌒 Revival',
+    'elite-win': '🏆 Elite Win',
+    'ml-place-ew': '🤖 ML E/W',
+    'p5-place-confirmed': '✓ P5 Place',
+    'elo-main-support': '📈 ELO Support',
+    'elo-win-support': '📈 ELO Win',
     'value': '💰',
     'model-edge-watch': '🎯',
     'blue': '🔵',
@@ -6568,6 +6601,8 @@
     if (type === 'BT E/W') return `<span class="type-badge type-btew">BT E/W</span>`;
     if (type === 'Longshot BT E/W B') return `<span class="type-badge type-btew">Longshot BT E/W B</span>`;
     if (type === 'Must Win' || type === 'Must Win A') return `<span class="type-badge type-win">Must Win</span>`;
+    if (type === 'Elite Win') return `<span class="type-badge type-win">Elite Win</span>`;
+    if (type === 'ML Place E/W') return `<span class="type-badge type-ew">ML Place E/W</span>`;
     if (type === 'Strong Win B') return `<span class="type-badge type-win">Strong Win B</span>`;
     if (type === 'Mid-Price Win') return `<span class="type-badge type-win">Mid-Price Win</span>`;
     if (type === 'Win Value A') return `<span class="type-badge type-win">Win Value A</span>`;
@@ -6724,7 +6759,6 @@
     const scoreNum = Number(entry?.sleeper_score ?? 0);
     const score = Number.isFinite(scoreNum) ? scoreNum.toFixed(1) : "-";
     const confidence = String(entry?.sleeper_confidence || "Low");
-    const plotWatch = entry?.sleeper_plot_watch === true || String(entry?.sleeper_plot_watch || "").toLowerCase() === "true";
     const reason = String(entry?.sleeper_reason || entry?.reason || "Returning-conditions pattern detected.");
     return `<tr class="sleeper-row">
       <td>${raceCellHTML(entry)}</td>
@@ -6734,9 +6768,9 @@
         <span class="supporting-price-box is-model"><small>Model</small><strong>${escHTML(entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-")}</strong></span>
         <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(entry?.raw_odds ?? "-")}</strong></span>
       </div></td>
-      <td><b>${score}/100</b><br><small>${escHTML(confidence)} confidence</small><br>${plotWatch ? `<span class="tag-chip tag-sleeper">🕵️ Possible Plot Watch</span>` : iconsOnly(tagSet(entry))}</td>
+      <td><b>${score}/100</b><br><small>${escHTML(confidence)} confidence</small><br><span class="tag-chip tag-sleeper">🌒 Revival Watch</span></td>
       <td><small class="reason">${escHTML(reason)}</small></td>
-      <td>${myBetButtonHTML(entry, "Sleeper Watch", "Watch")}</td>
+      <td>${myBetButtonHTML(entry, "Revival Watch", "Watch")}</td>
     </tr>`;
   };
 
@@ -6761,6 +6795,12 @@
     }
     if (type === "Must Win") {
       return "Strong win candidate: clear top-rated profile, short enough in the market, solid data confidence, strong win/leader shape and both model prices support the current odds.";
+    }
+    if (type === "Elite Win") {
+      return "Elite Win: model and market rank one in a positive historic price pocket, with a clear top-rating, dual value, 95/95 data and strong leader/place/rank profiles.";
+    }
+    if (type === "ML Place E/W") {
+      return "ML Place E/W: validated P5 top-four probability and edge confirm P4 top-four rank, a positive rank overlay, dual value and genuine four-place terms.";
     }
     if (type === "Strong Win B") {
       return "Strong Win B: a clear model number one at 5.00 or shorter with dual price support, top-two market rank, strong leader/place profiles and 95%+ data, but outside the stricter Grade-A favourite route.";
@@ -6920,9 +6960,7 @@
     const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
     const raw = entry?.raw_odds ?? "-";
-    const back = entry?.bf_back_odds ?? "-";
-    const lay = entry?.bf_lay_odds ?? "-";
-    const tags = tagSet(entry).slice(0, 3);
+    const tags = tagSet(entry).slice(0, 4);
     const reason = String(entry?.racing_reason || entry?.reason || "").trim();
     const raceLink = racecardRaceLinkHTML(entry, escHTML(entry?.course || ""), "mobile-selection-course");
     const horseLink = racecardHorseLinkHTML(entry, entry?.horse || "", "mobile-selection-horse");
@@ -6930,25 +6968,22 @@
     return `<article class="mobile-selection-card">
       <div class="mobile-selection-line mobile-selection-race">
         ${typeBadgeHTML(entry?.shortlist_type)}
+        <span class="mobile-selection-date">${escHTML(dateFromRaceDT(entry?.race_datetime))}</span>
         <span class="mobile-selection-time">${escHTML(timeFromRaceDT(entry?.race_datetime))}</span>
         ${raceLink}
       </div>
       <div class="mobile-selection-line mobile-selection-horse-line">
         ${horseLink}
+        <span class="mobile-selection-real"><small>Real odds</small><strong>${escHTML(market)}</strong></span>
       </div>
-      <div class="mobile-selection-line mobile-selection-prices">
-        <span class="mobile-selection-price"><small>Market</small><strong>${escHTML(market)}</strong></span>
-        <span class="mobile-selection-price mobile-selection-model"><small>Model odds</small><strong>${escHTML(model)}</strong></span>
-        <span class="mobile-selection-price mobile-selection-raw"><small>Raw odds</small><strong>${escHTML(raw)}</strong></span>
-      </div>
-      <div class="mobile-selection-line mobile-selection-exchange">
-        <span class="mobile-selection-price"><small>BF Back</small><strong>${escHTML(back)}</strong></span>
-        <span class="mobile-selection-price"><small>BF Lay</small><strong>${escHTML(lay)}</strong></span>
+      <div class="mobile-selection-line mobile-selection-prices mobile-selection-supporting">
+        <span class="mobile-selection-price mobile-selection-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
+        <span class="mobile-selection-price mobile-selection-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
       </div>
       <div class="mobile-selection-line mobile-selection-info">
         <span class="mobile-selection-tags">${shortlistTagsHTML(tags)}</span>
       </div>
-      ${reason ? `<div class="mobile-selection-reason"><strong>Why:</strong> ${escHTML(reason)}</div>` : ""}
+      ${reason ? `<details class="mobile-selection-reason"><summary>Why selected</summary><div>${escHTML(reason)}</div></details>` : ""}
       <div class="mobile-selection-line mobile-selection-footer">
         ${resultBadgeHTML(entry)}
         ${myBetButtonHTML(entry, entry?.shortlist_type || "Shortlist", entry?.shortlist_type || "Shortlist")}
@@ -8157,7 +8192,7 @@ const getShortlistType = (entry) => {
     const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
     if (["Strong Win B", "Mid-Price Win"].includes(backendType)) return "";
-    if (["Must Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
+    if (["Must Win", "Elite Win", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
       return backendType;
     }
     if (backendType === "Each Way") {
@@ -8449,13 +8484,17 @@ const getShortlistType = (entry) => {
       fairOdds > 1 && marketOdds >= fairOdds
     );
 
-    const confirmedShortlistSupport = entry?.elo_confirmed_shortlist_support === true;
+    const confirmedShortlistSupport = (
+      entry?.elo_confirmed_shortlist_support === true ||
+      entry?.elo_confirmed_main_support === true ||
+      entry?.elo_confirmed_win_support === true
+    );
     const qualifiedShadowWatch = (
       entry?.elo_shortlist_ready === true &&
-      rank >= 1 && rank <= 3 &&
-      runs >= 4 &&
-      confidence >= 65 &&
-      edge >= 2.5
+      rank >= 1 && rank <= 2 &&
+      runs >= 5 &&
+      confidence >= 45 &&
+      edge >= 3.0
     );
     const highConfidenceLeader = (
       rank === 1 &&
@@ -8489,6 +8528,8 @@ const getShortlistType = (entry) => {
       shortlist_type: 'Longshot BT E/W B'
     });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
+    if (shortlistType === 'Elite Win')    mustwinItems.push({ ...entry, shortlist_type: 'Elite Win' });
+    if (shortlistType === 'ML Place E/W') strongValueItems.push({ ...entry, shortlist_type: 'ML Place E/W' });
     if (shortlistType === 'Strong Value E/W') strongValueItems.push({ ...entry, shortlist_type: 'Strong Value E/W' });
     if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
     if (shortlistType === 'Must Lay')     rawlayItems.push({ ...entry, shortlist_type: 'Must Lay' });
@@ -8496,13 +8537,13 @@ const getShortlistType = (entry) => {
     if (shortlistType === 'Place Lay')    placelayItems.push({ ...entry, shortlist_type: 'Place Lay' });
 
     if (tags.includes("raw-value") || tags.includes("raw-value-watch")) rawvItems.push(entry);
-    if (tags.includes("sleeper"))         sleeperItems.push(entry);
+    if (tags.includes("revival-watch"))   sleeperItems.push(entry);
     // Price-watch evidence remains on the entry for downstream logic, but this
     // visible panel is intentionally limited to quote-confirmed Value Now rows.
     if (tags.includes("value")) valueItems.push(entry);
     if (tags.includes("blue")) blueItems.push(entry);
     if (tags.includes("top-rated-clear")) topItems.push(entry);
-    if (tags.includes("elo") && eloPassesStrictDisplay(entry)) eloItems.push(entry);
+    if ((tags.includes("elo") || tags.includes("elo-main-support") || tags.includes("elo-win-support")) && eloPassesStrictDisplay(entry)) eloItems.push(entry);
   });
 
   eloItems = eloItems
@@ -9094,7 +9135,7 @@ const getShortlistType = (entry) => {
   const ALERTS_ON_KEY = "racing_shortlist_alerts_enabled_v2";
   const BASELINE_SET_KEY = "racing_shortlist_baseline_set_v2";
   const ACTIVE_BACKTEST_TYPES = new Set([
-    "Must Win", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Must Win", "Elite Win", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
     "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
   ]);
 
@@ -9219,9 +9260,9 @@ const getShortlistType = (entry) => {
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
+    if (["ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (t === "Must Win") return "Win";
+    if (["Must Win", "Elite Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -9358,14 +9399,14 @@ const getShortlistType = (entry) => {
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    const winA = summariseBacktestTypes(rows, ["Must Win"]);
+    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
     if (headingPillsEl) headingPillsEl.innerHTML = [
       `<span class="backtest-heading-pill"><b>Overall P/L</b> <span class="${pl >= 0 ? "pl-pos" : "pl-neg"}">${moneyFmt(pl)}</span></span>`,
       `<span class="backtest-heading-pill"><b>ROI</b> <span class="${roi >= 0 ? "pl-pos" : "pl-neg"}">${pctFmt(roi)}</span></span>`,
-      backtestPillHTML("Must Win A", winA),
+      backtestPillHTML("Win routes", winA),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
@@ -9382,7 +9423,7 @@ const getShortlistType = (entry) => {
     `;
 
     if (typeEl) typeEl.innerHTML = [
-      backtestPillHTML("Must Win A", winA),
+      backtestPillHTML("Win routes", winA),
       backtestPillHTML("EW", groups.EW),
       backtestPillHTML("Must Lay A", layA),
       backtestPillHTML("Value Lay B", layB),
@@ -10057,7 +10098,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
       if (isExtra) return "Big E/W - EP";
       return "Each Way";
     }
-    if (["Must Win", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
+    if (["Must Win", "Elite Win", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
       return type;
     }
     if (raw) return "";
