@@ -5556,6 +5556,131 @@
       }
     }
 
+    /* Dedicated mobile cards for ELO, overlays, Tony Watch and Named Bets. */
+    .mobile-support-list { display: none; }
+    @media (max-width: 720px) {
+      #elo-section .section-body,
+      #rank-overlays-section .section-body,
+      #tony-watch-section .section-body,
+      #name-bets-section .section-body { padding: 8px !important; }
+
+      #elo-section .table-wrap,
+      #rank-overlays-section .table-wrap,
+      #tony-watch-section .table-wrap,
+      #name-bets-section .table-wrap,
+      #elo-section .section-note,
+      #name-bets-section .section-note { display: none !important; }
+
+      .mobile-support-list {
+        display: grid !important;
+        gap: 8px;
+      }
+      .mobile-support-list .mobile-selection-card {
+        position: relative;
+        margin: 0 !important;
+        overflow: hidden;
+        color: #eef2f7 !important;
+        background:
+          radial-gradient(circle at 18% 24%,rgba(230,184,31,0.065),transparent 34%),
+          linear-gradient(145deg,#101419 0%,#090c10 62%,#0d1116 100%) !important;
+        border: 1px solid #2a3037 !important;
+        border-left: 3px solid #dbb123 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.38) !important;
+      }
+      .mobile-support-list .mobile-card-primary {
+        min-height: 86px;
+        padding-top: 14px;
+        padding-bottom: 13px;
+      }
+      .mobile-support-list .mobile-card-bet-type small {
+        color: inherit;
+        font-size: 1.05rem;
+        line-height: 1;
+      }
+      .mobile-support-list .mobile-card-bet-type strong {
+        margin-top: 5px;
+        font-size: 0.67rem;
+        letter-spacing: 0.045em;
+      }
+      .mobile-support-list .mobile-card-bet-type.is-elo {
+        color: #c178ff;
+        background: rgba(156,76,232,0.07);
+        border-color: rgba(156,76,232,0.58);
+        box-shadow: 0 0 16px rgba(156,76,232,0.10);
+      }
+      .mobile-support-list .mobile-card-bet-type.is-overlay {
+        color: #61dac8;
+        background: rgba(42,194,169,0.07);
+        border-color: rgba(42,194,169,0.54);
+        box-shadow: 0 0 16px rgba(42,194,169,0.09);
+      }
+      .mobile-support-list .mobile-card-bet-type.is-name {
+        color: #ff91cf;
+        background: rgba(232,82,165,0.06);
+        border-color: rgba(232,82,165,0.48);
+      }
+      .mobile-support-list .mobile-card-odds-grid { margin-bottom: 0; }
+
+      .mobile-support-metrics {
+        display: grid;
+        grid-template-columns: repeat(3,minmax(0,1fr));
+        align-items: stretch;
+        margin: 0 15px;
+        border-bottom: 1px solid #252b32;
+      }
+      .mobile-support-metric {
+        display: flex;
+        min-width: 0;
+        min-height: 64px;
+        padding: 10px 8px 11px;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .mobile-support-metric:first-child { padding-left: 1px; }
+      .mobile-support-metric + .mobile-support-metric { border-left: 1px solid #252b32; }
+      .mobile-support-metric small {
+        color: #777f8b;
+        font-size: 0.51rem;
+        font-weight: 900;
+        letter-spacing: 0.035em;
+        line-height: 1.15;
+        text-transform: uppercase;
+      }
+      .mobile-support-metric strong {
+        margin-top: 6px;
+        color: #dbe2ec;
+        font-size: 0.90rem;
+        font-weight: 950;
+        line-height: 1.05;
+        overflow-wrap: anywhere;
+      }
+      .mobile-support-metric.is-highlight strong {
+        color: #f2c944;
+        font-size: 1.22rem;
+        text-shadow: 0 0 14px rgba(242,201,68,0.22);
+      }
+      .mobile-support-metric.is-positive strong { color: #64dda0; }
+      .mobile-support-metric.is-negative strong { color: #ff8795; }
+      .mobile-support-detail {
+        margin: 0 15px;
+        padding: 10px 0 11px;
+        color: #aeb7c4;
+        border-bottom: 1px solid #252b32;
+        font-size: 0.70rem;
+        font-weight: 800;
+      }
+      .mobile-support-detail strong { color: #f1c84b; }
+      .mobile-support-empty {
+        padding: 15px;
+        color: #8d96a3;
+        background: #0d1014;
+        border: 1px solid #292f37;
+        border-radius: 12px;
+        text-align: center;
+      }
+    }
+
     /* Shared precision-card language for every supporting mobile section. */
     @media (max-width: 720px) {
       details.section-card .table-wrap {
@@ -6080,6 +6205,7 @@
         <div class="table-wrap">
           <table id="namebets-table"><thead><tr><th>Race</th><th>Horse</th><th>Market / Model / Raw</th><th>Name Match</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table>
         </div>
+        <div id="mobile-namebets-list" class="mobile-support-list" aria-label="Mobile Named Bets selections"></div>
       </div>
     </details>
 
@@ -6128,6 +6254,7 @@
             <tbody></tbody>
           </table>
         </div>
+        <div id="mobile-elo-list" class="mobile-support-list" aria-label="Mobile Horse ELO selections"></div>
       </div>
     </details>
 
@@ -6295,7 +6422,7 @@
 
     <details id="tony-watch-section" class="section-card">
       <summary class="section-title"><span class="section-title-left">👀 Tony Watch</span><span class="section-chevron">▶</span></summary>
-      <div class="section-body"><div class="table-wrap"><table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="section-body"><div class="table-wrap"><table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div><div id="mobile-tonywatch-list" class="mobile-support-list" aria-label="Mobile Tony Watch selections"></div></div>
     </details>
 
     <details id="watchlist-section" class="section-card">
@@ -6316,7 +6443,7 @@
 
     <details id="rank-overlays-section" class="section-card">
       <summary class="section-title"><span class="section-title-left">📊 Rank Overlays (Model ≪ Market)</span><span class="section-chevron">▶</span></summary>
-      <div class="section-body"><div class="table-wrap"><table id="overlay-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Δ (Market − Model)</th><th>Ranks (Mdl / Mkt)</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="section-body"><div class="table-wrap"><table id="overlay-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Δ (Market − Model)</th><th>Ranks (Mdl / Mkt)</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div><div id="mobile-overlay-list" class="mobile-support-list" aria-label="Mobile Rank Overlay selections"></div></div>
     </details>
 
     <details class="section-card">
@@ -8258,6 +8385,122 @@
       lastDate = currentDate;
       return divider + mobileShortlistCardHTML(entry);
     }).join("");
+  };
+
+  const mobileSignedValue = (value, decimals = 1, suffix = "") => {
+    const num = Number(value);
+    if (!Number.isFinite(num)) return "-";
+    return `${num > 0 ? "+" : ""}${num.toFixed(decimals)}${suffix}`;
+  };
+
+  const mobileSupportMetricsHTML = (metrics = []) => {
+    if (!metrics.length) return "";
+    return `<div class="mobile-support-metrics">${metrics.map(metric =>
+      `<span class="mobile-support-metric ${metric.className || ""}"><small>${escHTML(metric.label)}</small><strong>${escHTML(metric.value)}</strong></span>`
+    ).join("")}</div>`;
+  };
+
+  const mobileSupportCardHTML = (entry, options = {}) => {
+    const resultEntry = findValueResult(entry?.race_datetime, entry?.course, entry?.horse) || entry;
+    const market = resultEntry?.bookie_odds ?? resultEntry?.real_odds ?? entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
+    const raw = entry?.raw_odds ?? "-";
+    const raceLink = racecardRaceLinkHTML(
+      entry,
+      `<span class="mobile-card-race-time">${escHTML(timeFromRaceDT(entry?.race_datetime))}</span><span class="mobile-card-race-separator">·</span><span class="mobile-card-race-course">${escHTML(entry?.course || "")}</span><span class="mobile-card-race-arrow" aria-hidden="true">↗</span>`,
+      "mobile-card-race-link"
+    );
+    const detail = options.detailValue
+      ? `<div class="mobile-support-detail">${escHTML(options.detailLabel || "Detail")}: <strong>${escHTML(options.detailValue)}</strong></div>`
+      : "";
+
+    return `<article class="mobile-selection-card mobile-support-card">
+      <header class="mobile-card-header">
+        <div class="mobile-card-context">${raceLink}</div>
+        ${resultBadgeHTML(resultEntry)}
+      </header>
+      <div class="mobile-card-primary">
+        <span class="mobile-card-bet-type mobile-support-plaque ${options.tone || ""}" title="${escHTML(options.label || "Selection")}"><small aria-hidden="true">${escHTML(options.icon || "◆")}</small><strong>${escHTML(options.label || "Selection")}</strong></span>
+        <div class="mobile-card-horse">${racecardHorseLinkHTML(entry, entry?.horse || "", "mobile-selection-horse")}</div>
+      </div>
+      <div class="mobile-card-odds-grid" aria-label="Market and model odds comparison">
+        <span class="mobile-card-odds is-market"><small>Real odds</small><strong>${escHTML(market)}</strong></span>
+        <span class="mobile-card-odds is-model"><small>Model odds</small><strong>${escHTML(model)}</strong></span>
+        <span class="mobile-card-odds is-raw"><small>Raw odds</small><strong>${escHTML(raw)}</strong></span>
+      </div>
+      ${mobileSupportMetricsHTML(options.metrics || [])}
+      ${detail}
+      <div class="mobile-card-footer">
+        ${myBetButtonHTML(entry, options.source || options.label || "Selection", options.source || options.label || "Selection", "Add to My Bets")}
+      </div>
+    </article>`;
+  };
+
+  const mobileEloCardHTML = (entry) => {
+    const classicPrimary = String(entry?.elo_variant || "").includes("classic_primary");
+    const rating = classicPrimary
+      ? p5Num(entry?.elo_rating, 1500)
+      : p5Num(entry?.elo_classic_rating, p5Num(entry?.elo_rating, 1500));
+    const recentChange = p5Num(entry?.elo_recent_change_3, 0);
+    const edge = p5Num(entry?.elo_edge_pp, 0);
+    const confidence = p5Num(entry?.elo_confidence, 0);
+    return mobileSupportCardHTML(entry, {
+      icon: "⚡",
+      label: "ELO",
+      tone: "is-elo",
+      source: "Horse ELO",
+      metrics: [
+        { label: "ELO rating", value: rating.toFixed(0), className: "is-highlight" },
+        { label: "Recent change", value: mobileSignedValue(recentChange, 1), className: recentChange >= 0 ? "is-positive" : "is-negative" },
+        { label: "Edge / confidence", value: `${mobileSignedValue(edge, 1, "pp")} / ${confidence.toFixed(0)}%`, className: edge >= 0 ? "is-positive" : "is-negative" }
+      ]
+    });
+  };
+
+  const mobileOverlayCardHTML = (entry) => {
+    const field = Number(getFieldSize(entry));
+    const fieldText = Number.isFinite(field) && field > 0 ? String(Math.round(field)) : "?";
+    const modelRank = Number(entry?.rank_model ?? entry?._model_rank);
+    const marketRank = Number(entry?.rank_market ?? entry?._market_rank);
+    const gap = Number(entry?.rank_delta ?? entry?._rank_delta);
+    const rankValue = rank => Number.isFinite(rank) && rank > 0 ? `#${Math.round(rank)} / ${fieldText}` : "-";
+    return mobileSupportCardHTML(entry, {
+      icon: "▥",
+      label: "RANK",
+      tone: "is-overlay",
+      source: "Rank Overlay",
+      metrics: [
+        { label: "Model rank", value: rankValue(modelRank), className: "is-highlight" },
+        { label: "Market rank", value: rankValue(marketRank) },
+        { label: "Rank gap", value: Number.isFinite(gap) ? `${gap > 0 ? "+" : ""}${Math.round(gap)}` : "-", className: gap >= 0 ? "is-positive" : "is-negative" }
+      ]
+    });
+  };
+
+  const mobileTonyCardHTML = (entry) => mobileSupportCardHTML(entry, {
+    icon: "👀",
+    label: "TONY",
+    source: "Tony Watch"
+  });
+
+  const mobileNameBetCardHTML = (entry) => {
+    const matches = Array.isArray(entry?.name_bet_matches) ? entry.name_bet_matches : [];
+    return mobileSupportCardHTML(entry, {
+      icon: "★",
+      label: "NAME",
+      tone: "is-name",
+      source: "Name Bet",
+      detailLabel: "Name match",
+      detailValue: matches.length ? matches.join(", ") : "Matched name"
+    });
+  };
+
+  const renderMobileSupportList = (id, items, cardBuilder) => {
+    const root = document.getElementById(id);
+    if (!root) return;
+    root.innerHTML = Array.isArray(items) && items.length
+      ? items.map(cardBuilder).join("")
+      : '<div class="mobile-support-empty">No active selections found.</div>';
   };
 
   const p5Num = (value, fallback = 0) => {
@@ -10331,6 +10574,10 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
+  renderMobileSupportList('mobile-elo-list', eloItems, mobileEloCardHTML);
+  renderMobileSupportList('mobile-overlay-list', overlayEntries, mobileOverlayCardHTML);
+  renderMobileSupportList('mobile-tonywatch-list', tonyItems, mobileTonyCardHTML);
+  renderMobileSupportList('mobile-namebets-list', nameBetItems, mobileNameBetCardHTML);
   setBody('#elo-table', eloHtml, 10);
   setBody('#machine-learning-table', machineLearning, 8);
   setBody('#live-intel-table', liveIntel, 7);
