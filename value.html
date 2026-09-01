@@ -2612,7 +2612,14 @@
     #shortlist-backtest-card,
     #my-bets-section,
     #todays-shortlist,
+    #was-value-section,
+    #elo-section,
+    #rank-overlays-section,
+    #tony-watch-section,
     #race-products-section,
+    #name-bets-section,
+    #machine-learning-section,
+    #historic-systems-section,
     #watchlist-section { scroll-margin-top: 76px; }
 
     .backtest-card {
@@ -4865,6 +4872,90 @@
       .historic-summary-card { padding: 0.6rem; }
       .historic-summary-card strong { font-size: 0.96rem; }
     }
+
+    /* Priority shortlist cue: mobile sections stay closed until the viewer opens them. */
+    .shortlist-mobile-cue { display: none; }
+
+    @media (max-width: 720px) {
+      #todays-shortlist > summary.section-title {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto auto;
+        column-gap: 0.5rem;
+        row-gap: 0.18rem;
+      }
+
+      #todays-shortlist > summary .section-title-left {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+      }
+
+      #todays-shortlist > summary .section-chevron {
+        grid-column: 2;
+        grid-row: 1 / 3;
+        align-self: center;
+      }
+
+      #todays-shortlist .shortlist-mobile-cue {
+        grid-column: 1;
+        grid-row: 2;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.34rem;
+        width: fit-content;
+        color: #d7dee8;
+        font-size: 0.66rem;
+        font-weight: 850;
+        line-height: 1.25;
+      }
+
+      #todays-shortlist .shortlist-signal-dot {
+        width: 0.48rem;
+        height: 0.48rem;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: #76808d;
+      }
+
+      #todays-shortlist.has-shortlist-items:not([open]) {
+        border-color: #ffd528 !important;
+        outline: 2px solid rgba(255, 213, 40, 0.38);
+        outline-offset: 2px;
+        animation: shortlist-card-pulse 2.2s ease-in-out infinite;
+      }
+
+      #todays-shortlist.has-shortlist-items:not([open]) > summary.section-title {
+        background: linear-gradient(100deg, rgba(255, 213, 40, 0.20), rgba(255, 213, 40, 0.04));
+      }
+
+      #todays-shortlist.has-shortlist-items .shortlist-mobile-cue {
+        color: #ffe982;
+      }
+
+      #todays-shortlist.has-shortlist-items .shortlist-signal-dot {
+        background: #ffd528;
+        box-shadow: 0 0 0 4px rgba(255, 213, 40, 0.15);
+        animation: shortlist-dot-pulse 1.35s ease-in-out infinite;
+      }
+
+      @keyframes shortlist-card-pulse {
+        0%, 100% { outline-color: rgba(255, 213, 40, 0.30); filter: brightness(1); }
+        50% { outline-color: rgba(255, 213, 40, 0.72); filter: brightness(1.08); }
+      }
+
+      @keyframes shortlist-dot-pulse {
+        0%, 100% { opacity: 0.72; transform: scale(0.92); }
+        50% { opacity: 1; transform: scale(1.12); }
+      }
+    }
+
+    @media (max-width: 720px) and (prefers-reduced-motion: reduce) {
+      #todays-shortlist.has-shortlist-items:not([open]),
+      #todays-shortlist.has-shortlist-items .shortlist-signal-dot {
+        animation: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -4873,7 +4964,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 18:39</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 19:02</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4891,13 +4982,17 @@
     </div>
 
     <nav class="page-jump-nav" aria-label="Page sections">
-      <a href="#todays-shortlist">⭐ Best Bets <span id="nav-shortlist-count" class="nav-count">0</span></a>
-      <a href="#machine-learning-section">🤖 Machine Learning <span id="nav-ml-count" class="nav-count">0</span></a>
       <a href="#my-bets-section">📝 My Bets <span id="nav-mybets-count" class="nav-count">0</span></a>
-      <a href="#shortlist-backtest-card">📊 Live Record</a>
-      <a href="#race-products-section">🧩 Race Products</a>
-      <a href="race_lab.html">🏇 Pace Lab</a>
+      <a href="#todays-shortlist">⭐ Bet &amp; Lay Shortlist <span id="nav-shortlist-count" class="nav-count">0</span></a>
+      <a href="#was-value-section">🕘 Was Value</a>
       <a href="#elo-section">⚡ Horse ELO <span id="nav-elo-count" class="nav-count">0</span></a>
+      <a href="#rank-overlays-section">📊 Rank Overlays</a>
+      <a href="#tony-watch-section">👀 Tony Watch</a>
+      <a href="#race-products-section">🧩 Placepot</a>
+      <a href="#name-bets-section">🎉 Name Bets <span id="nav-namebets-count" class="nav-count">0</span></a>
+      <a href="#shortlist-backtest-card">📊 Live Record</a>
+      <a href="#machine-learning-section">🤖 Machine Learning <span id="nav-ml-count" class="nav-count">0</span></a>
+      <a href="race_lab.html">🏇 Pace Lab</a>
       <a href="#historic-systems-section">🏛️ Historic Systems <span id="nav-historic-count" class="nav-count">0</span></a>
       <a href="#watchlist-section">🌑 Watchlist</a>
     </nav>
@@ -4986,7 +5081,8 @@
 
 <details id="todays-shortlist" class="section-card section-shortlist" open>
       <summary class="section-title">
-        <span class="section-title-left">⭐ Today's Best Bets &amp; Lays <span id="shortlist-section-count" class="section-count">0</span></span>
+        <span class="section-title-left">⭐ Today’s Bet &amp; Lay Shortlist <span id="shortlist-section-count" class="section-count">0</span></span>
+        <span id="shortlist-mobile-cue" class="shortlist-mobile-cue" aria-live="polite"><span class="shortlist-signal-dot" aria-hidden="true"></span><span>Checking for live selections…</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
@@ -5045,7 +5141,7 @@
       </div>
     </details>
 
-    <details class="section-card">
+    <details id="was-value-section" class="section-card">
       <summary class="section-title">
         <span class="section-title-left">🕘 Was Value Earlier Today</span>
         <span class="section-chevron">▶</span>
@@ -5255,7 +5351,7 @@
       </div>
     </details>
 
-    <details class="section-card">
+    <details id="tony-watch-section" class="section-card">
       <summary class="section-title"><span class="section-title-left">👀 Tony Watch</span><span class="section-chevron">▶</span></summary>
       <div class="section-body"><div class="table-wrap"><table id="tonywatch-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
     </details>
@@ -5276,7 +5372,7 @@
       </div>
     </details>
 
-    <details class="section-card">
+    <details id="rank-overlays-section" class="section-card">
       <summary class="section-title"><span class="section-title-left">📊 Rank Overlays (Model ≪ Market)</span><span class="section-chevron">▶</span></summary>
       <div class="section-body"><div class="table-wrap"><table id="overlay-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Δ (Market − Model)</th><th>Ranks (Mdl / Mkt)</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
     </details>
@@ -5460,6 +5556,103 @@
       </div>
     </details>
   </div>
+
+  <script>
+  (() => {
+    const shell = document.querySelector(".page-shell");
+    if (!shell) return;
+
+    const sectionForTable = (tableId) => document.getElementById(tableId)?.closest("details");
+    const firstPageSection = Array.from(shell.children).find((node) =>
+      node.matches?.("details.section-card, details.backtest-card")
+    );
+
+    /* Keep these eight sections first. All remaining sections retain their existing order. */
+    const prioritySections = [
+      document.getElementById("my-bets-section"),
+      document.getElementById("todays-shortlist"),
+      document.getElementById("was-value-section") || sectionForTable("wasvalue-table"),
+      document.getElementById("elo-section"),
+      document.getElementById("rank-overlays-section") || sectionForTable("overlay-table"),
+      document.getElementById("tony-watch-section") || sectionForTable("tonywatch-table"),
+      document.getElementById("race-products-section"),
+      document.getElementById("name-bets-section")
+    ].filter(Boolean);
+
+    if (firstPageSection) {
+      prioritySections.forEach((section) => shell.insertBefore(section, firstPageSection));
+    }
+
+    const mobileView = window.matchMedia("(max-width: 720px)");
+    const closeAllMobileSections = () => {
+      if (!mobileView.matches) return;
+      shell.querySelectorAll("details[open]").forEach((section) => section.removeAttribute("open"));
+    };
+
+    /* Mobile starts as a compact contents list, including sections marked open for desktop. */
+    closeAllMobileSections();
+    if (typeof mobileView.addEventListener === "function") {
+      mobileView.addEventListener("change", closeAllMobileSections);
+    } else if (typeof mobileView.addListener === "function") {
+      mobileView.addListener(closeAllMobileSections);
+    }
+
+    const shortlist = document.getElementById("todays-shortlist");
+    const shortlistCount = document.getElementById("shortlist-section-count");
+    const shortlistCue = document.querySelector("#shortlist-mobile-cue > span:last-child");
+
+    const updateShortlistCue = () => {
+      if (!shortlist || !shortlistCount || !shortlistCue) return;
+      const count = Number.parseInt(shortlistCount.textContent || "0", 10) || 0;
+      const hasItems = count > 0;
+      shortlist.classList.toggle("has-shortlist-items", hasItems);
+      shortlist.classList.toggle("is-shortlist-empty", !hasItems);
+
+      if (hasItems) {
+        const noun = count === 1 ? "selection" : "selections";
+        shortlistCue.textContent = shortlist.open
+          ? `${count} live ${noun} shown`
+          : `${count} live ${noun} inside · Tap to open`;
+      } else {
+        shortlistCue.textContent = "No live selections right now";
+      }
+    };
+
+    updateShortlistCue();
+    shortlist?.addEventListener("toggle", updateShortlistCue);
+    if (shortlistCount) {
+      new MutationObserver(updateShortlistCue).observe(shortlistCount, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
+
+    const nameBetsCount = document.getElementById("name-bets-section-count");
+    const navNameBetsCount = document.getElementById("nav-namebets-count");
+    const syncNameBetsCount = () => {
+      if (nameBetsCount && navNameBetsCount) {
+        navNameBetsCount.textContent = nameBetsCount.textContent || "0";
+      }
+    };
+    syncNameBetsCount();
+    if (nameBetsCount) {
+      new MutationObserver(syncNameBetsCount).observe(nameBetsCount, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    }
+
+    /* A mobile jump-link both opens and scrolls to its collapsed target. */
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest?.('a[href^="#"]');
+      if (!link || !mobileView.matches) return;
+      const target = document.querySelector(link.getAttribute("href"));
+      if (target?.matches("details")) target.open = true;
+    });
+  })();
+  </script>
 
   <a class="mobile-mybets-dock" href="#my-bets-section" aria-label="Open My Bets Today">
     ⭐ My Bets <span id="mobile-mybets-count" class="nav-count">0</span>
