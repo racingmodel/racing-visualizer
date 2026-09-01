@@ -5562,14 +5562,17 @@
       #elo-section .section-body,
       #rank-overlays-section .section-body,
       #tony-watch-section .section-body,
-      #name-bets-section .section-body { padding: 8px !important; }
+      #name-bets-section .section-body,
+      #was-value-section .section-body { padding: 8px !important; }
 
       #elo-section .table-wrap,
       #rank-overlays-section .table-wrap,
       #tony-watch-section .table-wrap,
       #name-bets-section .table-wrap,
+      #was-value-section .table-wrap,
       #elo-section .section-note,
-      #name-bets-section .section-note { display: none !important; }
+      #name-bets-section .section-note,
+      #was-value-section .section-note { display: none !important; }
 
       .mobile-support-list {
         display: grid !important;
@@ -6023,6 +6026,76 @@
         text-align: center;
       }
     }
+
+    /* Final mobile space-saving and section-separation pass. */
+    @media (max-width: 720px) {
+      .today-overview { display: none !important; }
+
+      #shortlist-backtest-card {
+        margin-top: 0 !important;
+        margin-bottom: 7px !important;
+        border-radius: 11px !important;
+      }
+      #shortlist-backtest-card:not([open]) > summary.backtest-head {
+        min-height: 44px;
+        padding: 8px 11px !important;
+        flex-wrap: nowrap !important;
+        border-bottom: 0 !important;
+      }
+      #shortlist-backtest-card .backtest-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        min-width: 0;
+      }
+      #shortlist-backtest-card:not([open]) .backtest-title {
+        font-size: 0.82rem !important;
+        line-height: 1;
+        white-space: nowrap;
+      }
+      #shortlist-backtest-card .backtest-collapse-indicator {
+        margin-left: auto;
+        flex: 0 0 auto;
+      }
+      #shortlist-backtest-card:not([open]) .backtest-heading-pills,
+      #shortlist-backtest-card:not([open]) .backtest-updated {
+        display: none !important;
+      }
+      #shortlist-backtest-card[open] .backtest-head { flex-wrap: wrap !important; }
+      #shortlist-backtest-card[open] .backtest-title { flex-wrap: wrap; }
+      #shortlist-backtest-card[open] .backtest-heading-pills {
+        display: flex !important;
+        flex: 1 0 100%;
+        flex-wrap: wrap;
+      }
+      #shortlist-backtest-card[open] .backtest-updated { display: block !important; }
+
+      .page-shell > details.section-card {
+        --section-accent: #6e7a8a;
+        border-left: 4px solid var(--section-accent) !important;
+      }
+      .page-shell > details.section-card:nth-of-type(8n+1) { --section-accent: #e0b529; }
+      .page-shell > details.section-card:nth-of-type(8n+2) { --section-accent: #3ecf78; }
+      .page-shell > details.section-card:nth-of-type(8n+3) { --section-accent: #3f9cf4; }
+      .page-shell > details.section-card:nth-of-type(8n+4) { --section-accent: #9b69ef; }
+      .page-shell > details.section-card:nth-of-type(8n+5) { --section-accent: #f06a9e; }
+      .page-shell > details.section-card:nth-of-type(8n+6) { --section-accent: #35c7b0; }
+      .page-shell > details.section-card:nth-of-type(8n+7) { --section-accent: #ed824d; }
+      .page-shell > details.section-card:nth-of-type(8n) { --section-accent: #78a8ff; }
+
+      #my-bets-section { --section-accent: #39d353; }
+      #todays-shortlist { --section-accent: #ffd528; }
+      #was-value-section { --section-accent: #f08a4b; }
+      #elo-section { --section-accent: #45c9ed; }
+      #rank-overlays-section { --section-accent: #45d5b9; }
+      #tony-watch-section { --section-accent: #f0b646; }
+      #race-products-section { --section-accent: #9a70ef; }
+      #name-bets-section { --section-accent: #ed68ad; }
+      #machine-learning-section { --section-accent: #4c98f5; }
+      #historic-systems-section { --section-accent: #c98e51; }
+      #watchlist-section { --section-accent: #78909c; }
+    }
   </style>
 </head>
 <body>
@@ -6233,6 +6306,7 @@
             <tbody></tbody>
           </table>
         </div>
+        <div id="mobile-wasvalue-list" class="mobile-support-list" aria-label="Mobile Was Value Earlier selections"></div>
       </div>
     </details>
 
@@ -8402,9 +8476,9 @@
 
   const mobileSupportCardHTML = (entry, options = {}) => {
     const resultEntry = findValueResult(entry?.race_datetime, entry?.course, entry?.horse) || entry;
-    const market = resultEntry?.bookie_odds ?? resultEntry?.real_odds ?? entry?.bookie_odds ?? entry?.real_odds ?? "-";
-    const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
-    const raw = entry?.raw_odds ?? "-";
+    const market = options.marketOdds ?? resultEntry?.bookie_odds ?? resultEntry?.real_odds ?? entry?.bookie_odds ?? entry?.real_odds ?? "-";
+    const model = options.modelOdds ?? entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
+    const raw = options.rawOdds ?? entry?.raw_odds ?? "-";
     const raceLink = racecardRaceLinkHTML(
       entry,
       `<span class="mobile-card-race-time">${escHTML(timeFromRaceDT(entry?.race_datetime))}</span><span class="mobile-card-race-separator">·</span><span class="mobile-card-race-course">${escHTML(entry?.course || "")}</span><span class="mobile-card-race-arrow" aria-hidden="true">↗</span>`,
@@ -8430,9 +8504,9 @@
       </div>
       ${mobileSupportMetricsHTML(options.metrics || [])}
       ${detail}
-      <div class="mobile-card-footer">
+      ${options.showAction === false ? "" : `<div class="mobile-card-footer">
         ${myBetButtonHTML(entry, options.source || options.label || "Selection", options.source || options.label || "Selection", "Add to My Bets")}
-      </div>
+      </div>`}
     </article>`;
   };
 
@@ -8492,6 +8566,23 @@
       source: "Name Bet",
       detailLabel: "Name match",
       detailValue: matches.length ? matches.join(", ") : "Matched name"
+    });
+  };
+
+  const mobileWasValueCardHTML = (entry) => {
+    const advisedType = entry?.advised_shortlist_type || entry?.shortlist_was_type || "Shortlist";
+    const tone = /lay/i.test(advisedType)
+      ? "is-lay"
+      : (/win/i.test(advisedType) ? "is-win" : (/e\/w|each way/i.test(advisedType) ? "is-ew" : ""));
+    return mobileSupportCardHTML(entry, {
+      icon: "↺",
+      label: mobileCompactBetTypeLabel(advisedType),
+      tone,
+      source: advisedType,
+      marketOdds: entry?.advised_odds ?? entry?.bookie_odds ?? "-",
+      modelOdds: entry?.advised_model_odds ?? entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-",
+      rawOdds: entry?.advised_raw_odds ?? entry?.raw_odds ?? "-",
+      showAction: false
     });
   };
 
@@ -10574,6 +10665,7 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 5);
   renderMobileShortlist(shortlistItems);
+  renderMobileSupportList('mobile-wasvalue-list', wasValueEntries, mobileWasValueCardHTML);
   renderMobileSupportList('mobile-elo-list', eloItems, mobileEloCardHTML);
   renderMobileSupportList('mobile-overlay-list', overlayEntries, mobileOverlayCardHTML);
   renderMobileSupportList('mobile-tonywatch-list', tonyItems, mobileTonyCardHTML);
