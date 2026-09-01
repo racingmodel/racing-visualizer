@@ -4964,7 +4964,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 19:02</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 19:19</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -4982,6 +4982,7 @@
     </div>
 
     <nav class="page-jump-nav" aria-label="Page sections">
+      <a href="#shortlist-backtest-card">📊 Live Record</a>
       <a href="#my-bets-section">📝 My Bets <span id="nav-mybets-count" class="nav-count">0</span></a>
       <a href="#todays-shortlist">⭐ Bet &amp; Lay Shortlist <span id="nav-shortlist-count" class="nav-count">0</span></a>
       <a href="#was-value-section">🕘 Was Value</a>
@@ -4990,7 +4991,6 @@
       <a href="#tony-watch-section">👀 Tony Watch</a>
       <a href="#race-products-section">🧩 Placepot</a>
       <a href="#name-bets-section">🎉 Name Bets <span id="nav-namebets-count" class="nav-count">0</span></a>
-      <a href="#shortlist-backtest-card">📊 Live Record</a>
       <a href="#machine-learning-section">🤖 Machine Learning <span id="nav-ml-count" class="nav-count">0</span></a>
       <a href="race_lab.html">🏇 Pace Lab</a>
       <a href="#historic-systems-section">🏛️ Historic Systems <span id="nav-historic-count" class="nav-count">0</span></a>
@@ -5567,7 +5567,7 @@
       node.matches?.("details.section-card, details.backtest-card")
     );
 
-    /* Keep these eight sections first. All remaining sections retain their existing order. */
+    /* Keep the Live Record first, followed by the eight requested priority sections. */
     const prioritySections = [
       document.getElementById("my-bets-section"),
       document.getElementById("todays-shortlist"),
@@ -5581,6 +5581,7 @@
 
     if (firstPageSection) {
       prioritySections.forEach((section) => shell.insertBefore(section, firstPageSection));
+      if (prioritySections[0]) shell.insertBefore(firstPageSection, prioritySections[0]);
     }
 
     const mobileView = window.matchMedia("(max-width: 720px)");
