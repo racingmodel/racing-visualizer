@@ -6104,7 +6104,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 18:39</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Sep 2026, 22:25</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -7007,15 +7007,15 @@
   };
 
   const ACTIVE_BACKTEST_TYPES = new Set([
-    "Must Win", "Elite Win", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
     "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
   ]);
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
+    if (["ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Elite Win"].includes(t)) return "Win";
+    if (["Must Win", "Elite Win", "ELO Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -7152,7 +7152,7 @@
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win"]);
+    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win", "ELO Win"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
@@ -7383,6 +7383,7 @@
     'p5-place-confirmed': '✓ P5 Place',
     'elo-main-support': '📈 ELO Support',
     'elo-win-support': '📈 ELO Win',
+    'elo-shortlist-qualified': '⚡ ELO Qualified',
     'value': '💰',
     'model-edge-watch': '🎯',
     'blue': '🔵',
@@ -7944,6 +7945,8 @@
     if (type === 'Longshot BT E/W B') return `<span class="type-badge type-btew">Longshot BT E/W B</span>`;
     if (type === 'Must Win' || type === 'Must Win A') return `<span class="type-badge type-win">Must Win</span>`;
     if (type === 'Elite Win') return `<span class="type-badge type-win">Elite Win</span>`;
+    if (type === 'ELO Win') return `<span class="type-badge type-win">ELO Win</span>`;
+    if (type === 'ELO E/W') return `<span class="type-badge type-ew">ELO E/W</span>`;
     if (type === 'ML Place E/W') return `<span class="type-badge type-ew">ML Place E/W</span>`;
     if (type === 'Strong Win B') return `<span class="type-badge type-win">Strong Win B</span>`;
     if (type === 'Mid-Price Win') return `<span class="type-badge type-win">Mid-Price Win</span>`;
@@ -8330,6 +8333,7 @@
       "p5-place-confirmed": "✓ P5 place",
       "elo-main-support": "📈 ELO support",
       "elo-win-support": "📈 ELO win",
+      "elo-shortlist-qualified": "⚡ ELO qualified",
       "value": "◆ Value",
       "model-edge-watch": "◎ Model edge",
       "blue": "🔵 Big odds",
@@ -8378,6 +8382,8 @@
       "Must Win": "Must Win",
       "Must Win A": "Must Win",
       "Elite Win": "Elite Win",
+      "ELO Win": "ELO Win",
+      "ELO E/W": "ELO E/W",
       "ML Place E/W": "ML E/W",
       "Strong Win B": "Strong Win",
       "Mid-Price Win": "Mid Win",
@@ -9782,7 +9788,7 @@ const getShortlistType = (entry) => {
     const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
     if (["Strong Win B", "Mid-Price Win"].includes(backendType)) return "";
-    if (["Must Win", "Elite Win", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
+    if (["Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
       return backendType;
     }
     if (backendType === "Each Way") {
@@ -10048,6 +10054,7 @@ const getShortlistType = (entry) => {
   let ewnotepItems = [];
   let btewItems = [];
   let mustwinItems = [];
+  let eloShortlistItems = [];
   let strongValueItems = [];
   let winvalueItems = [];
   let rawvItems = [];
@@ -10119,6 +10126,8 @@ const getShortlistType = (entry) => {
     });
     if (shortlistType === 'Must Win')     mustwinItems.push({ ...entry, shortlist_type: 'Must Win' });
     if (shortlistType === 'Elite Win')    mustwinItems.push({ ...entry, shortlist_type: 'Elite Win' });
+    if (shortlistType === 'ELO Win')      eloShortlistItems.push({ ...entry, shortlist_type: 'ELO Win' });
+    if (shortlistType === 'ELO E/W')      eloShortlistItems.push({ ...entry, shortlist_type: 'ELO E/W' });
     if (shortlistType === 'ML Place E/W') strongValueItems.push({ ...entry, shortlist_type: 'ML Place E/W' });
     if (shortlistType === 'Strong Value E/W') strongValueItems.push({ ...entry, shortlist_type: 'Strong Value E/W' });
     if (shortlistType === 'Win Value')    winvalueItems.push({ ...entry, shortlist_type: 'Win Value' });
@@ -10187,6 +10196,7 @@ const getShortlistType = (entry) => {
     ...btewItems,
     ...ewnotepItems,
     ...mustwinItems,
+    ...eloShortlistItems,
     ...strongValueItems,
     ...rawlayItems,
     ...placelayItems
@@ -10730,7 +10740,7 @@ const getShortlistType = (entry) => {
   const ALERTS_ON_KEY = "racing_shortlist_alerts_enabled_v2";
   const BASELINE_SET_KEY = "racing_shortlist_baseline_set_v2";
   const ACTIVE_BACKTEST_TYPES = new Set([
-    "Must Win", "Elite Win", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
     "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
   ]);
 
@@ -10855,9 +10865,9 @@ const getShortlistType = (entry) => {
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
+    if (["ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Elite Win"].includes(t)) return "Win";
+    if (["Must Win", "Elite Win", "ELO Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -10994,7 +11004,7 @@ const getShortlistType = (entry) => {
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win"]);
+    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win", "ELO Win"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
@@ -11693,7 +11703,7 @@ const getShortlistType = (entry, extraPlacesArg) => {
       if (isExtra) return "Big E/W - EP";
       return "Each Way";
     }
-    if (["Must Win", "Elite Win", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
+    if (["Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(type)) {
       return type;
     }
     if (raw) return "";
