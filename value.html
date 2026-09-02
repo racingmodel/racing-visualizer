@@ -68,15 +68,25 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
       transition: opacity 240ms ease;
+    }
+
+    .birthday-overlay[hidden] {
+      display: none !important;
     }
 
     .birthday-overlay.is-visible {
       opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .birthday-overlay.is-closing {
       opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
     }
 
     .birthday-card {
@@ -11940,14 +11950,16 @@ const getShortlistType = (entry, extraPlacesArg) => {
     rememberAsSeen();
     popup.classList.add("is-closing");
     popup.classList.remove("is-visible");
+    popup.style.pointerEvents = "none";
     document.body.classList.remove("birthday-open");
 
     window.setTimeout(() => {
-      popup.hidden = true;
+      popup.remove();
     }, 250);
   };
 
   if (hasBeenSeen()) {
+    popup.remove();
     return;
   }
 
