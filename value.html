@@ -6099,6 +6099,25 @@
   </style>
 </head>
 <body>
+  <div
+    id="birthdayPopup"
+    class="birthday-overlay"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="birthdayTitle"
+    aria-describedby="birthdayMessage"
+  >
+    <div class="birthday-card">
+      <button class="birthday-close" type="button" aria-label="Close birthday message">&times;</button>
+      <div class="birthday-icons" aria-hidden="true">🎂 🏇 🎉</div>
+      <div class="birthday-kicker">Racing Model Birthday Special</div>
+      <h2 id="birthdayTitle" class="birthday-title">Happy Birthday <strong>Jez!</strong></h2>
+      <p id="birthdayMessage" class="birthday-message">Celebrating our <strong>No.1 Subscriber</strong> — have a brilliant day! 🥳</p>
+      <button class="birthday-dismiss" type="button">Cheers! View today&rsquo;s racing</button>
+    </div>
+  </div>
+
   <div class="page-shell">
     <h1>🏇 Today's Racing Model</h1>
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
@@ -11890,6 +11909,64 @@ const getShortlistType = (entry, extraPlacesArg) => {
 
     checkForShortlistChange();
     setInterval(checkForShortlistChange, CHECK_EVERY_MS);
+  });
+})();
+</script>
+
+<script>
+(() => {
+  const popup = document.getElementById("birthdayPopup");
+  if (!popup) return;
+
+  const sessionKey = "racingModelBirthdayJez20260902Seen";
+  const closeButton = popup.querySelector(".birthday-close");
+  const dismissButton = popup.querySelector(".birthday-dismiss");
+
+  const hasBeenSeen = () => {
+    try {
+      return sessionStorage.getItem(sessionKey) === "1";
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const rememberAsSeen = () => {
+    try {
+      sessionStorage.setItem(sessionKey, "1");
+    } catch (error) {}
+  };
+
+  const closePopup = () => {
+    rememberAsSeen();
+    popup.classList.add("is-closing");
+    popup.classList.remove("is-visible");
+    document.body.classList.remove("birthday-open");
+
+    window.setTimeout(() => {
+      popup.hidden = true;
+    }, 250);
+  };
+
+  if (hasBeenSeen()) {
+    return;
+  }
+
+  popup.hidden = false;
+  document.body.classList.add("birthday-open");
+  window.requestAnimationFrame(() => {
+    popup.classList.add("is-visible");
+    dismissButton?.focus();
+  });
+
+  closeButton?.addEventListener("click", closePopup);
+  dismissButton?.addEventListener("click", closePopup);
+
+  popup.addEventListener("click", (event) => {
+    if (event.target === popup) closePopup();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !popup.hidden) closePopup();
   });
 })();
 </script>
