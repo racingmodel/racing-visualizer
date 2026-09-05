@@ -102,7 +102,7 @@
       .panel,.race-head { padding:12px; }
     }
   </style>
-</head>
+<script src="racing-store.js"></script></head>
 <body>
   <main class="shell">
     <header class="top">
@@ -207,12 +207,11 @@
       if(!race){app.innerHTML='<div class="panel empty">No current races are available.</div>';return;}
       if(!race.scenarios.some(s=>s.key===activeScenario)) activeScenario='base';
       const cp=race.course_profile||{}, pace=race.pace||{}, lanes=pace.lanes||{};
-      app.innerHTML=`<section class="race-head panel"><div class="race-kicker">${esc(race.race_time)} · ${esc(race.course)}</div><h2 class="race-title">${esc(race.race_name||'Race')}</h2><div class="race-meta"><span class="chip">${esc(race.race_distance||'Distance unknown')}</span><span class="chip">${esc(race.going||'Going unknown')}</span>${race.race_class?`<span class="chip">Class ${race.race_class}</span>`:''}<span class="chip">${race.field_size} runners</span>${race.racecard_url?`<a class="chip good" href="${esc(race.racecard_url)}">Open racecard ↗</a>`:''}</div></section><div class="grid"><section class="panel"><h2>🏁 Projected Early Position</h2><div class="pace-summary"><strong>${esc(pace.headline||'Pace unavailable')}</strong><span class="chip ${num(pace.confidence_pct,0)>=75?'good':'warn'}">Confidence ${pct(pace.confidence_pct)}</span></div><p class="panel-note">${esc(pace.explanation||'')}</p><div class="pace-lanes">${paceLane('front','EARLY LEAD',lanes.front||[])}${paceLane('prominent','PROMINENT',lanes.prominent||[])}${paceLane('midfield','MIDFIELD',lanes.midfield||[])}${paceLane('hold-up','HOLD-UP',lanes['hold-up']||[])}</div><div class="confidence-bar"><span style="width:${Math.max(0,Math.min(100,num(pace.confidence_pct,0)))}%"></span></div></section>${coursePanel(cp)}</div>${scenarioTable(race)}<div class="grid" style="margin-top:12px">${handicapPanel(race)}${movementPanel(race)}</div>${notesPanel(race)}`;
+      app.innerHTML=`<section class="race-head panel"><div class="race-kicker">${esc(race.race_time)} · ${esc(race.course)}</div><h2 class="race-title">${esc(race.race_name||'Race')}</h2><div class="race-meta"><span class="chip">${esc(race.race_distance||'Distance unknown')}</span><span class="chip">${esc(race.going||'Going unknown')}</span>${race.race_class?`<span class="chip">Class ${race.race_class}</span>`:''}<span class="chip">${race.field_size} runners</span>${race.racecard_url?`<a class="chip good" href="${esc(race.racecard_url)}">Open racecard ↗</a>`:''}</div></section><div class="grid"><section class="panel"><h2>🏁 Projected Early Position</h2><div class="pace-summary"><strong>${esc(pace.headline||'Pace unavailable')}</strong><span class="chip ${num(pace.confidence_pct,0)>=75?'good':'warn'}">Confidence ${pct(pace.confidence_pct)}</span></div><p class="panel-note">${esc(pace.explanation||'')}</p><div class="pace-lanes">${paceLane('front','EARLY LEAD',lanes.front||[])}${paceLane('prominent','PROMINENT',lanes.prominent||[])}${paceLane('midfield','MIDFIELD',lanes.midfield||[])}${paceLane('hold-up','HOLD-UP',lanes['hold-up']||[])}${paceLane('unknown','UNKNOWN STYLE',lanes.unknown||[])}</div><div class="confidence-bar"><span style="width:${Math.max(0,Math.min(100,num(pace.confidence_pct,0)))}%"></span></div></section>${coursePanel(cp)}</div>${scenarioTable(race)}<div class="grid" style="margin-top:12px">${handicapPanel(race)}${movementPanel(race)}</div>${notesPanel(race)}`;
       app.querySelectorAll('[data-scenario]').forEach(btn=>btn.addEventListener('click',()=>{activeScenario=btn.dataset.scenario;render();}));
     };
 
-    fetch(`race_simulation_insights.json?v=${Date.now()}`,{cache:'no-store'})
-      .then(response=>{if(!response.ok) throw new Error(response.statusText);return response.json();})
+    RacingStore.get('race_simulation_insights.json')
       .then(payload=>{
         data=payload&&Array.isArray(payload.races)?payload:{races:[]};
         const summary=data.summary||{};

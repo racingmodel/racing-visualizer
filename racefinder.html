@@ -221,8 +221,8 @@
       * { scroll-behavior:auto !important; animation:none !important; transition:none !important; }
     }
   </style>
-</head>
-<body>
+<link rel="stylesheet" href="racing-ui.css"><script src="racing-store.js"></script><script defer src="racing-dashboard.js"></script></head>
+<body><section id="racing-upgrade"></section>
   <main class="shell">
     <header class="hero">
       <div class="hero-top">
@@ -464,16 +464,7 @@
     const nvalue = id => hasValue(id) ? num($(id).value) : null;
     const fitValues = runner => [runner.going_fit,runner.distance_fit,runner.class_fit,runner.form_fit].map(v => num(v,null)).filter(v => v !== null);
 
-    async function safeJSON(path) {
-      try {
-        const response = await fetch(`${path}?rf=${Date.now()}`, {cache:"no-store"});
-        if (!response.ok) throw new Error(`${response.status}`);
-        return await response.json();
-      } catch (error) {
-        console.warn(`Race Finder could not load ${path}:`, error);
-        return null;
-      }
-    }
+    async function safeJSON(path) { return RacingStore.get(path); }
 
     function fallbackRunner(entry, index) {
       const match = clean(entry.race_datetime).match(/(\d{1,2}\/\d{1,2}\/\d{4}).*?(\d{1,2}:\d{2})/);
@@ -793,7 +784,7 @@
     ["sort","group","odds-format"].forEach(id=>$(id).addEventListener("change",render));
     document.querySelectorAll("button[data-preset]").forEach(button=>button.addEventListener("click",()=>preset(button.dataset.preset)));
     window.addEventListener("resize",applyView);
-    loadData();
+    RacingStore.ready.then(() => { loadData(); RacingStore.subscribe(loadData); }).catch(console.error);
   })();
   </script>
 </body>
