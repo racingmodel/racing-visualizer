@@ -6466,7 +6466,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">06 Sep 2026, 20:29</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">06 Sep 2026, 21:20</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -6588,7 +6588,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">The latest officially advised shortlist for these races. Selections remain visible until race time. “Refresh price” means the last verified quote is over five minutes old and must be checked again before betting.</div>
+        <div class="section-note">The latest officially advised shortlist for these races. Horse ELO runners qualify when at least two of Rank Overlays, Model Edge Value, Top Rated or Big E/W agree. Selections remain visible until race time. “Refresh price” means the displayed price is not currently verified and must be checked before betting.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -10598,20 +10598,29 @@ const getShortlistType = (entry) => {
       .map(shortlistRunnerKey)
   );
 
-  // The main shortlist uses the same executable decisions as the desk and
-  // email. Watch-panel display thresholds must not veto approved advice.
+  // The main shortlist and email share the same carried-forward advice list:
+  // verified execution tickets plus the user's ELO two-main-area rule.
   const displayedRunnerLookup = new Map(allEntries.map(entry => [shortlistRunnerKey(entry),entry]));
-  const allCurrentShortlistItems = (RacingStore.snapshot?.data['daily_decisions.json']?.rows || [])
-    // Retain decisions that were Ready when the verified release was
-    // published. The live decision state below still expires the price after
-    // five minutes, but the emailed/advised runner remains visible until post.
-    .filter(decision => decision?.execution_status === 'ready')
+  const dailyDecisionPayload = RacingStore.snapshot?.data['daily_decisions.json'] || {};
+  const carriedAdviceRows = Array.isArray(dailyDecisionPayload.advised_rows)
+    ? dailyDecisionPayload.advised_rows
+    : [];
+  const currentReadyRows = (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
+    .filter(decision => decision?.execution_status === 'ready');
+  // New releases carry immutable execution advice forward until post.  The
+  // fallback keeps older daily_decisions.json deployments fully compatible.
+  const visibleAdviceRows = carriedAdviceRows.length ? carriedAdviceRows : currentReadyRows;
+  const uniqueVisibleAdviceRows = [...new Map(
+    visibleAdviceRows.map(decision => [shortlistRunnerKey(decision), decision])
+  ).values()];
+  const allCurrentShortlistItems = uniqueVisibleAdviceRows
     .map(decision => {
-      const liveState=RacingStore.decisionState(decision);
+      const liveState=RacingStore.decisionState({...decision,execution_status:'ready'});
       const entry=displayedRunnerLookup.get(shortlistRunnerKey(decision)) || decision;
       return {...entry,shortlist_type:decision.route,
         execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
         race_start_utc:decision.race_start_utc,execution_quote_timestamp:decision.quote_timestamp,
+        advice_status:decision.advice_status || 'advised_until_race_start',
         bookie_odds:String(decision.route||'').includes('Lay') ? entry.bookie_odds : (decision.price ?? entry.bookie_odds)};
     })
     .map(entry => p5SupportKeys.has(shortlistRunnerKey(entry))
