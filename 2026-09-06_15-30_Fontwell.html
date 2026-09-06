@@ -168,118 +168,7 @@
       .model-order-card.animation-enabled .model-race-replay { display: none; }
     }
   </style>
-<style data-racing-inline="racing-ui.css">
-.racing-upgrade {--ink:#e9f1f5;--muted:#b4c6d2;--line:#334a5c;color:var(--ink);background:#102231;border:1px solid var(--line);border-radius:14px;padding:clamp(15px,3vw,28px);margin:18px auto;max-width:1440px;font:16px/1.5 system-ui,sans-serif;box-sizing:border-box}
-.racing-upgrade *{box-sizing:border-box}.racing-upgrade h2{font-size:clamp(22px,3vw,32px);margin:0 0 8px;color:#fff}.racing-upgrade h3{margin:8px 0}.racing-upgrade p{color:var(--muted);margin:8px 0}.racing-upgrade .ru-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:16px 0}.racing-upgrade button,.racing-upgrade select,.racing-upgrade input{background:#203b4d;color:#fff;border:1px solid #6a8597;border-radius:7px;padding:10px 14px;font:inherit;min-height:44px}.racing-upgrade button{cursor:pointer}.racing-upgrade :focus-visible{outline:3px solid #79d5ff;outline-offset:3px}.racing-upgrade .ru-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.racing-upgrade article{background:#172e3e;border:1px solid var(--line);border-radius:10px;padding:16px}.racing-upgrade .ru-ready{border-left:4px solid #54d6a1}.racing-upgrade .ru-watch{border-left:4px solid #e8bd67}.racing-upgrade .ru-pill{display:inline-block;border:1px solid #6a8597;border-radius:20px;padding:3px 10px;font-size:13px}.racing-upgrade .ru-num{font-size:26px;font-weight:700}.racing-upgrade details{padding-top:12px}.racing-upgrade summary{cursor:pointer;min-height:36px}.racing-upgrade .ru-table-wrap{overflow:auto}.racing-upgrade table{width:100%;border-collapse:collapse;background:transparent;color:var(--ink);font:inherit}.racing-upgrade th,.racing-upgrade td{padding:10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}.racing-upgrade a{color:#8edaff}.racing-upgrade [role=status]{padding:8px 0}.racing-upgrade .ru-warning{color:#ffcf8c}.racing-upgrade .ru-good{color:#65e0b0}.racing-upgrade small{color:var(--muted)}
-
-</style><script data-racing-inline="racing-store.js">
-/* A single immutable, hash-checked snapshot for tables, cards and notifications. */
-(() => {
-  'use strict';
-  const names=['value_bets.json','placepot_picks.json','ai_bets.json','racing_products.json','shortlist_backtest.json','p5_shadow_predictions.json','historic_systems.json','daily_decisions.json','p6_predictions.json','race_finder_data.json','race_simulation_insights.json','extra_places.txt'];
-  const events=new EventTarget(); let snapshot=null, inflight=null, error=null;
-  const hash=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))), b=>b.toString(16).padStart(2,'0')).join('');
-  async function read(url){
-    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-    try{const r=await fetch(url,{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
-    catch(e){if(e.name==='AbortError')throw new Error(`Loading timed out: ${url.split('?')[0]}. Retrying automatically.`);throw e;}
-    finally{clearTimeout(timer);}
-  }
-  async function refresh(){
-    if(inflight)return inflight;
-    inflight=(async()=>{
-      try {
-        const manifest=JSON.parse(await read(`release_manifest.json?t=${Date.now()}`));
-        if(!manifest.files || !manifest.run_id)throw new Error('Release manifest invalid');
-        const revision=JSON.stringify(manifest.files);
-        if(snapshot?.revision===revision){error=null;return snapshot;}
-        const data={};
-        await Promise.all(names.map(async name=>{
-          if(!manifest.files[name]){data[name]=name.endsWith('.txt')?'':[];return;}
-          const text=await read(`${name}?release=${encodeURIComponent(manifest.run_id)}`);
-          if(await hash(text)!==manifest.files[name])throw new Error(`Release still updating: ${name}`);
-          data[name]=name.endsWith('.txt')?text:JSON.parse(text);
-        }));
-        if(!Array.isArray(data['value_bets.json']) || !Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
-        if(data['daily_decisions.json'].run_id!==manifest.run_id)throw new Error('Decision release mismatch');
-        snapshot=Object.freeze({manifest,data,revision,receivedAt:new Date().toISOString()});error=null;
-        events.dispatchEvent(new Event('change'));return snapshot;
-      } catch(e){error=e;events.dispatchEvent(new Event('error'));throw e;}
-      finally {inflight=null;}
-    })();return inflight;
-  }
-  function ukDate(text){
-    if(!text)return new Date(NaN);
-    if(/(?:Z|[+-]\d\d:\d\d)$/.test(String(text)))return new Date(text);
-    let m=String(text).match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/);
-    if(!m){let d=String(text).match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);if(!d)return new Date(NaN);m=[d[0],d[3],d[2],d[1],d[4],d[5],d[6]];}
-    const target=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0));let guess=target;
-    const fmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
-    for(let i=0;i<3;i++){const p=Object.fromEntries(fmt.formatToParts(new Date(guess)).map(x=>[x.type,x.value]));guess=target-(Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute,+p.second)-guess);}
-    return new Date(guess);
-  }
-  function decisionState(row, now=new Date()){
-    const result={...row};
-    const start=ukDate(row?.race_start_utc||row?.race_datetime).getTime();
-    const timestamp=ukDate(row?.quote_timestamp||row?.execution_quote_timestamp).getTime();
-    const current=Number(now),age=current-timestamp;
-    if(Number.isFinite(start) && start<=current){result.execution_status='closed';result.execution_reason='race_started';}
-    else if(result.execution_status==='ready'){
-      const reason=!Number.isFinite(start)?'invalid_race_time':!Number.isFinite(timestamp)?'missing_quote_timestamp':age < -5000?'future_timestamp':age > 300000?'stale_quote':null;
-      if(reason){result.execution_status='watch';result.execution_reason=reason;}
-    }
-    return result;
-  }
-  const ready=refresh();ready.catch(()=>{});
-  window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,
-    async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
-    subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
-    onError(fn){events.addEventListener('error',fn);},
-    isReady(row){return decisionState(row).execution_status==='ready';}
-  };
-  setInterval(()=>refresh().catch(()=>{}),60000);
-})();
-
-</script><script data-racing-inline="racing-dashboard.js">
-(() => {
- 'use strict';
- const start=()=>{
-  const root=document.getElementById('racing-upgrade');if(!root || !window.RacingStore)return;
-  root.classList.add('racing-upgrade');
-  root.innerHTML=`<h2>Today's decision desk</h2><p>Current offers, clear reasons and the complete advice record. Ratings elsewhere on the page are model signals; execution status here determines readiness.</p><div id="ru-status" role="status" aria-live="polite">Loading a verified release…</div><div class="ru-toolbar"><label>Show <select id="ru-filter"><option value="ready">Ready now</option><option value="watch">Watch / blocked</option><option value="all">All candidates</option></select></label><label>Search <input id="ru-search" type="search" placeholder="Horse or course"></label><button id="ru-refresh" type="button">Refresh</button><button id="ru-notify" type="button">Enable shortlist notifications</button></div><div id="ru-cards" class="ru-grid"></div><details><summary>Performance: every retained advice route</summary><label>Scope <select id="ru-scope"><option value="all">All advice, including retired routes</option><option value="active">Current routes</option><option value="retired">Retired routes</option></select></label><div id="ru-evidence"></div></details><details><summary>Research challenger forecasts</summary><p>Unpromoted forecasts. These do not create bets or change the ready shortlist.</p><div id="ru-research"></div></details><details><summary>Offer calculator</summary><p>Use probabilities as percentages. Each-way EV is per £1 win + £1 place.</p><div class="ru-toolbar"><label>Win % <input id="ru-pw" type="number" min="0" max="100" value="10"></label><label>Place % <input id="ru-pp" type="number" min="0" max="100" value="35"></label><label>Decimal odds <input id="ru-odds" type="number" min="1.01" step="0.1" value="12"></label><label>Place fraction <select id="ru-fraction"><option value="0.2">1/5</option><option value="0.25">1/4</option></select></label></div><p id="ru-calculation" role="status"></p></details>`;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const fmt=(v,d=2)=>v==null?'—':Number(v).toFixed(d);
-  function calculate(){const p=+root.querySelector('#ru-pw').value/100,q=+root.querySelector('#ru-pp').value/100,o=+root.querySelector('#ru-odds').value,f=+root.querySelector('#ru-fraction').value;root.querySelector('#ru-calculation').textContent=(p<0||q<p||q>1||o<=1)?'Enter valid odds and a place probability at least as high as win probability.':`Win EV £${fmt(p*o-1)}; each-way EV £${fmt(p*o+q*(1+(o-1)*f)-2)}; lay EV £${fmt((1-p)*.98-p*(o-1))} per £1 lay stake, liability £${fmt(o-1)} (2% commission assumption).`;}
-  function render(){
-   const snap=RacingStore.snapshot;if(!snap)return;
-   const payload=snap.data['daily_decisions.json'];const now=new Date();
-   const age=(now-new Date(payload.generated_at_utc))/60000;
-   root.querySelector('#ru-status').textContent=`Release ${snap.manifest.run_id} · ${age.toFixed(1)} minutes old · ${payload.summary.ready} qualified when published. ${age>5?'Quotes need refreshing before use.':''}`;
-   let rows=payload.rows.map(r=>RacingStore.decisionState(r,now));
-   if(root.dataset.raceTime)rows=rows.filter(r=>String(r.race_datetime||'').includes(root.dataset.raceTime) && String(r.course||'').toLowerCase()===root.dataset.course.toLowerCase());
-   const filter=root.querySelector('#ru-filter').value,query=root.querySelector('#ru-search').value.toLowerCase();
-   rows=rows.filter(r=>(filter==='all'||(filter==='ready'?r.execution_status==='ready':r.execution_status!=='ready')) && `${r.horse} ${r.course}`.toLowerCase().includes(query));
-   root.querySelector('#ru-cards').innerHTML=rows.length?rows.map(r=>`<article class="${r.execution_status==='ready'?'ru-ready':'ru-watch'}"><span class="ru-pill">${esc(r.execution_status)}</span><h3>${esc(r.horse)}</h3><p>${esc(r.race_datetime)} · ${esc(r.course)}</p><strong>${esc(r.route)}</strong><p>${esc(String(r.execution_reason||'').replaceAll('_',' '))}</p><div>Price <b>${fmt(r.price)}</b> · ${esc(r.offer_bookmaker||'Offer unavailable')}</div><div>Net EV <b>${fmt(r.net_ev)}</b> · stressed EV <b>${fmt(r.stressed_ev)}</b></div><small>EV per £1 stake, or £1 each leg for E/W. Stress margin is a sensitivity assumption.</small><details><summary>Why this selection / price limits</summary><p>${esc((r.reason_codes||[]).join(' · '))}</p><p>Back floor ${fmt(r.price_floor)} · lay ceiling ${fmt(r.price_ceiling)}</p><p>Data ${fmt(r.data_coverage,0)}% · race confidence ${fmt(r.race_data_confidence,0)}%</p><p>Suggested stake ${fmt(r.stake_units)} units · capital at risk ${fmt(r.liability_units)} units.</p><p>Offer ${esc(r.offer_id)} · captured ${esc(r.quote_timestamp)}</p></details></article>`).join(''):'<p>No selections meet this view. A quiet shortlist is a valid result.</p>';
-   const research=snap.data['p6_predictions.json']?.rows||[];
-   root.querySelector('#ru-research').innerHTML=research.length?`<div class="ru-table-wrap"><table><thead><tr><th>Horse</th><th>Course</th><th>Win</th><th>Top 3</th><th>Top 4</th><th>Training cutoff</th></tr></thead><tbody>${research.slice(0,100).map(r=>`<tr><td>${esc(r.horse)}</td><td>${esc(r.course)}</td><td>${fmt(100*r.win_prob)}%</td><td>${fmt(100*r.place3_prob)}%</td><td>${fmt(100*r.place4_prob)}%</td><td>${esc(r.training_cutoff)}</td></tr>`).join('')}</tbody></table></div>`:'<p>No current challenger forecasts. Run the research trainer and next model refresh.</p>';
-   const ledger=snap.data['shortlist_backtest.json']||{},scope=root.querySelector('#ru-scope').value;
-   let advice=scope==='active'?(ledger.rows||[]):scope==='retired'?(ledger.archived_rows||[]):ledger.all_advice_rows||[...(ledger.rows||[]),...(ledger.archived_rows||[])];
-   let settled=advice.filter(r=>r.settled),pl=settled.reduce((s,r)=>s+(+r.pl||0),0),stake=settled.reduce((s,r)=>s+(+r.settled_stake||0),0);
-   let basis={};settled.forEach(r=>{const k=r.settlement_basis||'Legacy / unclassified';basis[k]??={n:0,pl:0};basis[k].n++;basis[k].pl+=+r.pl||0;});
-   root.querySelector('#ru-evidence').innerHTML=`<p><strong>${settled.length}</strong> settled / ${advice.length} retained · P/L <strong>${fmt(pl)}</strong> · stake ${fmt(stake)} · ROI ${stake?fmt(100*pl/stake):'—'}%</p><p>Retired advice stays in the all-advice record. Legacy and simulated prices are not executable-price proof.</p><div class="ru-table-wrap"><table><thead><tr><th>Settlement evidence</th><th>Settled</th><th>P/L</th></tr></thead><tbody>${Object.entries(basis).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.pl)}</td></tr>`).join('')}</tbody></table></div>`;
-  }
-  root.addEventListener('input',e=>{if(e.target.id.startsWith('ru-p')||e.target.id==='ru-odds'||e.target.id==='ru-fraction')calculate();else render();});
-  root.addEventListener('change',render);
-  root.querySelector('#ru-refresh').addEventListener('click',()=>RacingStore.refresh().catch(()=>{}));
-  root.querySelector('#ru-notify').addEventListener('click',async()=>{if(!('Notification'in window)){alert('This browser does not support notifications.');return;}const p=await Notification.requestPermission();localStorage.setItem('racing_notifications',p==='granted'?'on':'off');root.querySelector('#ru-notify').textContent=p==='granted'?'Notifications enabled':'Notifications unavailable';});
-  RacingStore.subscribe(render);RacingStore.onError(()=>{root.querySelector('#ru-status').textContent=`Refresh unavailable: ${RacingStore.error.message}. Previous snapshot is retained; check quote age.`;});
-  RacingStore.ready.then(render).catch(()=>{root.querySelector('#ru-status').textContent='A complete published release is required. Run the local release builder or refresh after publication.';});
-  setInterval(render,30000);calculate();
- };
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();
-
-</script></head>
+<link rel="stylesheet" href="racing-ui.css"><script src="racing-store.js"></script><script defer src="racing-dashboard.js"></script></head>
 <body><section id="racing-upgrade" data-race-time="15:30" data-course="Fontwell"></section>
   <main class="race-shell">
     <nav class="race-nav" aria-label="Racecard navigation">
@@ -295,7 +184,7 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 6 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="gata-ban" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="2"><a class="runner-card" href="#horse-gata-ban" aria-label="1st: Gata Ban"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Gata Ban</strong><span class="runner-numbers"><span>Real <b>3.00</b></span><span>Score <b>549</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="edgewell" style="--track-position:83.76%;--race-quarter:25.44%;--race-mid:48.77%;--race-late:74.43%;--race-overshoot:84.31%" data-cloth="1"><a class="runner-card" href="#horse-edgewell" aria-label="2nd: Edgewell"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Edgewell</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>546</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="of-corse-i-can" style="--track-position:69.30%;--race-quarter:21.83%;--race-mid:40.82%;--race-late:61.71%;--race-overshoot:69.85%" data-cloth="6"><a class="runner-card" href="#horse-of-corse-i-can" aria-label="3rd: Of Corse I Can"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Of Corse I Can</strong><span class="runner-numbers"><span>Real <b>3.75</b></span><span>Score <b>363</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="frankie-faulkner" style="--track-position:61.87%;--race-quarter:19.97%;--race-mid:36.73%;--race-late:55.17%;--race-overshoot:62.42%" data-cloth="5"><a class="runner-card" href="#horse-frankie-faulkner" aria-label="4th: Frankie Faulkner"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Frankie Faulkner</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>269</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="unspeakable" style="--track-position:56.34%;--race-quarter:18.59%;--race-mid:33.69%;--race-late:50.30%;--race-overshoot:56.89%" data-cloth="3"><a class="runner-card" href="#horse-unspeakable" aria-label="5th: Unspeakable"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Unspeakable</strong><span class="runner-numbers"><span>Real <b>7.00</b></span><span>Score <b>199</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="the-kings-soldier" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="4"><a class="runner-card" href="#horse-the-kings-soldier" aria-label="6th: The Kings Soldier"><span class="runner-rank">6th</span><span class="runner-copy"><strong>The Kings Soldier</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>182</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 6 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="gata-ban" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="2"><a class="runner-card" href="#horse-gata-ban" aria-label="1st: Gata Ban"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Gata Ban</strong><span class="runner-numbers"><span>Real <b>2.62</b></span><span>Score <b>550</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="edgewell" style="--track-position:83.68%;--race-quarter:25.42%;--race-mid:48.73%;--race-late:74.36%;--race-overshoot:84.23%" data-cloth="1"><a class="runner-card" href="#horse-edgewell" aria-label="2nd: Edgewell"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Edgewell</strong><span class="runner-numbers"><span>Real <b>8.50</b></span><span>Score <b>546</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="of-corse-i-can" style="--track-position:69.26%;--race-quarter:21.82%;--race-mid:40.79%;--race-late:61.67%;--race-overshoot:69.81%" data-cloth="6"><a class="runner-card" href="#horse-of-corse-i-can" aria-label="3rd: Of Corse I Can"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Of Corse I Can</strong><span class="runner-numbers"><span>Real <b>4.00</b></span><span>Score <b>363</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="frankie-faulkner" style="--track-position:61.86%;--race-quarter:19.96%;--race-mid:36.72%;--race-late:55.15%;--race-overshoot:62.41%" data-cloth="5"><a class="runner-card" href="#horse-frankie-faulkner" aria-label="4th: Frankie Faulkner"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Frankie Faulkner</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>269</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="unspeakable" style="--track-position:56.34%;--race-quarter:18.58%;--race-mid:33.69%;--race-late:50.30%;--race-overshoot:56.89%" data-cloth="3"><a class="runner-card" href="#horse-unspeakable" aria-label="5th: Unspeakable"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Unspeakable</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>199</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="the-kings-soldier" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="4"><a class="runner-card" href="#horse-the-kings-soldier" aria-label="6th: The Kings Soldier"><span class="runner-rank">6th</span><span class="runner-copy"><strong>The Kings Soldier</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>182</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -315,73 +204,73 @@
     <tr>
       <td>2</td>
       <td><span id="horse-gata-ban" class="horse-anchor-target">Gata Ban</span></td>
-      <td>3.00</td>
-      <td>3.05</td>
-      <td>3.08</td>
-      <td><span class="edge-pill edge-negative">-0.5pp</span></td>
-      <td>1st · 549</td>
+      <td>2.62</td>
+      <td>2.93</td>
+      <td>3.07</td>
+      <td><span class="edge-pill edge-negative">-4.0pp</span></td>
+      <td>1st · 550</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>59.3%</td>
+      <td>61.0%</td>
       <td><div class="model-view-cell">🏟️ Fontwell Park proven 📘 ATR 🧠 Model-history +2% (n=9, avg 7.0) context-fitness</div></td>
     </tr>
     <tr>
       <td>1</td>
       <td><span id="horse-edgewell" class="horse-anchor-target">Edgewell</span></td>
-      <td>8.00</td>
-      <td>4.43</td>
+      <td>8.50</td>
+      <td>4.60</td>
       <td>3.13</td>
-      <td><span class="edge-pill edge-positive">+10.1pp</span></td>
+      <td><span class="edge-pill edge-positive">+10.0pp</span></td>
       <td>2nd · 546</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>45.8%</td>
+      <td>44.7%</td>
       <td><div class="model-view-cell">💰 Value · 🏟️ Fontwell Park proven 📘 ATR 🧠 Model-history +0% (n=17, avg 5.12) context-edge context-connection context-trip context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>6</td>
       <td><span id="horse-of-corse-i-can" class="horse-anchor-target">Of Corse I Can</span></td>
-      <td>3.75</td>
-      <td>5.72</td>
+      <td>4.00</td>
       <td>5.94</td>
-      <td><span class="edge-pill edge-negative">-9.2pp</span></td>
+      <td>5.95</td>
+      <td><span class="edge-pill edge-negative">-8.2pp</span></td>
       <td>3rd · 363</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>36.2%</td>
+      <td>35.2%</td>
       <td><div class="model-view-cell">⚠️ One-Dimensional 🧠 Model-history −1% (n=10, avg 5.36) context-fitness</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-frankie-faulkner" class="horse-anchor-target">Frankie Faulkner</span></td>
-      <td>5.50</td>
-      <td>8.59</td>
-      <td>11.29</td>
-      <td><span class="edge-pill edge-negative">-6.5pp</span></td>
+      <td>4.50</td>
+      <td>8.07</td>
+      <td>11.31</td>
+      <td><span class="edge-pill edge-negative">-9.8pp</span></td>
       <td>4th · 269</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>24.5%</td>
-      <td><div class="model-view-cell">⚠️ One-Dimensional 📘 ATR 🧠 Model-history +1% (n=2, avg 6.45) context-fitness-risk</div></td>
+      <td>26.1%</td>
+      <td><div class="model-view-cell">📘 ATR ⚠️ One-Dimensional 🧠 Model-history +1% (n=2, avg 6.45) context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>3</td>
       <td><span id="horse-unspeakable" class="horse-anchor-target">Unspeakable</span></td>
-      <td>7.00</td>
-      <td>11.36</td>
+      <td>8.00</td>
+      <td>12.09</td>
       <td>19.46</td>
-      <td><span class="edge-pill edge-negative">-5.5pp</span></td>
+      <td><span class="edge-pill edge-negative">-4.2pp</span></td>
       <td>5th · 199</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>19.5%</td>
+      <td>18.5%</td>
       <td><div class="model-view-cell">🧠 Model-history +0% (n=9, avg 5.63) context-trip</div></td>
     </tr>
     <tr>
       <td>4</td>
       <td><span id="horse-the-kings-soldier" class="horse-anchor-target">The Kings Soldier</span></td>
       <td>13.00</td>
-      <td>14.94</td>
-      <td>21.12</td>
-      <td><span class="edge-pill edge-negative">-1.0pp</span></td>
+      <td>15.12</td>
+      <td>21.11</td>
+      <td><span class="edge-pill edge-negative">-1.1pp</span></td>
       <td>6th · 182</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>14.6%</td>
+      <td>14.5%</td>
       <td><div class="model-view-cell">🧠 Model-history +1% (n=8, avg 5.46)</div></td>
     </tr>
   </tbody>
@@ -484,41 +373,41 @@
     <tr>
       <td>2</td>
       <td>Gata Ban</td>
-      <td>3.00</td>
-      <td>3.07</td>
-      <td>32.58</td>
-      <td>3.38</td>
-      <td>3.25</td>
-      <td>3.05</td>
+      <td>2.62</td>
+      <td>3.06</td>
+      <td>32.64</td>
       <td>3.08</td>
-      <td>32.84</td>
-      <td>33.33</td>
-      <td>29.59</td>
-      <td>-0.50</td>
-      <td>3.25</td>
-      <td>112.66</td>
+      <td>3.00</td>
+      <td>2.93</td>
+      <td>3.07</td>
+      <td>34.13</td>
+      <td>38.10</td>
+      <td>32.48</td>
+      <td>-3.97</td>
+      <td>1.64</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>59.31</td>
-      <td>54.67</td>
-      <td>4.64</td>
-      <td>-0.185</td>
+      <td>60.99</td>
+      <td>58.88</td>
+      <td>2.11</td>
+      <td>-0.296</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
-      <td>549</td>
+      <td>550</td>
       <td>fontwell park</td>
       <td>jumps</td>
       <td>turf</td>
       <td>1.100</td>
       <td>0.0</td>
       <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
-      <td>549.057627</td>
+      <td>549.637528</td>
       <td>0.0000</td>
       <td>0.000000</td>
       <td>73.750000</td>
@@ -564,39 +453,39 @@
       <td></td>
       <td>🏟️ Fontwell Park proven 📘 ATR 🧠 Model-history +2% (n=9, avg 7.0) context-fitness</td>
       <td>100.0</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
     <tr>
       <td>1</td>
       <td>Edgewell</td>
+      <td>8.50</td>
+      <td>3.12</td>
+      <td>32.08</td>
+      <td>9.97</td>
       <td>8.00</td>
-      <td>3.11</td>
-      <td>32.12</td>
-      <td>9.01</td>
-      <td>7.36</td>
-      <td>4.43</td>
+      <td>4.60</td>
       <td>3.13</td>
-      <td>22.56</td>
-      <td>12.50</td>
-      <td>11.10</td>
-      <td>10.06</td>
-      <td>11.46</td>
-      <td>112.66</td>
+      <td>21.76</td>
+      <td>11.76</td>
+      <td>10.03</td>
+      <td>10.00</td>
+      <td>11.73</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>45.80</td>
-      <td>23.69</td>
-      <td>22.11</td>
-      <td>0.904</td>
+      <td>44.72</td>
+      <td>21.79</td>
+      <td>22.92</td>
+      <td>0.968</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
       <td>546</td>
@@ -606,9 +495,9 @@
       <td>1.100</td>
       <td>0.0</td>
       <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
-      <td>538.085709</td>
+      <td>538.037033</td>
       <td>1.4836</td>
-      <td>7.983037</td>
+      <td>7.982315</td>
       <td>90.750000</td>
       <td>connection,trip</td>
       <td>fitness</td>
@@ -630,10 +519,10 @@
       <td>0.050457</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>75.2</td>
+      <td>74.8</td>
       <td>71.5</td>
-      <td>58.7</td>
-      <td>54.0</td>
+      <td>58.1</td>
+      <td>54.8</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -652,39 +541,39 @@
       <td>💰</td>
       <td>🏟️ Fontwell Park proven 📘 ATR 🧠 Model-history +0% (n=17, avg 5.12) context-edge context-connection context-trip context-fitness-risk</td>
       <td>100.0</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
     <tr>
       <td>6</td>
       <td>Of Corse I Can</td>
-      <td>3.75</td>
+      <td>4.00</td>
       <td>7.36</td>
-      <td>13.59</td>
-      <td>4.22</td>
-      <td>4.53</td>
-      <td>5.72</td>
+      <td>13.58</td>
+      <td>4.69</td>
+      <td>4.93</td>
       <td>5.94</td>
-      <td>17.47</td>
-      <td>26.67</td>
-      <td>23.67</td>
-      <td>-9.19</td>
-      <td>-6.20</td>
-      <td>112.66</td>
+      <td>5.95</td>
+      <td>16.83</td>
+      <td>25.00</td>
+      <td>21.32</td>
+      <td>-8.17</td>
+      <td>-4.48</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>36.22</td>
-      <td>46.01</td>
-      <td>-9.79</td>
-      <td>-0.783</td>
+      <td>35.19</td>
+      <td>42.60</td>
+      <td>-7.41</td>
+      <td>-0.764</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
       <td>363</td>
@@ -694,7 +583,7 @@
       <td>0.484</td>
       <td>0.0</td>
       <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
-      <td>362.938556</td>
+      <td>362.800286</td>
       <td>0.0000</td>
       <td>0.000000</td>
       <td>52.285714</td>
@@ -721,7 +610,7 @@
       <td>60.1</td>
       <td>41.1</td>
       <td>65.7</td>
-      <td>86.6</td>
+      <td>86.7</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -740,39 +629,39 @@
       <td></td>
       <td>⚠️ One-Dimensional 🧠 Model-history −1% (n=10, avg 5.36) context-fitness</td>
       <td>100.0</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
     <tr>
       <td>5</td>
       <td>Frankie Faulkner</td>
-      <td>5.50</td>
-      <td>11.20</td>
-      <td>8.93</td>
-      <td>6.20</td>
-      <td>6.68</td>
-      <td>8.59</td>
-      <td>11.29</td>
-      <td>11.64</td>
-      <td>18.18</td>
-      <td>16.14</td>
-      <td>-6.54</td>
-      <td>-4.50</td>
-      <td>112.66</td>
+      <td>4.50</td>
+      <td>11.19</td>
+      <td>8.94</td>
+      <td>5.28</td>
+      <td>5.84</td>
+      <td>8.07</td>
+      <td>11.31</td>
+      <td>12.40</td>
+      <td>22.22</td>
+      <td>18.95</td>
+      <td>-9.82</td>
+      <td>-6.55</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>24.50</td>
-      <td>33.38</td>
-      <td>-8.88</td>
-      <td>-0.894</td>
+      <td>26.08</td>
+      <td>38.80</td>
+      <td>-12.72</td>
+      <td>-0.999</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
       <td>269</td>
@@ -782,7 +671,7 @@
       <td>0.000</td>
       <td>0.0</td>
       <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
-      <td>269.191218</td>
+      <td>269.456844</td>
       <td>0.0000</td>
       <td>0.000000</td>
       <td>55.035714</td>
@@ -806,10 +695,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R3 Midfield/Unclear</td>
-      <td>39.5</td>
+      <td>41.0</td>
       <td>23.4</td>
-      <td>47.7</td>
-      <td>74.4</td>
+      <td>50.0</td>
+      <td>77.7</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -826,41 +715,41 @@
       <td>+3.1%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>⚠️ One-Dimensional 📘 ATR 🧠 Model-history +1% (n=2, avg 6.45) context-fitness-risk</td>
+      <td>📘 ATR ⚠️ One-Dimensional 🧠 Model-history +1% (n=2, avg 6.45) context-fitness-risk</td>
       <td>100.0</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
     <tr>
       <td>3</td>
       <td>Unspeakable</td>
-      <td>7.00</td>
+      <td>8.00</td>
       <td>15.15</td>
       <td>6.60</td>
-      <td>7.89</td>
-      <td>8.59</td>
-      <td>11.36</td>
+      <td>9.38</td>
+      <td>9.91</td>
+      <td>12.09</td>
       <td>19.46</td>
-      <td>8.80</td>
-      <td>14.29</td>
-      <td>12.68</td>
-      <td>-5.48</td>
-      <td>-3.88</td>
-      <td>112.66</td>
+      <td>8.27</td>
+      <td>12.50</td>
+      <td>10.66</td>
+      <td>-4.23</td>
+      <td>-2.39</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>19.53</td>
-      <td>26.80</td>
-      <td>-7.27</td>
-      <td>-0.954</td>
+      <td>18.48</td>
+      <td>23.11</td>
+      <td>-4.63</td>
+      <td>-0.895</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
       <td>199</td>
@@ -870,7 +759,7 @@
       <td>0.457</td>
       <td>0.0</td>
       <td>2026.08.13-course-profiles-p2.3-canonical-priors</td>
-      <td>198.636389</td>
+      <td>198.539855</td>
       <td>0.0000</td>
       <td>0.000000</td>
       <td>76.250000</td>
@@ -894,10 +783,10 @@
       <td>0.002776</td>
       <td>100.0</td>
       <td>R4 Weak/Lay</td>
-      <td>21.6</td>
-      <td>12.6</td>
-      <td>31.5</td>
-      <td>35.6</td>
+      <td>20.8</td>
+      <td>12.5</td>
+      <td>30.3</td>
+      <td>33.9</td>
       <td>20.7</td>
       <td>Low</td>
       <td>Historic matching run 2/4 at Plumpton on 17/11/25 matched going, distance. 1 newer poor run(s) came under materially different conditions. The complete Revival Watch evidence gate was not reached.</td>
@@ -916,10 +805,10 @@
       <td></td>
       <td>🧠 Model-history +0% (n=9, avg 5.63) context-trip</td>
       <td>87.5</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
     <tr>
       <td>4</td>
@@ -927,28 +816,28 @@
       <td>13.00</td>
       <td>16.21</td>
       <td>6.17</td>
-      <td>14.65</td>
-      <td>14.54</td>
-      <td>14.94</td>
-      <td>21.12</td>
-      <td>6.69</td>
+      <td>15.25</td>
+      <td>15.02</td>
+      <td>15.12</td>
+      <td>21.11</td>
+      <td>6.61</td>
       <td>7.69</td>
-      <td>6.83</td>
-      <td>-1.00</td>
-      <td>-0.13</td>
-      <td>112.66</td>
+      <td>6.56</td>
+      <td>-1.08</td>
+      <td>0.05</td>
+      <td>117.27</td>
       <td>62.62</td>
-      <td>14.64</td>
-      <td>15.46</td>
-      <td>-0.82</td>
-      <td>-0.632</td>
+      <td>14.53</td>
+      <td>14.82</td>
+      <td>-0.28</td>
+      <td>-0.646</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.62625</td>
       <td>0.167917</td>
       <td>0.4634</td>
-      <td>0.7724</td>
-      <td>2.9889</td>
+      <td>0.7723</td>
+      <td>3.6182</td>
       <td>1.31902</td>
       <td>2</td>
       <td>182</td>
@@ -1004,10 +893,10 @@
       <td></td>
       <td>🧠 Model-history +1% (n=8, avg 5.46)</td>
       <td>100.0</td>
-      <td>2026.09.05-contracts-v2</td>
+      <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.01-p4.22-elo-two-section-shortlist</td>
-      <td>20260906_125530</td>
-      <td>2026-09-06 12:55:30</td>
+      <td>20260906_151256</td>
+      <td>2026-09-06 15:12:56</td>
     </tr>
   </tbody>
 </table></div>
