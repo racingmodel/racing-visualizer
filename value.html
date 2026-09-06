@@ -3336,8 +3336,31 @@
         color: #ffe976 !important;
         font-weight: 900;
         text-overflow: ellipsis;
-        text-decoration: none;
-      }
+      text-decoration: none;
+    }
+
+    .shortlist-quote-state {
+      display: block;
+      width: fit-content;
+      margin: 0.34rem auto 0;
+      padding: 0.18rem 0.46rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 950;
+      line-height: 1.15;
+      text-transform: uppercase;
+      letter-spacing: 0.035em;
+    }
+
+    .shortlist-quote-state.is-ready {
+      color: #092b16;
+      background: #8ff0ad;
+    }
+
+    .shortlist-quote-state.is-refresh {
+      color: #2b2100;
+      background: #ffd85a;
+    }
       .mobile-selection-horse { font-size: 0.9rem; }
       .mobile-selection-price {
         display: inline-flex;
@@ -6554,11 +6577,11 @@
 <details id="todays-shortlist" class="section-card section-shortlist" open>
       <summary class="section-title">
         <span class="section-title-left">⭐ Today’s Bet &amp; Lay Shortlist <span id="shortlist-section-count" class="section-count">0</span></span>
-        <span id="shortlist-mobile-cue" class="shortlist-mobile-cue" aria-live="polite"><span class="shortlist-signal-dot" aria-hidden="true"></span><span>Checking for live selections…</span></span>
+        <span id="shortlist-mobile-cue" class="shortlist-mobile-cue" aria-live="polite"><span class="shortlist-signal-dot" aria-hidden="true"></span><span>Checking advised selections…</span></span>
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">The active, actionable model shortlist. Market odds are the available price; shorter model odds can indicate value. Win Lay and Place Lay are clearly labelled and use different settlement rules.</div>
+        <div class="section-note">The latest officially advised shortlist for these races. Selections remain visible until race time. “Refresh price” means the last verified quote is over five minutes old and must be checked again before betting.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -7086,10 +7109,10 @@
       if (hasItems) {
         const noun = count === 1 ? "selection" : "selections";
         shortlistCue.textContent = shortlist.open
-          ? `${count} live ${noun} shown`
-          : `${count} live ${noun} inside · Tap to open`;
+          ? `${count} advised ${noun} shown`
+          : `${count} advised ${noun} inside · Tap to open`;
       } else {
-        shortlistCue.textContent = "No live selections right now";
+        shortlistCue.textContent = "No advised selections right now";
       }
     };
 
@@ -8582,11 +8605,21 @@ window.renderRacingView = async () => {
     const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
     const raw = entry?.raw_odds ?? "-";
+    const marketLabel = String(entry?.execution_status || "").toLowerCase() === "ready"
+      ? "Market"
+      : "Last price";
     return `<div class="shortlist-core-prices" aria-label="Market, model and raw odds">
-      <span class="desktop-price-box"><small>Market</small><strong>${escHTML(market)}</strong></span>
+      <span class="desktop-price-box"><small>${marketLabel}</small><strong>${escHTML(market)}</strong></span>
       <span class="desktop-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
       <span class="desktop-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
     </div>`;
+  };
+
+  const shortlistQuoteStateHTML = (entry) => {
+    const ready = String(entry?.execution_status || "").toLowerCase() === "ready";
+    return ready
+      ? '<span class="shortlist-quote-state is-ready">Price verified</span>'
+      : '<span class="shortlist-quote-state is-refresh">Refresh price</span>';
   };
 
   const mainShortlistRow = (entry, rowClass = "") => {
@@ -8594,7 +8627,7 @@ window.renderRacingView = async () => {
     const back = entry?.bf_back_odds ?? "-";
     const lay = entry?.bf_lay_odds ?? "-";
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
+      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}${shortlistQuoteStateHTML(entry)}</td>
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
       <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div></td>
       <td data-label="Market / Model / Raw">${mainShortlistInlinePricesHTML(entry)}</td>
@@ -8718,8 +8751,11 @@ window.renderRacingView = async () => {
     );
     const horseLink = racecardHorseLinkHTML(entry, entry?.horse || "", "mobile-selection-horse");
     const mobileResult = resultLabel(entry);
-    const mobileStatusHTML = /^Pending/i.test(mobileResult)
-      ? `<span class="mobile-card-live-status"><span aria-hidden="true"></span>Live</span>`
+    const quoteIsReady = String(entry?.execution_status || "").toLowerCase() === "ready";
+    const mobileStatusHTML = !quoteIsReady
+      ? `<span class="shortlist-quote-state is-refresh">Refresh price</span>`
+      : /^Pending/i.test(mobileResult)
+      ? `<span class="mobile-card-live-status"><span aria-hidden="true"></span>Price verified</span>`
       : resultBadgeHTML(entry);
 
     return `<article class="mobile-selection-card">
@@ -8732,7 +8768,7 @@ window.renderRacingView = async () => {
         <div class="mobile-card-horse">${horseLink}</div>
       </div>
       <div class="mobile-card-odds-grid" aria-label="Market and model odds comparison">
-        <span class="mobile-card-odds is-market"><small>Market odds</small><strong>${escHTML(market)}</strong></span>
+        <span class="mobile-card-odds is-market"><small>${quoteIsReady ? "Market odds" : "Last price"}</small><strong>${escHTML(market)}</strong></span>
         <span class="mobile-card-odds is-model"><small>Model odds</small><strong>${escHTML(model)}</strong></span>
         <span class="mobile-card-odds is-raw"><small>Raw odds</small><strong>${escHTML(raw)}</strong></span>
       </div>
@@ -10559,10 +10595,15 @@ const getShortlistType = (entry) => {
   // email. Watch-panel display thresholds must not veto approved advice.
   const displayedRunnerLookup = new Map(allEntries.map(entry => [shortlistRunnerKey(entry),entry]));
   const allCurrentShortlistItems = (RacingStore.snapshot?.data['daily_decisions.json']?.rows || [])
-    .filter(RacingStore.isReady)
+    // Retain decisions that were Ready when the verified release was
+    // published. The live decision state below still expires the price after
+    // five minutes, but the emailed/advised runner remains visible until post.
+    .filter(decision => decision?.execution_status === 'ready')
     .map(decision => {
+      const liveState=RacingStore.decisionState(decision);
       const entry=displayedRunnerLookup.get(shortlistRunnerKey(decision)) || decision;
-      return {...entry,shortlist_type:decision.route,execution_status:'ready',
+      return {...entry,shortlist_type:decision.route,
+        execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
         race_start_utc:decision.race_start_utc,execution_quote_timestamp:decision.quote_timestamp,
         bookie_odds:String(decision.route||'').includes('Lay') ? entry.bookie_odds : (decision.price ?? entry.bookie_odds)};
     })
@@ -11056,13 +11097,13 @@ const getShortlistType = (entry) => {
     if (el) el.textContent = String(eloItems.length);
   });
   const dashboardCount = document.getElementById("dashboard-shortlist-count");
-  if (dashboardCount) dashboardCount.textContent = `${activeShortlistCount} active`;
+  if (dashboardCount) dashboardCount.textContent = `${activeShortlistCount} advised`;
   const nextSelection = shortlistItems[0];
   const dashboardNext = document.getElementById("dashboard-next-selection");
   if (dashboardNext) {
     dashboardNext.textContent = nextSelection
       ? `${timeFromRaceDT(nextSelection.race_datetime)} ${nextSelection.course || ""} — ${nextSelection.horse || ""}`.trim()
-      : "No active selections";
+      : "No advised selections";
   }
 
   renderMyBets();
