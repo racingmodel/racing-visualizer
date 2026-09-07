@@ -6243,6 +6243,38 @@
         width: 100%;
         min-width: 0 !important;
       }
+
+      /* Today's shortlist: readable evidence chips rather than clipped icon circles. */
+      #shortlist-table .shortlist-tags {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        align-items: center !important;
+        align-content: center !important;
+        gap: 0.28rem !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 auto !important;
+        overflow: visible !important;
+      }
+
+      #shortlist-table .shortlist-tags .tag-chip,
+      #shortlist-table .shortlist-tags .tag-chip[class*="tag-overlay"] {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 1.58rem !important;
+        padding: 0.22rem 0.46rem !important;
+        border-radius: 999px !important;
+        font-size: 0.62rem !important;
+        line-height: 1.05 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+        text-overflow: clip !important;
+      }
     }
   </style>
 <style data-racing-inline="racing-ui.css">
@@ -8620,19 +8652,12 @@ window.renderRacingView = async () => {
     </div>`;
   };
 
-  const shortlistQuoteStateHTML = (entry) => {
-    const ready = String(entry?.execution_status || "").toLowerCase() === "ready";
-    return ready
-      ? '<span class="shortlist-quote-state is-ready">Price verified</span>'
-      : '<span class="shortlist-quote-state is-refresh">Check current price</span>';
-  };
-
   const mainShortlistRow = (entry, rowClass = "") => {
     const tags = tagSet(entry).slice(0, 4);
     const back = entry?.bf_back_odds ?? "-";
     const lay = entry?.bf_lay_odds ?? "-";
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
-      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}${shortlistQuoteStateHTML(entry)}</td>
+      <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
       <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div></td>
       <td data-label="Market / Model / Raw">${mainShortlistInlinePricesHTML(entry)}</td>
@@ -8756,12 +8781,7 @@ window.renderRacingView = async () => {
     );
     const horseLink = racecardHorseLinkHTML(entry, entry?.horse || "", "mobile-selection-horse");
     const mobileResult = resultLabel(entry);
-    const quoteIsReady = String(entry?.execution_status || "").toLowerCase() === "ready";
-    const mobileStatusHTML = !quoteIsReady
-      ? `<span class="shortlist-quote-state is-refresh">Check current price</span>`
-      : /^Pending/i.test(mobileResult)
-      ? `<span class="mobile-card-live-status"><span aria-hidden="true"></span>Price verified</span>`
-      : resultBadgeHTML(entry);
+    const mobileStatusHTML = resultBadgeHTML(entry);
 
     return `<article class="mobile-selection-card">
       <header class="mobile-card-header">
