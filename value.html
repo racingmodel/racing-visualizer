@@ -6498,7 +6498,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">07 Sep 2026, 18:31</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">07 Sep 2026, 20:10</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -7760,6 +7760,7 @@ window.renderRacingView = async () => {
     'monster-ew': '💥 Monster E/W',
     'longshot-ew-b': '🎯 Longshot E/W B',
     'strong-value': '🔥',
+    'normal-ew': '↔️ E/W',
     'edge-four-place': '🟠 Edge 4P',
     'mid-price-value': '🎯 Mid-Price',
     'mid-price-win': '🏇 Win',
@@ -9584,10 +9585,10 @@ window.renderRacingView = async () => {
     return !isNaN(dec) && dec >= 16.0;
   };
 
-  // Legacy fallback only: normal Each Way uses decimal 21.0+
+  // Legacy fallback only: selective normal Each Way uses decimal 13.0+
   const isNormalEachWayPriced = (entry) => {
     const dec = parseOdds(entry?.bookie_odds ?? entry?.real_odds);
-    return !isNaN(dec) && dec >= 21.0;
+    return !isNaN(dec) && dec >= 13.0;
   };
 
   const isMustWinPriced = (entry) => {
@@ -10292,6 +10293,7 @@ const getShortlistType = (entry) => {
         raw_odds: entry.advised_raw_odds ?? entry.raw_odds,
         policy_version: entry.advised_policy_version ?? entry.policy_version,
         policy_finalized: entry.advice_policy_finalized !== false,
+        immutable_advice: true,
         seen_at: parseRunTS(entry.advised_at)
       });
     }
@@ -10343,14 +10345,25 @@ const getShortlistType = (entry) => {
       });
     }
 
+    const immutableTypes = new Set([
+      "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W",
+      "Strong Value E/W", "Each Way", "Must Lay", "Value Lay B", "Place Lay",
+      "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"
+    ]);
+
     return snapshots
       .filter(s => {
         const seenAt = s.seen_at;
+        const savedType = String(s?.shortlist_type || s?.type || "").trim();
+        const savedFinalAdvice = (
+          s?.immutable_advice === true ||
+          (s?.policy_finalized !== false && immutableTypes.has(savedType))
+        );
         return (
           seenAt instanceof Date &&
           !Number.isNaN(seenAt.getTime()) &&
           seenAt <= raceDT &&
-          !!shortlistTypeFromSnapshot(entry, s)
+          (savedFinalAdvice || !!shortlistTypeFromSnapshot(entry, s))
         );
       })
       .sort((a, b) => a.seen_at - b.seen_at);
