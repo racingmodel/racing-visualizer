@@ -6588,7 +6588,7 @@
         <span class="section-chevron">▶</span>
       </summary>
       <div class="section-body">
-        <div class="section-note">The latest officially advised shortlist for these races. Horse ELO runners qualify when at least two of Rank Overlays, Model Edge Value, Top Rated or Big E/W agree. Selections remain visible until race time. “Refresh price” means the displayed price is not currently verified and must be checked before betting.</div>
+        <div class="section-note">The latest officially advised shortlist for these races. Horse ELO runners qualify when at least two of Rank Overlays, Model Edge Value, Top Rated or Big E/W agree. Selections remain visible until race time. Real odds use the latest published model snapshot; check the current price before betting whenever a quote is not verified.</div>
         <div class="table-wrap shortlist-table-wrap">
           <table id="shortlist-table" class="shortlist-premium-table">
             <thead>
@@ -8612,9 +8612,7 @@ window.renderRacingView = async () => {
     const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
     const raw = entry?.raw_odds ?? "-";
-    const marketLabel = String(entry?.execution_status || "").toLowerCase() === "ready"
-      ? "Market"
-      : "Last price";
+    const marketLabel = "Real odds";
     return `<div class="shortlist-core-prices" aria-label="Market, model and raw odds">
       <span class="desktop-price-box"><small>${marketLabel}</small><strong>${escHTML(market)}</strong></span>
       <span class="desktop-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
@@ -8626,7 +8624,7 @@ window.renderRacingView = async () => {
     const ready = String(entry?.execution_status || "").toLowerCase() === "ready";
     return ready
       ? '<span class="shortlist-quote-state is-ready">Price verified</span>'
-      : '<span class="shortlist-quote-state is-refresh">Refresh price</span>';
+      : '<span class="shortlist-quote-state is-refresh">Check current price</span>';
   };
 
   const mainShortlistRow = (entry, rowClass = "") => {
@@ -8760,7 +8758,7 @@ window.renderRacingView = async () => {
     const mobileResult = resultLabel(entry);
     const quoteIsReady = String(entry?.execution_status || "").toLowerCase() === "ready";
     const mobileStatusHTML = !quoteIsReady
-      ? `<span class="shortlist-quote-state is-refresh">Refresh price</span>`
+      ? `<span class="shortlist-quote-state is-refresh">Check current price</span>`
       : /^Pending/i.test(mobileResult)
       ? `<span class="mobile-card-live-status"><span aria-hidden="true"></span>Price verified</span>`
       : resultBadgeHTML(entry);
@@ -8775,7 +8773,7 @@ window.renderRacingView = async () => {
         <div class="mobile-card-horse">${horseLink}</div>
       </div>
       <div class="mobile-card-odds-grid" aria-label="Market and model odds comparison">
-        <span class="mobile-card-odds is-market"><small>${quoteIsReady ? "Market odds" : "Last price"}</small><strong>${escHTML(market)}</strong></span>
+        <span class="mobile-card-odds is-market"><small>Real odds</small><strong>${escHTML(market)}</strong></span>
         <span class="mobile-card-odds is-model"><small>Model odds</small><strong>${escHTML(model)}</strong></span>
         <span class="mobile-card-odds is-raw"><small>Raw odds</small><strong>${escHTML(raw)}</strong></span>
       </div>
@@ -10607,6 +10605,10 @@ const getShortlistType = (entry) => {
     : [];
   const currentReadyRows = (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
     .filter(decision => decision?.execution_status === 'ready');
+  const currentDecisionLookup = new Map(
+    (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
+      .map(decision => [shortlistRunnerKey(decision), decision])
+  );
   // New releases carry immutable execution advice forward until post.  The
   // fallback keeps older daily_decisions.json deployments fully compatible.
   const visibleAdviceRows = carriedAdviceRows.length ? carriedAdviceRows : currentReadyRows;
@@ -10615,13 +10617,19 @@ const getShortlistType = (entry) => {
   ).values()];
   const allCurrentShortlistItems = uniqueVisibleAdviceRows
     .map(decision => {
-      const liveState=RacingStore.decisionState({...decision,execution_status:'ready'});
+      const currentDecision=currentDecisionLookup.get(shortlistRunnerKey(decision));
+      const liveState=currentDecision
+        ? RacingStore.decisionState(currentDecision)
+        : RacingStore.decisionState({...decision,execution_status:'ready'});
       const entry=displayedRunnerLookup.get(shortlistRunnerKey(decision)) || decision;
       return {...entry,shortlist_type:decision.route,
         execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
-        race_start_utc:decision.race_start_utc,execution_quote_timestamp:decision.quote_timestamp,
+        race_start_utc:decision.race_start_utc,
+        quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
+        execution_quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         advice_status:decision.advice_status || 'advised_until_race_start',
-        bookie_odds:String(decision.route||'').includes('Lay') ? entry.bookie_odds : (decision.price ?? entry.bookie_odds)};
+        advised_odds:decision.price ?? decision.advised_odds ?? entry.advised_odds,
+        bookie_odds:entry.bookie_odds ?? entry.real_odds ?? decision.price};
     })
     .map(entry => p5SupportKeys.has(shortlistRunnerKey(entry))
       ? {
