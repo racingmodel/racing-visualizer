@@ -6498,7 +6498,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">08 Sep 2026, 14:45</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">08 Sep 2026, 16:57</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -10369,7 +10369,18 @@ const getShortlistType = (entry) => {
       .sort((a, b) => a.seen_at - b.seen_at);
   };
 
-  const wasInShortlistBeforeRaceStart = (entry) => shortlistSnapshotsBeforeRaceStart(entry).length > 0;
+  const wasInShortlistBeforeRaceStart = (entry) => {
+    // Never reconstruct publication from tags or backend eligibility.  Was
+    // Value is a lifecycle view of runners actually shown in Today's shortlist.
+    const publishedAt = parseRunTS(entry?.today_shortlist_first_published_at);
+    const raceDT = parseRaceDT(entry?.race_datetime);
+    return !!(
+      entry?.published_in_today_shortlist === true &&
+      publishedAt instanceof Date && !Number.isNaN(publishedAt.getTime()) &&
+      raceDT instanceof Date && !Number.isNaN(raceDT.getTime()) &&
+      publishedAt <= raceDT
+    );
+  };
 
   wasValueEntries = entries
     .filter(e =>
@@ -10698,6 +10709,11 @@ const getShortlistType = (entry) => {
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const shortlistItems = allCurrentShortlistItems.filter(e => !raceHasStarted(e));
+  // A carried-forward published selection remains in Today's shortlist until
+  // the off even if its latest mutable value_bets row says watch/not-live.
+  // Never render the same runner in Today and Was Value simultaneously.
+  const activePublishedKeys = new Set(shortlistItems.map(shortlistRunnerKey));
+  wasValueEntries = wasValueEntries.filter(entry => !activePublishedKeys.has(shortlistRunnerKey(entry)));
 
   // Today's shortlist has one shared day/date heading. Keep it above the
   // column labels, then render only runner rows in the tbody.

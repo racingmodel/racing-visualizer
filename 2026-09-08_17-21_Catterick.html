@@ -59,10 +59,18 @@
       background: repeating-linear-gradient(0deg,#fff 0 7px,#172337 7px 14px); box-shadow: 0 0 0 2px rgba(255,255,255,.5); }
     .finish-line span { position: sticky; z-index: 6; top: 8px; display: block; width: 34px; margin-left: -13px; font-size: 1.55rem;
       filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
-    .model-lane { position: relative; min-height: 66px; border-bottom: 1px dashed rgba(235,255,236,.28); }
+    .model-lane { position: relative; min-height: 84px; border-bottom: 1px dashed rgba(235,255,236,.28); }
     .model-lane:last-child { border-bottom: 0; }
     .model-runner { position: absolute; z-index: 2; top: 50%; left: var(--track-position); display: flex; align-items: center;
       transform: translateY(-50%); will-change: left; }
+    .runner-evidence-trail { position: absolute; z-index: -1; right: 31px; bottom: -30px; display: flex; flex-direction: row-reverse;
+      align-items: center; gap: 3px; width: max-content; max-width: min(73vw,1050px); overflow: hidden; pointer-events: none; }
+    .runner-evidence-chip { display: inline-flex; align-items: center; gap: 2px; padding: 2px 5px; border: 1px solid rgba(255,255,255,.45);
+      border-radius: 999px; color: #fff; background: rgba(19,36,60,.82); box-shadow: 0 2px 5px rgba(0,0,0,.18); font-size: .59rem;
+      font-weight: 780; white-space: nowrap; opacity: 1; transform: translateX(0); transition: opacity .26s ease,transform .26s ease; }
+    .runner-evidence-chip b { color: #ffe36b; font-weight: 950; }
+    .model-order-card.stage-race:not(.race-finished) .runner-evidence-chip:not(.is-revealed) { opacity: 0; transform: translateX(8px); }
+    .model-stage-status { color: #ffe36b; font-weight: 900; }
     .runner-horse { display: block; margin-left: 7px; font-size: clamp(1.9rem,3.1vw,2.45rem); line-height: 1; transform: scaleX(-1);
       transform-origin: center; filter: drop-shadow(0 3px 2px rgba(20,49,25,.32)); }
     .runner-card { position: absolute; right: calc(100% - 2px); display: flex; align-items: center; gap: 8px; width: max-content;
@@ -83,9 +91,10 @@
     .model-order-note { margin: 0; padding: 9px 14px 10px; color: var(--muted); background: #f5f8fa; font-size: .76rem; text-align: center; }
     .model-order-card.race-ready:not(.race-running):not(.race-finished) .model-runner { left: 6%; }
     .model-order-card.race-ready:not(.race-running):not(.race-finished) .runner-card { opacity: 0; }
-    .model-order-card.race-running .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
-    .model-order-card.race-running .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
+    .model-order-card.race-running:not(.stage-race) .model-runner { animation: model-runner-race 3.2s cubic-bezier(.18,.68,.24,1) both; }
+    .model-order-card.race-running:not(.stage-race) .runner-card { animation: model-runner-card-arrival 3.2s linear both; }
     .model-order-card.race-running .runner-horse { animation: model-horse-gallop .20s ease-in-out infinite; }
+    .model-order-card.stage-race .model-runner { transition: left .72s cubic-bezier(.2,.72,.25,1); }
     @keyframes model-runner-race {
       0%, 5% { left: 6%; }
       28% { left: var(--race-quarter); }
@@ -165,7 +174,10 @@
       .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
       .decision-heading { display:block; padding:14px; } .decision-controls { grid-template-columns:1fr; margin-top:12px; } .decision-controls label { display:none; }
       .decision-play,.decision-controls select { width:100%; } .decision-stage { padding:12px; }
-      .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
+      .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 90px; }
+      .runner-evidence-trail { max-width: 70vw; bottom: -34px; gap: 2px; }
+      .runner-evidence-chip { padding: 2px 4px; font-size: .56rem; }
+      .runner-evidence-chip { font-size: 0; } .runner-evidence-chip b { font-size: .58rem; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
       .runner-numbers { gap: 3px; font-size: .61rem; } .runner-numbers span { padding: 2px 4px; }
@@ -404,8 +416,7 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 9 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="our-absent-friends" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="1"><a class="runner-card" href="#horse-our-absent-friends" aria-label="1st: Our Absent Friends"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Our Absent Friends</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>525</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="wen-moon" style="--track-position:82.93%;--race-quarter:25.23%;--race-mid:48.31%;--race-late:73.70%;--race-overshoot:83.48%" data-cloth="6"><a class="runner-card" href="#horse-wen-moon" aria-label="2nd: Wen Moon"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Wen Moon</strong><span class="runner-numbers"><span>Real <b>7.00</b></span><span>Score <b>511</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="keldeo" style="--track-position:82.33%;--race-quarter:25.08%;--race-mid:47.98%;--race-late:73.17%;--race-overshoot:82.88%" data-cloth="8"><a class="runner-card" href="#horse-keldeo" aria-label="3rd: Keldeo"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Keldeo</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>503</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="im-dan-dare" style="--track-position:81.18%;--race-quarter:24.80%;--race-mid:47.35%;--race-late:72.16%;--race-overshoot:81.73%" data-cloth="4"><a class="runner-card" href="#horse-im-dan-dare" aria-label="4th: I&#x27;m Dan Dare"><span class="runner-rank">4th</span><span class="runner-copy"><strong>I&#x27;m Dan Dare</strong><span class="runner-numbers"><span>Real <b>12.00</b></span><span>Score <b>488</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="j-street" style="--track-position:77.53%;--race-quarter:23.88%;--race-mid:45.34%;--race-late:68.95%;--race-overshoot:78.08%" data-cloth="3"><a class="runner-card" href="#horse-j-street" aria-label="5th: J Street"><span class="runner-rank">5th</span><span class="runner-copy"><strong>J Street</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>440</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="military-girl" style="--track-position:76.31%;--race-quarter:23.58%;--race-mid:44.67%;--race-late:67.87%;--race-overshoot:76.86%" data-cloth="2"><a class="runner-card" href="#horse-military-girl" aria-label="6th: Military Girl"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Military Girl</strong><span class="runner-numbers"><span>Real <b>10.00</b></span><span>Score <b>424</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="hanney-girl" style="--track-position:73.42%;--race-quarter:22.85%;--race-mid:43.08%;--race-late:65.33%;--race-overshoot:73.97%" data-cloth="5"><a class="runner-card" href="#horse-hanney-girl" aria-label="7th: Hanney Girl"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Hanney Girl</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>386</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="valor-spirit" style="--track-position:65.81%;--race-quarter:20.95%;--race-mid:38.89%;--race-late:58.63%;--race-overshoot:66.36%" data-cloth="7"><a class="runner-card" href="#horse-valor-spirit" aria-label="8th: Valor Spirit"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Valor Spirit</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>286</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="protest-rally" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="9"><a class="runner-card" href="#horse-protest-rally" aria-label="9th: Protest Rally"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Protest Rally</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>144</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
-    <section class="decision-card" aria-labelledby="decision-title" data-runners="[{&quot;horse&quot;:&quot;Our Absent Friends&quot;,&quot;slug&quot;:&quot;our-absent-friends&quot;,&quot;score&quot;:525,&quot;modelOdds&quot;:6.02,&quot;marketOdds&quot;:5.5,&quot;probability&quot;:16.6,&quot;edge&quot;:-1.6,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Wen Moon&quot;,&quot;slug&quot;:&quot;wen-moon&quot;,&quot;score&quot;:511,&quot;modelOdds&quot;:6.94,&quot;marketOdds&quot;:7.0,&quot;probability&quot;:14.4,&quot;edge&quot;:0.1,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Keldeo&quot;,&quot;slug&quot;:&quot;keldeo&quot;,&quot;score&quot;:503,&quot;modelOdds&quot;:6.21,&quot;marketOdds&quot;:5.0,&quot;probability&quot;:16.1,&quot;edge&quot;:-3.9,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;I&#x27;m Dan Dare&quot;,&quot;slug&quot;:&quot;im-dan-dare&quot;,&quot;score&quot;:488,&quot;modelOdds&quot;:9.25,&quot;marketOdds&quot;:12.0,&quot;probability&quot;:10.8,&quot;edge&quot;:2.5,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;J Street&quot;,&quot;slug&quot;:&quot;j-street&quot;,&quot;score&quot;:440,&quot;modelOdds&quot;:7.55,&quot;marketOdds&quot;:5.0,&quot;probability&quot;:13.2,&quot;edge&quot;:-6.8,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Military Girl&quot;,&quot;slug&quot;:&quot;military-girl&quot;,&quot;score&quot;:424,&quot;modelOdds&quot;:10.43,&quot;marketOdds&quot;:10.0,&quot;probability&quot;:9.6,&quot;edge&quot;:-0.4,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Hanney Girl&quot;,&quot;slug&quot;:&quot;hanney-girl&quot;,&quot;score&quot;:386,&quot;modelOdds&quot;:8.5,&quot;marketOdds&quot;:4.5,&quot;probability&quot;:11.8,&quot;edge&quot;:-10.4,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Valor Spirit&quot;,&quot;slug&quot;:&quot;valor-spirit&quot;,&quot;score&quot;:286,&quot;modelOdds&quot;:21.01,&quot;marketOdds&quot;:21.0,&quot;probability&quot;:4.8,&quot;edge&quot;:0.0,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Protest Rally&quot;,&quot;slug&quot;:&quot;protest-rally&quot;,&quot;score&quot;:144,&quot;modelOdds&quot;:36.84,&quot;marketOdds&quot;:34.0,&quot;probability&quot;:2.7,&quot;edge&quot;:-0.2,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]}]"><div class="decision-heading"><div><span class="decision-kicker">Inside the calculation</span><h2 id="decision-title">How the model decided</h2><p>Watch the real evidence groups build toward the published model result.</p></div><div class="decision-controls"><label for="decision-horse">Horse</label><select id="decision-horse"><option value="our-absent-friends">Our Absent Friends</option><option value="wen-moon">Wen Moon</option><option value="keldeo">Keldeo</option><option value="im-dan-dare">I&#x27;m Dan Dare</option><option value="j-street">J Street</option><option value="military-girl">Military Girl</option><option value="hanney-girl">Hanney Girl</option><option value="valor-spirit">Valor Spirit</option><option value="protest-rally">Protest Rally</option></select><button class="decision-play" type="button">▶ Play decision</button></div></div><div class="decision-stage"><div class="decision-track" aria-hidden="true"><span class="decision-neutral">Neutral</span><div class="decision-progress"></div><div class="decision-horse">🏇</div></div><div class="decision-live" aria-live="polite"><span class="decision-icon">🏁</span><div><b class="decision-factor">Ready</b><span class="decision-detail">Choose a horse and play its evidence journey.</span></div><strong class="decision-meter">50</strong></div><div class="decision-ticks" role="list"></div><div class="decision-result" hidden></div></div><p class="decision-note">Factor movement is an explanatory evidence scale. The published Composite Score and Model 100% price remain authoritative; value is shown only after modelling.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p><span class="model-stage-status" aria-live="polite">Seven model areas build the finishing order.</span> Horizontal separation reflects the final composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 9 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="our-absent-friends" data-stage-positions="[13.96,29.88,45.8,68.08,68.08,68.08,84.0]" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="1"><a class="runner-card" href="#horse-our-absent-friends" aria-label="1st: Our Absent Friends"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Our Absent Friends</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>525</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="wen-moon" data-stage-positions="[15.86,25.73,35.59,63.21,63.21,63.21,82.93]" style="--track-position:82.93%;--race-quarter:25.23%;--race-mid:48.31%;--race-late:73.70%;--race-overshoot:83.48%" data-cloth="6"><a class="runner-card" href="#horse-wen-moon" aria-label="2nd: Wen Moon"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Wen Moon</strong><span class="runner-numbers"><span>Real <b>8.00</b></span><span>Score <b>511</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="keldeo" data-stage-positions="[14.67,23.35,40.69,64.98,64.98,64.98,82.33]" style="--track-position:82.33%;--race-quarter:25.08%;--race-mid:47.98%;--race-late:73.17%;--race-overshoot:82.88%" data-cloth="8"><a class="runner-card" href="#horse-keldeo" aria-label="3rd: Keldeo"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Keldeo</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>503</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="im-dan-dare" data-stage-positions="[12.93,33.99,47.85,67.25,67.25,67.25,81.11]" style="--track-position:81.11%;--race-quarter:24.78%;--race-mid:47.31%;--race-late:72.09%;--race-overshoot:81.66%" data-cloth="4"><a class="runner-card" href="#horse-im-dan-dare" aria-label="4th: I&#x27;m Dan Dare"><span class="runner-rank">4th</span><span class="runner-copy"><strong>I&#x27;m Dan Dare</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>487</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+7.6</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="j-street" data-stage-positions="[12.75,26.24,39.74,58.64,58.64,64.03,77.53]" style="--track-position:77.53%;--race-quarter:23.88%;--race-mid:45.34%;--race-late:68.95%;--race-overshoot:78.08%" data-cloth="3"><a class="runner-card" href="#horse-j-street" aria-label="5th: J Street"><span class="runner-rank">5th</span><span class="runner-copy"><strong>J Street</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>440</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>+2</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="military-girl" data-stage-positions="[13.17,27.52,41.87,61.96,61.96,61.96,76.31]" style="--track-position:76.31%;--race-quarter:23.58%;--race-mid:44.67%;--race-late:67.87%;--race-overshoot:76.86%" data-cloth="2"><a class="runner-card" href="#horse-military-girl" aria-label="6th: Military Girl"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Military Girl</strong><span class="runner-numbers"><span>Real <b>10.00</b></span><span>Score <b>424</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="hanney-girl" data-stage-positions="[14.64,23.29,31.93,56.13,56.13,56.13,73.42]" style="--track-position:73.42%;--race-quarter:22.85%;--race-mid:43.08%;--race-late:65.33%;--race-overshoot:73.97%" data-cloth="5"><a class="runner-card" href="#horse-hanney-girl" aria-label="7th: Hanney Girl"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Hanney Girl</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>386</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="valor-spirit" data-stage-positions="[13.67,21.34,29.0,50.47,50.47,50.47,65.81]" style="--track-position:65.81%;--race-quarter:20.95%;--race-mid:38.89%;--race-late:58.63%;--race-overshoot:66.36%" data-cloth="7"><a class="runner-card" href="#horse-valor-spirit" aria-label="8th: Valor Spirit"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Valor Spirit</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>286</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="protest-rally" data-stage-positions="[6.0,6.0,6.0,34.58,34.58,34.58,55.0]" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="9"><a class="runner-card" href="#horse-protest-rally" aria-label="9th: Protest Rally"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Protest Rally</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>144</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>-5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>-5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>-5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>+5</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -425,57 +436,57 @@
     <tr>
       <td>1</td>
       <td><span id="horse-our-absent-friends" class="horse-anchor-target">Our Absent Friends</span></td>
-      <td>5.50</td>
-      <td>6.02</td>
-      <td>5.50</td>
-      <td><span class="edge-pill edge-negative">-1.6pp</span></td>
+      <td>4.50</td>
+      <td>5.56</td>
+      <td>5.49</td>
+      <td><span class="edge-pill edge-negative">-4.2pp</span></td>
       <td>1st · 525</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>46.7%</td>
-      <td><div class="model-view-cell">🏟️ Catterick proven 📘 ATR 🧠 Model-history +1% (n=25, avg 5.28) context-edge context-connection context-fitness context-trip</div></td>
+      <td>49.6%</td>
+      <td><div class="model-view-cell">📘 ATR 🏟️ Catterick proven 🧠 Model-history +1% (n=25, avg 5.28) context-edge context-connection context-fitness context-trip</div></td>
     </tr>
     <tr>
       <td>6</td>
       <td><span id="horse-wen-moon" class="horse-anchor-target">Wen Moon</span></td>
-      <td>7.00</td>
-      <td>6.94</td>
+      <td>8.00</td>
+      <td>7.33</td>
       <td>6.01</td>
-      <td><span class="edge-pill edge-positive">+0.1pp</span></td>
+      <td><span class="edge-pill edge-positive">+1.1pp</span></td>
       <td>2nd · 511</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>41.8%</td>
+      <td>40.2%</td>
       <td><div class="model-view-cell">📘 ATR 🧠 Model-history +1% (n=10, avg 5.87) context-trip</div></td>
     </tr>
     <tr>
       <td>8</td>
       <td><span id="horse-keldeo" class="horse-anchor-target">Keldeo</span></td>
       <td>5.00</td>
-      <td>6.21</td>
-      <td>6.29</td>
+      <td>6.22</td>
+      <td>6.30</td>
       <td><span class="edge-pill edge-negative">-3.9pp</span></td>
       <td>3rd · 503</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>46.6%</td>
+      <td>46.7%</td>
       <td><div class="model-view-cell">🧠 Model-history +1% (n=9, avg 5.15) context-edge context-fitness context-trip context-connection-risk</div></td>
     </tr>
     <tr>
       <td>4</td>
       <td><span id="horse-im-dan-dare" class="horse-anchor-target">I&#x27;m Dan Dare</span></td>
-      <td>12.00</td>
-      <td>9.25</td>
+      <td>13.00</td>
+      <td>9.57</td>
       <td>6.94</td>
-      <td><span class="edge-pill edge-positive">+2.5pp</span></td>
-      <td>4th · 488</td>
+      <td><span class="edge-pill edge-positive">+2.8pp</span></td>
+      <td>4th · 487</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>33.4%</td>
+      <td>32.5%</td>
       <td><div class="model-view-cell">💰 Value · 🏟️ Catterick proven 🧠 Model-history +0% (n=3, avg 5.22) context-edge context-connection context-trip context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>3</td>
       <td><span id="horse-j-street" class="horse-anchor-target">J Street</span></td>
       <td>5.00</td>
-      <td>7.55</td>
-      <td>9.30</td>
+      <td>7.56</td>
+      <td>9.31</td>
       <td><span class="edge-pill edge-negative">-6.8pp</span></td>
       <td>5th · 440</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
@@ -486,19 +497,19 @@
       <td>2</td>
       <td><span id="horse-military-girl" class="horse-anchor-target">Military Girl</span></td>
       <td>10.00</td>
-      <td>10.43</td>
+      <td>10.44</td>
       <td>10.20</td>
       <td><span class="edge-pill edge-negative">-0.4pp</span></td>
       <td>6th · 424</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>30.6%</td>
+      <td>30.4%</td>
       <td><div class="model-view-cell">🧠 Model-history +1% (n=8, avg 6.7) context-edge context-fitness context-trip context-connection-risk</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-hanney-girl" class="horse-anchor-target">Hanney Girl</span></td>
       <td>4.50</td>
-      <td>8.50</td>
+      <td>8.51</td>
       <td>12.88</td>
       <td><span class="edge-pill edge-negative">-10.5pp</span></td>
       <td>7th · 386</td>
@@ -509,21 +520,21 @@
     <tr>
       <td>7</td>
       <td><span id="horse-valor-spirit" class="horse-anchor-target">Valor Spirit</span></td>
-      <td>21.00</td>
-      <td>21.01</td>
-      <td>23.35</td>
-      <td><span class="edge-pill edge-negative">-0.0pp</span></td>
+      <td>23.00</td>
+      <td>21.82</td>
+      <td>23.36</td>
+      <td><span class="edge-pill edge-positive">+0.2pp</span></td>
       <td>8th · 286</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>15.9%</td>
+      <td>15.4%</td>
       <td><div class="model-view-cell">🧠 Model-history +1% (n=3, avg 6.3) context-trip</div></td>
     </tr>
     <tr>
       <td>9</td>
       <td><span id="horse-protest-rally" class="horse-anchor-target">Protest Rally</span></td>
       <td>34.00</td>
-      <td>36.84</td>
-      <td>44.37</td>
+      <td>36.89</td>
+      <td>44.38</td>
       <td><span class="edge-pill edge-negative">-0.2pp</span></td>
       <td>9th · 144</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
@@ -630,32 +641,32 @@
     <tr>
       <td>1</td>
       <td>Our Absent Friends</td>
-      <td>5.50</td>
-      <td>5.85</td>
-      <td>17.10</td>
-      <td>6.64</td>
-      <td>6.42</td>
-      <td>6.02</td>
-      <td>5.50</td>
-      <td>16.60</td>
-      <td>18.18</td>
-      <td>15.06</td>
-      <td>-1.58</td>
-      <td>1.54</td>
-      <td>120.73</td>
+      <td>4.50</td>
+      <td>5.84</td>
+      <td>17.12</td>
+      <td>5.49</td>
+      <td>5.47</td>
+      <td>5.56</td>
+      <td>5.49</td>
+      <td>17.97</td>
+      <td>22.22</td>
+      <td>18.23</td>
+      <td>-4.25</td>
+      <td>-0.25</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>46.73</td>
-      <td>44.47</td>
-      <td>2.27</td>
-      <td>-0.199</td>
+      <td>49.60</td>
+      <td>51.51</td>
+      <td>-1.91</td>
+      <td>-0.348</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>525</td>
       <td>catterick</td>
@@ -664,9 +675,9 @@
       <td>0.615</td>
       <td>-0.115</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>512.524544</td>
+      <td>512.671635</td>
       <td>2.500000</td>
-      <td>12.813114</td>
+      <td>12.816791</td>
       <td>90.125000</td>
       <td>connection,fitness,trip</td>
       <td></td>
@@ -688,10 +699,10 @@
       <td>0.015949</td>
       <td>100.0</td>
       <td>R1 Win/Leader</td>
-      <td>89.2</td>
-      <td>71.6</td>
-      <td>77.8</td>
-      <td>23.5</td>
+      <td>95.0</td>
+      <td>81.6</td>
+      <td>89.1</td>
+      <td>10.8</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -708,42 +719,42 @@
       <td>+3.0%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>🏟️ Catterick proven 📘 ATR 🧠 Model-history +1% (n=25, avg 5.28) context-edge context-connection context-fitness context-trip</td>
+      <td>📘 ATR 🏟️ Catterick proven 🧠 Model-history +1% (n=25, avg 5.28) context-edge context-connection context-fitness context-trip</td>
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>6</td>
       <td>Wen Moon</td>
-      <td>7.00</td>
+      <td>8.00</td>
       <td>6.30</td>
-      <td>15.88</td>
-      <td>8.45</td>
-      <td>7.94</td>
-      <td>6.94</td>
+      <td>15.87</td>
+      <td>9.75</td>
+      <td>8.93</td>
+      <td>7.33</td>
       <td>6.01</td>
-      <td>14.42</td>
-      <td>14.29</td>
-      <td>11.83</td>
-      <td>0.13</td>
-      <td>2.58</td>
-      <td>120.73</td>
+      <td>13.65</td>
+      <td>12.50</td>
+      <td>10.25</td>
+      <td>1.15</td>
+      <td>3.39</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>41.78</td>
-      <td>36.78</td>
-      <td>5.01</td>
-      <td>-0.072</td>
+      <td>40.22</td>
+      <td>32.84</td>
+      <td>7.38</td>
+      <td>0.057</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>511</td>
       <td>catterick</td>
@@ -752,7 +763,7 @@
       <td>0.000</td>
       <td>0.154</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>510.973329</td>
+      <td>510.919671</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>63.375000</td>
@@ -776,10 +787,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R1 Win/Leader</td>
-      <td>82.1</td>
+      <td>81.7</td>
       <td>64.0</td>
-      <td>70.4</td>
-      <td>38.9</td>
+      <td>69.8</td>
+      <td>39.8</td>
       <td>14.9</td>
       <td>Low</td>
       <td>Historic matching run 1/12 at Musselburgh on 05/11/25 matched going, distance. 0 newer poor run(s) came under materially different conditions. The complete Revival Watch evidence gate was not reached.</td>
@@ -800,8 +811,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>8</td>
@@ -809,29 +820,29 @@
       <td>5.00</td>
       <td>6.55</td>
       <td>15.26</td>
-      <td>6.04</td>
-      <td>6.04</td>
-      <td>6.21</td>
-      <td>6.29</td>
-      <td>16.11</td>
+      <td>6.10</td>
+      <td>6.09</td>
+      <td>6.22</td>
+      <td>6.30</td>
+      <td>16.09</td>
       <td>20.00</td>
-      <td>16.57</td>
-      <td>-3.89</td>
-      <td>-0.46</td>
-      <td>120.73</td>
+      <td>16.40</td>
+      <td>-3.91</td>
+      <td>-0.32</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>46.62</td>
-      <td>48.11</td>
-      <td>-1.49</td>
-      <td>-0.356</td>
+      <td>46.72</td>
+      <td>48.08</td>
+      <td>-1.35</td>
+      <td>-0.355</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>503</td>
       <td>catterick</td>
@@ -864,10 +875,10 @@
       <td>-0.028832</td>
       <td>100.0</td>
       <td>R1 Win/Leader</td>
-      <td>83.1</td>
-      <td>59.7</td>
-      <td>79.2</td>
-      <td>36.7</td>
+      <td>81.1</td>
+      <td>54.7</td>
+      <td>75.4</td>
+      <td>41.2</td>
       <td>65.2</td>
       <td>Low</td>
       <td>Historic matching run 2/9 at Beverley on 16/06/26 matched going, distance. 1 newer poor run(s) came under materially different conditions. Today's mark is 2 lb below the mark recorded for that run. The complete Revival Watch evidence gate was not reached.</td>
@@ -888,49 +899,49 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>4</td>
       <td>I'm Dan Dare</td>
-      <td>12.00</td>
+      <td>13.00</td>
       <td>7.11</td>
       <td>14.07</td>
-      <td>14.49</td>
-      <td>12.67</td>
-      <td>9.25</td>
+      <td>15.85</td>
+      <td>13.64</td>
+      <td>9.57</td>
       <td>6.94</td>
-      <td>10.81</td>
-      <td>8.33</td>
-      <td>6.90</td>
-      <td>2.47</td>
-      <td>3.90</td>
-      <td>120.73</td>
+      <td>10.45</td>
+      <td>7.69</td>
+      <td>6.31</td>
+      <td>2.76</td>
+      <td>4.14</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>33.37</td>
-      <td>22.96</td>
-      <td>10.41</td>
-      <td>0.365</td>
+      <td>32.52</td>
+      <td>21.44</td>
+      <td>11.08</td>
+      <td>0.465</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
-      <td>488</td>
+      <td>487</td>
       <td>catterick</td>
       <td>flat</td>
       <td>turf</td>
       <td>0.517</td>
       <td>-0.115</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>479.056372</td>
+      <td>479.041455</td>
       <td>1.762938</td>
-      <td>8.445467</td>
+      <td>8.445204</td>
       <td>89.285714</td>
       <td>connection,trip</td>
       <td>fitness</td>
@@ -952,10 +963,10 @@
       <td>0.025254</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>67.4</td>
+      <td>67.0</td>
       <td>57.0</td>
-      <td>56.3</td>
-      <td>70.9</td>
+      <td>55.6</td>
+      <td>71.8</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -976,8 +987,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>3</td>
@@ -985,29 +996,29 @@
       <td>5.00</td>
       <td>9.08</td>
       <td>11.02</td>
-      <td>6.04</td>
-      <td>6.39</td>
-      <td>7.55</td>
-      <td>9.30</td>
-      <td>13.24</td>
+      <td>6.10</td>
+      <td>6.43</td>
+      <td>7.56</td>
+      <td>9.31</td>
+      <td>13.23</td>
       <td>20.00</td>
-      <td>16.57</td>
-      <td>-6.76</td>
-      <td>-3.32</td>
-      <td>120.73</td>
+      <td>16.40</td>
+      <td>-6.77</td>
+      <td>-3.18</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>39.98</td>
-      <td>48.05</td>
-      <td>-8.07</td>
+      <td>40.03</td>
+      <td>47.88</td>
+      <td>-7.85</td>
       <td>-0.618</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>440</td>
       <td>catterick</td>
@@ -1040,10 +1051,10 @@
       <td>-0.001072</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>69.3</td>
-      <td>34.0</td>
-      <td>72.9</td>
-      <td>66.6</td>
+      <td>67.3</td>
+      <td>29.0</td>
+      <td>69.1</td>
+      <td>71.1</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -1064,8 +1075,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>2</td>
@@ -1073,29 +1084,29 @@
       <td>10.00</td>
       <td>9.79</td>
       <td>10.21</td>
-      <td>12.07</td>
-      <td>11.50</td>
-      <td>10.43</td>
+      <td>12.19</td>
+      <td>11.58</td>
+      <td>10.44</td>
       <td>10.20</td>
-      <td>9.59</td>
+      <td>9.58</td>
       <td>10.00</td>
-      <td>8.28</td>
-      <td>-0.41</td>
-      <td>1.31</td>
-      <td>120.73</td>
+      <td>8.20</td>
+      <td>-0.42</td>
+      <td>1.38</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>30.56</td>
-      <td>27.08</td>
+      <td>30.44</td>
+      <td>26.97</td>
       <td>3.48</td>
-      <td>-0.185</td>
+      <td>-0.190</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>424</td>
       <td>catterick</td>
@@ -1152,38 +1163,38 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>5</td>
       <td>Hanney Girl</td>
       <td>4.50</td>
       <td>11.87</td>
-      <td>8.43</td>
-      <td>5.43</td>
-      <td>6.13</td>
-      <td>8.50</td>
+      <td>8.42</td>
+      <td>5.49</td>
+      <td>6.17</td>
+      <td>8.51</td>
       <td>12.88</td>
-      <td>11.76</td>
+      <td>11.75</td>
       <td>22.22</td>
-      <td>18.41</td>
-      <td>-10.46</td>
-      <td>-6.65</td>
-      <td>120.73</td>
+      <td>18.23</td>
+      <td>-10.48</td>
+      <td>-6.48</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>35.54</td>
-      <td>51.02</td>
-      <td>-15.48</td>
-      <td>-0.867</td>
+      <td>35.52</td>
+      <td>50.93</td>
+      <td>-15.41</td>
+      <td>-0.868</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>386</td>
       <td>catterick</td>
@@ -1216,10 +1227,10 @@
       <td>-0.014243</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>59.5</td>
+      <td>59.4</td>
       <td>43.8</td>
       <td>69.1</td>
-      <td>88.1</td>
+      <td>88.2</td>
       <td>0.0</td>
       <td>Low</td>
       <td>No strong historic run matched enough of today's known conditions.</td>
@@ -1240,38 +1251,38 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>7</td>
       <td>Valor Spirit</td>
-      <td>21.00</td>
+      <td>23.00</td>
       <td>19.20</td>
       <td>5.21</td>
-      <td>25.35</td>
-      <td>23.88</td>
-      <td>21.01</td>
-      <td>23.35</td>
-      <td>4.76</td>
-      <td>4.76</td>
-      <td>3.94</td>
-      <td>-0.00</td>
-      <td>0.82</td>
-      <td>120.73</td>
+      <td>28.04</td>
+      <td>25.93</td>
+      <td>21.82</td>
+      <td>23.36</td>
+      <td>4.58</td>
+      <td>4.35</td>
+      <td>3.57</td>
+      <td>0.24</td>
+      <td>1.02</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>15.95</td>
-      <td>13.31</td>
-      <td>2.64</td>
-      <td>-0.203</td>
+      <td>15.43</td>
+      <td>12.05</td>
+      <td>3.38</td>
+      <td>-0.112</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>286</td>
       <td>catterick</td>
@@ -1280,7 +1291,7 @@
       <td>0.000</td>
       <td>-0.115</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>285.967950</td>
+      <td>285.961141</td>
       <td>0.000000</td>
       <td>0.000000</td>
       <td>73.750000</td>
@@ -1303,11 +1314,11 @@
       <td>0.000000</td>
       <td>0.000000</td>
       <td>84.0</td>
-      <td>R4 Weak/Lay</td>
-      <td>26.6</td>
-      <td>25.6</td>
-      <td>26.3</td>
-      <td>40.4</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>27.3</td>
+      <td>30.6</td>
+      <td>27.1</td>
+      <td>42.0</td>
       <td>38.7</td>
       <td>Low</td>
       <td>Historic matching run 2/11 at Ripon on 28/05/26 matched going, distance. 0 newer poor run(s) came under materially different conditions. Today's mark is within 1 lb of that proven mark. The complete Revival Watch evidence gate was not reached.</td>
@@ -1328,8 +1339,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
     <tr>
       <td>9</td>
@@ -1337,29 +1348,29 @@
       <td>34.00</td>
       <td>35.49</td>
       <td>2.82</td>
-      <td>41.05</td>
-      <td>39.54</td>
-      <td>36.84</td>
-      <td>44.37</td>
+      <td>41.45</td>
+      <td>39.82</td>
+      <td>36.89</td>
+      <td>44.38</td>
       <td>2.71</td>
       <td>2.94</td>
-      <td>2.44</td>
+      <td>2.41</td>
       <td>-0.23</td>
-      <td>0.28</td>
-      <td>120.73</td>
+      <td>0.30</td>
+      <td>121.93</td>
       <td>60.0</td>
-      <td>9.47</td>
-      <td>8.23</td>
-      <td>1.23</td>
-      <td>-0.358</td>
+      <td>9.49</td>
+      <td>8.30</td>
+      <td>1.19</td>
+      <td>-0.357</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.6</td>
       <td>0.17</td>
-      <td>0.868</td>
+      <td>0.8675</td>
       <td>0.9023</td>
-      <td>14.3643</td>
-      <td>1.4504</td>
+      <td>14.5688</td>
+      <td>1.45025</td>
       <td>3</td>
       <td>144</td>
       <td>catterick</td>
@@ -1416,8 +1427,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_141448</td>
-      <td>2026-09-08 14:14:48</td>
+      <td>20260908_163145</td>
+      <td>2026-09-08 16:31:45</td>
     </tr>
   </tbody>
 </table></div>
@@ -1427,26 +1438,48 @@
     (function () {
       const modelOrderCard = document.querySelector(".model-order-card");
       const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      let modelRaceTimer = null;
+      let modelRaceTimers = [];
       let modelRaceStarted = false;
 
       function finishModelRace() {
         if (!modelOrderCard) return;
         modelOrderCard.classList.add("race-finished");
         modelOrderCard.classList.remove("race-running");
+        const status = modelOrderCard.querySelector(".model-stage-status");
+        if (status) status.textContent = "Final composite-score finishing order";
       }
 
       function runModelRace() {
         if (!modelOrderCard || reduceMotion) return;
-        if (modelRaceTimer) window.clearTimeout(modelRaceTimer);
-        modelOrderCard.classList.add("animation-enabled", "race-ready");
+        modelRaceTimers.forEach(timer => window.clearTimeout(timer));
+        modelRaceTimers = [];
+        const runners = Array.from(modelOrderCard.querySelectorAll(".model-runner"));
+        const stages = ["Going", "Distance", "Class", "Form & history", "Connections", "Race adjustments", "Data reliability"];
+        const status = modelOrderCard.querySelector(".model-stage-status");
+        modelOrderCard.classList.add("animation-enabled", "race-ready", "stage-race");
         modelOrderCard.classList.remove("race-running", "race-finished");
-        // Force the shared straight-line starting frame before replaying.
+        runners.forEach(runner => {
+          runner.style.left = "6%";
+          runner.querySelectorAll(".runner-evidence-chip").forEach(chip => chip.classList.remove("is-revealed"));
+        });
+        if (status) status.textContent = "At the start — every horse begins together";
         void modelOrderCard.offsetWidth;
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
             modelOrderCard.classList.add("race-running");
-            modelRaceTimer = window.setTimeout(finishModelRace, 3280);
+            stages.forEach((stage, index) => {
+              modelRaceTimers.push(window.setTimeout(() => {
+                if (status) status.textContent = `Stage ${index + 1} of 7 — ${stage}`;
+                runners.forEach(runner => {
+                  let positions = [];
+                  try { positions = JSON.parse(runner.dataset.stagePositions || "[]"); } catch (error) {}
+                  if (positions[index] != null) runner.style.left = positions[index] + "%";
+                  const chip = runner.querySelector(`.runner-evidence-chip[data-stage="${index + 1}"]`);
+                  if (chip) chip.classList.add("is-revealed");
+                });
+              }, 260 + index * 920));
+            });
+            modelRaceTimers.push(window.setTimeout(finishModelRace, 260 + stages.length * 920 + 760));
           });
         });
       }
