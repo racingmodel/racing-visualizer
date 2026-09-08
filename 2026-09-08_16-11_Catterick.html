@@ -102,6 +102,29 @@
       0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
       50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
     }
+    .decision-card { margin: 14px 0 16px; overflow: hidden; border: 1px solid #cfd9e4; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+    .decision-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 17px 18px; color: #fff; background: linear-gradient(135deg,#2b1749,#193a51); }
+    .decision-heading h2 { margin: 2px 0 4px; font-size: clamp(1.15rem,2vw,1.55rem); }
+    .decision-heading p { margin: 0; color: #dfe8f4; font-size: .8rem; }
+    .decision-kicker { color: #f3cf45; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .decision-controls { display: grid; grid-template-columns: auto minmax(150px,230px) auto; gap: 7px; align-items: center; }
+    .decision-controls label { font-size: .72rem; font-weight: 850; }
+    .decision-controls select, .decision-play { min-height: 39px; border: 1px solid rgba(255,255,255,.34); border-radius: 9px; padding: 7px 10px; font: inherit; font-weight: 750; }
+    .decision-play { color: #2b2100; background: #f3cf45; cursor: pointer; }
+    .decision-stage { padding: 18px; background: radial-gradient(circle at 80% 0,rgba(30,136,229,.10),transparent 35%),#f8fafc; }
+    .decision-track { position: relative; height: 74px; overflow: hidden; border: 1px solid #c8d5df; border-radius: 14px; background: linear-gradient(90deg,#f5dddd 0 49.6%,#e8edf2 49.6% 50.4%,#dff2e5 50.4% 100%); }
+    .decision-track::after { content:""; position:absolute; left:50%; top:0; bottom:0; border-left:2px dashed rgba(19,36,60,.35); }
+    .decision-neutral { position:absolute; z-index:2; left:50%; top:5px; transform:translateX(-50%); color:#516075; font-size:.67rem; font-weight:850; text-transform:uppercase; }
+    .decision-progress { position:absolute; left:50%; top:0; bottom:0; width:0; background:rgba(8,122,69,.16); transition:width .55s ease, transform .55s ease, background .3s ease; transform-origin:left; }
+    .decision-horse { position:absolute; z-index:3; left:50%; top:31px; font-size:2.05rem; transform:translateX(-50%) scaleX(-1); transition:left .55s cubic-bezier(.2,.8,.2,1); filter:drop-shadow(0 3px 2px rgba(20,49,25,.25)); }
+    .decision-live { display:grid; grid-template-columns:auto 1fr auto; gap:11px; align-items:center; min-height:65px; margin-top:12px; padding:10px 12px; border:1px solid #dce4eb; border-radius:12px; background:#fff; }
+    .decision-icon { font-size:1.55rem; } .decision-factor,.decision-detail { display:block; } .decision-detail { margin-top:2px; color:var(--muted); font-size:.76rem; }
+    .decision-meter { min-width:54px; color:var(--navy); font-size:1.45rem; text-align:right; font-variant-numeric:tabular-nums; }
+    .decision-ticks { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    .decision-tick { padding:5px 8px; border:1px solid #dbe3ea; border-radius:999px; background:#fff; color:#526177; font-size:.7rem; font-weight:800; }
+    .decision-tick.up { color:#087a45; border-color:#afd6bf; background:#edf8f1; } .decision-tick.down { color:#a32920; border-color:#e4b9b5; background:#fff1f0; }
+    .decision-result { margin-top:12px; padding:12px 14px; border:1px solid #e4c54b; border-radius:12px; color:#fff; background:linear-gradient(135deg,#13243c,#244667); }
+    .decision-result strong { color:#ffe36b; } .decision-note { margin:0; padding:9px 14px 11px; color:var(--muted); background:#f5f8fa; font-size:.74rem; text-align:center; }
     .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     #racecard-table { min-width: 1160px; }
@@ -140,6 +163,8 @@
       .model-order-heading { display: block; padding: 13px 14px 12px; }
       .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
       .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .decision-heading { display:block; padding:14px; } .decision-controls { grid-template-columns:1fr; margin-top:12px; } .decision-controls label { display:none; }
+      .decision-play,.decision-controls select { width:100%; } .decision-stage { padding:12px; }
       .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
@@ -166,6 +191,7 @@
       html { scroll-behavior: auto; }
       .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
       .model-order-card.animation-enabled .model-race-replay { display: none; }
+      .decision-horse,.decision-progress { transition:none !important; }
     }
   </style>
 <style data-racing-inline="racing-ui.css">
@@ -379,6 +405,7 @@
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
     <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 12 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="lanarra" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="11"><a class="runner-card" href="#horse-lanarra" aria-label="1st: Lanarra"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Lanarra</strong><span class="runner-numbers"><span>Real <b>4.00</b></span><span>Score <b>602</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="maynora" style="--track-position:78.48%;--race-quarter:24.12%;--race-mid:45.87%;--race-late:69.78%;--race-overshoot:79.03%" data-cloth="6"><a class="runner-card" href="#horse-maynora" aria-label="2nd: Maynora"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Maynora</strong><span class="runner-numbers"><span>Real <b>11.00</b></span><span>Score <b>516</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="lope-y-linda" style="--track-position:74.63%;--race-quarter:23.16%;--race-mid:43.75%;--race-late:66.40%;--race-overshoot:75.18%" data-cloth="10"><a class="runner-card" href="#horse-lope-y-linda" aria-label="3rd: Lope Y Linda"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Lope Y Linda</strong><span class="runner-numbers"><span>Real <b>6.50</b></span><span>Score <b>456</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="kilmac-air" style="--track-position:73.61%;--race-quarter:22.90%;--race-mid:43.18%;--race-late:65.49%;--race-overshoot:74.16%" data-cloth="4"><a class="runner-card" href="#horse-kilmac-air" aria-label="4th: Kilmac Air"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Kilmac Air</strong><span class="runner-numbers"><span>Real <b>9.00</b></span><span>Score <b>440</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="taaklam" style="--track-position:73.16%;--race-quarter:22.79%;--race-mid:42.94%;--race-late:65.10%;--race-overshoot:73.71%" data-cloth="1"><a class="runner-card" href="#horse-taaklam" aria-label="5th: Taaklam"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Taaklam</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>433</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="willowinghurn" style="--track-position:70.46%;--race-quarter:22.12%;--race-mid:41.45%;--race-late:62.73%;--race-overshoot:71.01%" data-cloth="7"><a class="runner-card" href="#horse-willowinghurn" aria-label="6th: Willowinghurn"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Willowinghurn</strong><span class="runner-numbers"><span>Real <b>6.00</b></span><span>Score <b>391</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="light-the-night-up" style="--track-position:63.15%;--race-quarter:20.29%;--race-mid:37.43%;--race-late:56.29%;--race-overshoot:63.70%" data-cloth="2"><a class="runner-card" href="#horse-light-the-night-up" aria-label="7th: Light The Night Up"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Light The Night Up</strong><span class="runner-numbers"><span>Real <b>6.50</b></span><span>Score <b>277</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="belling-the-cat" style="--track-position:61.61%;--race-quarter:19.90%;--race-mid:36.58%;--race-late:54.94%;--race-overshoot:62.16%" data-cloth="12"><a class="runner-card" href="#horse-belling-the-cat" aria-label="8th: Belling The Cat"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Belling The Cat</strong><span class="runner-numbers"><span>Real <b>41.00</b></span><span>Score <b>253</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="singarda" style="--track-position:56.60%;--race-quarter:18.65%;--race-mid:33.83%;--race-late:50.53%;--race-overshoot:57.15%" data-cloth="8"><a class="runner-card" href="#horse-singarda" aria-label="9th: Singarda"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Singarda</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>175</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="oasis-cover" style="--track-position:55.06%;--race-quarter:18.27%;--race-mid:32.99%;--race-late:49.18%;--race-overshoot:55.61%" data-cloth="9"><a class="runner-card" href="#horse-oasis-cover" aria-label="10th: Oasis Cover"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Oasis Cover</strong><span class="runner-numbers"><span>Real <b>67.00</b></span><span>Score <b>151</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="territorial-star" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="5"><a class="runner-card" href="#horse-territorial-star" aria-label="11th: Territorial Star"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Territorial Star</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>150</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="real-jack" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="3"><a class="runner-card" href="#horse-real-jack" aria-label="12th: Real Jack"><span class="runner-rank">12th</span><span class="runner-copy"><strong>Real Jack</strong><span class="runner-numbers"><span>Real <b>12.00</b></span><span>Score <b>150</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="decision-card" aria-labelledby="decision-title" data-runners="[{&quot;horse&quot;:&quot;Lanarra&quot;,&quot;slug&quot;:&quot;lanarra&quot;,&quot;score&quot;:602,&quot;modelOdds&quot;:4.45,&quot;marketOdds&quot;:4.0,&quot;probability&quot;:22.5,&quot;edge&quot;:-2.5,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Maynora&quot;,&quot;slug&quot;:&quot;maynora&quot;,&quot;score&quot;:516,&quot;modelOdds&quot;:8.16,&quot;marketOdds&quot;:11.0,&quot;probability&quot;:12.3,&quot;edge&quot;:3.2,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Lope Y Linda&quot;,&quot;slug&quot;:&quot;lope-y-linda&quot;,&quot;score&quot;:456,&quot;modelOdds&quot;:8.48,&quot;marketOdds&quot;:6.5,&quot;probability&quot;:11.8,&quot;edge&quot;:-3.6,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Kilmac Air&quot;,&quot;slug&quot;:&quot;kilmac-air&quot;,&quot;score&quot;:440,&quot;modelOdds&quot;:9.89,&quot;marketOdds&quot;:9.0,&quot;probability&quot;:10.1,&quot;edge&quot;:-1.0,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Taaklam&quot;,&quot;slug&quot;:&quot;taaklam&quot;,&quot;score&quot;:433,&quot;modelOdds&quot;:8.7,&quot;marketOdds&quot;:5.5,&quot;probability&quot;:11.5,&quot;edge&quot;:-6.7,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Willowinghurn&quot;,&quot;slug&quot;:&quot;willowinghurn&quot;,&quot;score&quot;:391,&quot;modelOdds&quot;:10.27,&quot;marketOdds&quot;:6.0,&quot;probability&quot;:9.7,&quot;edge&quot;:-7.0,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Light The Night Up&quot;,&quot;slug&quot;:&quot;light-the-night-up&quot;,&quot;score&quot;:277,&quot;modelOdds&quot;:15.13,&quot;marketOdds&quot;:6.5,&quot;probability&quot;:6.6,&quot;edge&quot;:-8.8,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Belling The Cat&quot;,&quot;slug&quot;:&quot;belling-the-cat&quot;,&quot;score&quot;:253,&quot;modelOdds&quot;:28.93,&quot;marketOdds&quot;:41.0,&quot;probability&quot;:3.5,&quot;edge&quot;:1.1,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:-2.0,&quot;detail&quot;:&quot;Atr negative&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Singarda&quot;,&quot;slug&quot;:&quot;singarda&quot;,&quot;score&quot;:175,&quot;modelOdds&quot;:29.59,&quot;marketOdds&quot;:21.0,&quot;probability&quot;:3.4,&quot;edge&quot;:-1.4,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Oasis Cover&quot;,&quot;slug&quot;:&quot;oasis-cover&quot;,&quot;score&quot;:151,&quot;modelOdds&quot;:45.46,&quot;marketOdds&quot;:67.0,&quot;probability&quot;:2.2,&quot;edge&quot;:0.7,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Territorial Star&quot;,&quot;slug&quot;:&quot;territorial-star&quot;,&quot;score&quot;:150,&quot;modelOdds&quot;:36.91,&quot;marketOdds&quot;:34.0,&quot;probability&quot;:2.7,&quot;edge&quot;:-0.2,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Real Jack&quot;,&quot;slug&quot;:&quot;real-jack&quot;,&quot;score&quot;:150,&quot;modelOdds&quot;:26.73,&quot;marketOdds&quot;:12.0,&quot;probability&quot;:3.7,&quot;edge&quot;:-4.6,&quot;coverage&quot;:100.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;100% runner-data coverage.&quot;}]}]"><div class="decision-heading"><div><span class="decision-kicker">Inside the calculation</span><h2 id="decision-title">How the model decided</h2><p>Watch the real evidence groups build toward the published model result.</p></div><div class="decision-controls"><label for="decision-horse">Horse</label><select id="decision-horse"><option value="lanarra">Lanarra</option><option value="maynora">Maynora</option><option value="lope-y-linda">Lope Y Linda</option><option value="kilmac-air">Kilmac Air</option><option value="taaklam">Taaklam</option><option value="willowinghurn">Willowinghurn</option><option value="light-the-night-up">Light The Night Up</option><option value="belling-the-cat">Belling The Cat</option><option value="singarda">Singarda</option><option value="oasis-cover">Oasis Cover</option><option value="territorial-star">Territorial Star</option><option value="real-jack">Real Jack</option></select><button class="decision-play" type="button">▶ Play decision</button></div></div><div class="decision-stage"><div class="decision-track" aria-hidden="true"><span class="decision-neutral">Neutral</span><div class="decision-progress"></div><div class="decision-horse">🏇</div></div><div class="decision-live" aria-live="polite"><span class="decision-icon">🏁</span><div><b class="decision-factor">Ready</b><span class="decision-detail">Choose a horse and play its evidence journey.</span></div><strong class="decision-meter">50</strong></div><div class="decision-ticks" role="list"></div><div class="decision-result" hidden></div></div><p class="decision-note">Factor movement is an explanatory evidence scale. The published Composite Score and Model 100% price remain authoritative; value is shown only after modelling.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -721,8 +748,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>6</td>
@@ -809,8 +836,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>10</td>
@@ -897,8 +924,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>4</td>
@@ -985,8 +1012,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>1</td>
@@ -1073,8 +1100,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>7</td>
@@ -1161,8 +1188,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>2</td>
@@ -1249,8 +1276,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>12</td>
@@ -1337,8 +1364,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>8</td>
@@ -1425,8 +1452,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>9</td>
@@ -1513,8 +1540,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>5</td>
@@ -1601,8 +1628,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>3</td>
@@ -1689,8 +1716,8 @@
       <td>100.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
   </tbody>
 </table></div>
@@ -1744,6 +1771,57 @@
         } else {
           window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
         }
+      }
+
+      const decisionCard = document.querySelector(".decision-card");
+      if (decisionCard) {
+        let runners = [];
+        try { runners = JSON.parse(decisionCard.dataset.runners || "[]"); } catch (error) {}
+        const chooser = decisionCard.querySelector("#decision-horse");
+        const play = decisionCard.querySelector(".decision-play");
+        const horse = decisionCard.querySelector(".decision-horse");
+        const progress = decisionCard.querySelector(".decision-progress");
+        const factor = decisionCard.querySelector(".decision-factor");
+        const detail = decisionCard.querySelector(".decision-detail");
+        const icon = decisionCard.querySelector(".decision-icon");
+        const meter = decisionCard.querySelector(".decision-meter");
+        const ticks = decisionCard.querySelector(".decision-ticks");
+        const result = decisionCard.querySelector(".decision-result");
+        let runToken = 0;
+        const wait = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+        const selected = () => runners.find(item => item.slug === chooser.value) || runners[0];
+        function resetDecision() {
+          runToken += 1; horse.style.left = "50%"; progress.style.width = "0"; progress.style.transform = "scaleX(1)";
+          progress.style.background = "rgba(8,122,69,.16)"; factor.textContent = "Ready";
+          detail.textContent = "Play this horse’s evidence journey."; icon.textContent = "🏁"; meter.textContent = "50";
+          ticks.innerHTML = ""; result.hidden = true; result.innerHTML = "";
+        }
+        async function runDecision() {
+          const item = selected(); if (!item) return; resetDecision(); const token = runToken; play.disabled = true;
+          let evidence = 50; await wait(reduceMotion ? 0 : 250);
+          for (const step of item.steps) {
+            if (token !== runToken) return;
+            evidence = Math.max(8, Math.min(92, evidence + Number(step.delta || 0)));
+            icon.textContent = step.icon; factor.textContent = step.label + " " + (step.delta > 0 ? "+" : "") + step.delta;
+            detail.textContent = step.detail; meter.textContent = Math.round(evidence); horse.style.left = evidence + "%";
+            const distance = Math.abs(evidence - 50); progress.style.width = distance + "%";
+            progress.style.transform = evidence < 50 ? "scaleX(-1)" : "scaleX(1)";
+            progress.style.background = evidence < 50 ? "rgba(180,35,24,.15)" : "rgba(8,122,69,.16)";
+            const chip = document.createElement("span"); chip.className = "decision-tick " + (step.delta > .4 ? "up" : step.delta < -.4 ? "down" : "");
+            chip.setAttribute("role","listitem"); chip.textContent = step.icon + " " + step.label + " " + (step.delta > 0 ? "+" : "") + step.delta; ticks.appendChild(chip);
+            await wait(reduceMotion ? 0 : 820);
+          }
+          if (token !== runToken) return;
+          const price = item.modelOdds == null ? "—" : item.modelOdds.toFixed(2);
+          const chance = item.probability == null ? "—" : item.probability.toFixed(1) + "%";
+          const market = item.marketOdds == null ? "—" : item.marketOdds.toFixed(2);
+          let value = "Market comparison unavailable.";
+          if (item.edge != null) value = item.edge > 0 ? `<strong>Potential value:</strong> model edge +${item.edge.toFixed(1)}pp.` : `No positive model edge (${item.edge.toFixed(1)}pp).`;
+          factor.textContent = "Published model result"; detail.textContent = "The authoritative output replaces the explanatory journey score."; icon.textContent = "🏇"; meter.textContent = item.score;
+          result.innerHTML = `<strong>${item.horse}</strong> · Model chance ${chance} · Model price ${price} · Market ${market}<br>${value}`;
+          result.hidden = false; play.disabled = false;
+        }
+        chooser.addEventListener("change", resetDecision); play.addEventListener("click", runDecision); resetDecision();
       }
 
       const table = document.getElementById("racecard-table");

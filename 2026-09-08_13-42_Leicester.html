@@ -102,6 +102,29 @@
       0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
       50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
     }
+    .decision-card { margin: 14px 0 16px; overflow: hidden; border: 1px solid #cfd9e4; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+    .decision-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 17px 18px; color: #fff; background: linear-gradient(135deg,#2b1749,#193a51); }
+    .decision-heading h2 { margin: 2px 0 4px; font-size: clamp(1.15rem,2vw,1.55rem); }
+    .decision-heading p { margin: 0; color: #dfe8f4; font-size: .8rem; }
+    .decision-kicker { color: #f3cf45; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .decision-controls { display: grid; grid-template-columns: auto minmax(150px,230px) auto; gap: 7px; align-items: center; }
+    .decision-controls label { font-size: .72rem; font-weight: 850; }
+    .decision-controls select, .decision-play { min-height: 39px; border: 1px solid rgba(255,255,255,.34); border-radius: 9px; padding: 7px 10px; font: inherit; font-weight: 750; }
+    .decision-play { color: #2b2100; background: #f3cf45; cursor: pointer; }
+    .decision-stage { padding: 18px; background: radial-gradient(circle at 80% 0,rgba(30,136,229,.10),transparent 35%),#f8fafc; }
+    .decision-track { position: relative; height: 74px; overflow: hidden; border: 1px solid #c8d5df; border-radius: 14px; background: linear-gradient(90deg,#f5dddd 0 49.6%,#e8edf2 49.6% 50.4%,#dff2e5 50.4% 100%); }
+    .decision-track::after { content:""; position:absolute; left:50%; top:0; bottom:0; border-left:2px dashed rgba(19,36,60,.35); }
+    .decision-neutral { position:absolute; z-index:2; left:50%; top:5px; transform:translateX(-50%); color:#516075; font-size:.67rem; font-weight:850; text-transform:uppercase; }
+    .decision-progress { position:absolute; left:50%; top:0; bottom:0; width:0; background:rgba(8,122,69,.16); transition:width .55s ease, transform .55s ease, background .3s ease; transform-origin:left; }
+    .decision-horse { position:absolute; z-index:3; left:50%; top:31px; font-size:2.05rem; transform:translateX(-50%) scaleX(-1); transition:left .55s cubic-bezier(.2,.8,.2,1); filter:drop-shadow(0 3px 2px rgba(20,49,25,.25)); }
+    .decision-live { display:grid; grid-template-columns:auto 1fr auto; gap:11px; align-items:center; min-height:65px; margin-top:12px; padding:10px 12px; border:1px solid #dce4eb; border-radius:12px; background:#fff; }
+    .decision-icon { font-size:1.55rem; } .decision-factor,.decision-detail { display:block; } .decision-detail { margin-top:2px; color:var(--muted); font-size:.76rem; }
+    .decision-meter { min-width:54px; color:var(--navy); font-size:1.45rem; text-align:right; font-variant-numeric:tabular-nums; }
+    .decision-ticks { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    .decision-tick { padding:5px 8px; border:1px solid #dbe3ea; border-radius:999px; background:#fff; color:#526177; font-size:.7rem; font-weight:800; }
+    .decision-tick.up { color:#087a45; border-color:#afd6bf; background:#edf8f1; } .decision-tick.down { color:#a32920; border-color:#e4b9b5; background:#fff1f0; }
+    .decision-result { margin-top:12px; padding:12px 14px; border:1px solid #e4c54b; border-radius:12px; color:#fff; background:linear-gradient(135deg,#13243c,#244667); }
+    .decision-result strong { color:#ffe36b; } .decision-note { margin:0; padding:9px 14px 11px; color:var(--muted); background:#f5f8fa; font-size:.74rem; text-align:center; }
     .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     #racecard-table { min-width: 1160px; }
@@ -140,6 +163,8 @@
       .model-order-heading { display: block; padding: 13px 14px 12px; }
       .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
       .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .decision-heading { display:block; padding:14px; } .decision-controls { grid-template-columns:1fr; margin-top:12px; } .decision-controls label { display:none; }
+      .decision-play,.decision-controls select { width:100%; } .decision-stage { padding:12px; }
       .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
@@ -166,6 +191,7 @@
       html { scroll-behavior: auto; }
       .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
       .model-order-card.animation-enabled .model-race-replay { display: none; }
+      .decision-horse,.decision-progress { transition:none !important; }
     }
   </style>
 <style data-racing-inline="racing-ui.css">
@@ -378,7 +404,8 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 9 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="iwasjustsaying" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="1"><a class="runner-card" href="#horse-iwasjustsaying" aria-label="1st: Iwasjustsaying"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Iwasjustsaying</strong><span class="runner-numbers"><span>Real <b>3.25</b></span><span>Score <b>548</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="talamon" style="--track-position:70.74%;--race-quarter:22.18%;--race-mid:41.61%;--race-late:62.97%;--race-overshoot:71.29%" data-cloth="8"><a class="runner-card" href="#horse-talamon" aria-label="2nd: Talamon"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Talamon</strong><span class="runner-numbers"><span>Real <b>7.50</b></span><span>Score <b>339</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="united-authority" style="--track-position:68.14%;--race-quarter:21.53%;--race-mid:40.17%;--race-late:60.68%;--race-overshoot:68.69%" data-cloth="9"><a class="runner-card" href="#horse-united-authority" aria-label="3rd: United Authority"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>United Authority</strong><span class="runner-numbers"><span>Real <b>2.88</b></span><span>Score <b>298</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="revoked" style="--track-position:57.28%;--race-quarter:18.82%;--race-mid:34.21%;--race-late:51.13%;--race-overshoot:57.83%" data-cloth="7"><a class="runner-card" href="#horse-revoked" aria-label="4th: Revoked"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Revoked</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>127</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="inkjet" style="--track-position:55.76%;--race-quarter:18.44%;--race-mid:33.37%;--race-late:49.79%;--race-overshoot:56.31%" data-cloth="5"><a class="runner-card" href="#horse-inkjet" aria-label="5th: Inkjet"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Inkjet</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>103</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="meticulously" style="--track-position:55.25%;--race-quarter:18.31%;--race-mid:33.09%;--race-late:49.34%;--race-overshoot:55.80%" data-cloth="6"><a class="runner-card" href="#horse-meticulously" aria-label="6th: Meticulously"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Meticulously</strong><span class="runner-numbers"><span>Real <b>15.00</b></span><span>Score <b>95</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="arabian-blue" style="--track-position:55.13%;--race-quarter:18.28%;--race-mid:33.02%;--race-late:49.23%;--race-overshoot:55.68%" data-cloth="2"><a class="runner-card" href="#horse-arabian-blue" aria-label="7th: Arabian Blue"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Arabian Blue</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>93</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="gilded-call" style="--track-position:55.06%;--race-quarter:18.27%;--race-mid:32.98%;--race-late:49.18%;--race-overshoot:55.61%" data-cloth="4"><a class="runner-card" href="#horse-gilded-call" aria-label="8th: Gilded Call"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Gilded Call</strong><span class="runner-numbers"><span>Real <b>41.00</b></span><span>Score <b>92</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="waqqad" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="10"><a class="runner-card" href="#horse-waqqad" aria-label="9th: Waqqad"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Waqqad</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>91</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 9 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="iwasjustsaying" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="1"><a class="runner-card" href="#horse-iwasjustsaying" aria-label="1st: Iwasjustsaying"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Iwasjustsaying</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>547</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="talamon" style="--track-position:70.77%;--race-quarter:22.19%;--race-mid:41.62%;--race-late:63.00%;--race-overshoot:71.32%" data-cloth="8"><a class="runner-card" href="#horse-talamon" aria-label="2nd: Talamon"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Talamon</strong><span class="runner-numbers"><span>Real <b>7.50</b></span><span>Score <b>339</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="united-authority" style="--track-position:68.16%;--race-quarter:21.54%;--race-mid:40.19%;--race-late:60.70%;--race-overshoot:68.71%" data-cloth="9"><a class="runner-card" href="#horse-united-authority" aria-label="3rd: United Authority"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>United Authority</strong><span class="runner-numbers"><span>Real <b>2.50</b></span><span>Score <b>298</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="revoked" style="--track-position:57.29%;--race-quarter:18.82%;--race-mid:34.21%;--race-late:51.13%;--race-overshoot:57.84%" data-cloth="7"><a class="runner-card" href="#horse-revoked" aria-label="4th: Revoked"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Revoked</strong><span class="runner-numbers"><span>Real <b>19.00</b></span><span>Score <b>127</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="inkjet" style="--track-position:55.76%;--race-quarter:18.44%;--race-mid:33.37%;--race-late:49.79%;--race-overshoot:56.31%" data-cloth="5"><a class="runner-card" href="#horse-inkjet" aria-label="5th: Inkjet"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Inkjet</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>103</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="meticulously" style="--track-position:55.25%;--race-quarter:18.31%;--race-mid:33.09%;--race-late:49.34%;--race-overshoot:55.80%" data-cloth="6"><a class="runner-card" href="#horse-meticulously" aria-label="6th: Meticulously"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Meticulously</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>95</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="arabian-blue" style="--track-position:55.13%;--race-quarter:18.28%;--race-mid:33.02%;--race-late:49.23%;--race-overshoot:55.68%" data-cloth="2"><a class="runner-card" href="#horse-arabian-blue" aria-label="7th: Arabian Blue"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Arabian Blue</strong><span class="runner-numbers"><span>Real <b>21.00</b></span><span>Score <b>93</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="gilded-call" style="--track-position:55.06%;--race-quarter:18.27%;--race-mid:32.98%;--race-late:49.18%;--race-overshoot:55.61%" data-cloth="4"><a class="runner-card" href="#horse-gilded-call" aria-label="8th: Gilded Call"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Gilded Call</strong><span class="runner-numbers"><span>Real <b>67.00</b></span><span>Score <b>92</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="waqqad" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="10"><a class="runner-card" href="#horse-waqqad" aria-label="9th: Waqqad"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Waqqad</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>91</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="decision-card" aria-labelledby="decision-title" data-runners="[{&quot;horse&quot;:&quot;Iwasjustsaying&quot;,&quot;slug&quot;:&quot;iwasjustsaying&quot;,&quot;score&quot;:547,&quot;modelOdds&quot;:3.15,&quot;marketOdds&quot;:3.5,&quot;probability&quot;:31.7,&quot;edge&quot;:3.1,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Talamon&quot;,&quot;slug&quot;:&quot;talamon&quot;,&quot;score&quot;:339,&quot;modelOdds&quot;:7.63,&quot;marketOdds&quot;:7.5,&quot;probability&quot;:13.1,&quot;edge&quot;:-0.2,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;United Authority&quot;,&quot;slug&quot;:&quot;united-authority&quot;,&quot;score&quot;:298,&quot;modelOdds&quot;:4.14,&quot;marketOdds&quot;:2.5,&quot;probability&quot;:24.2,&quot;edge&quot;:-15.8,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Revoked&quot;,&quot;slug&quot;:&quot;revoked&quot;,&quot;score&quot;:127,&quot;modelOdds&quot;:20.16,&quot;marketOdds&quot;:19.0,&quot;probability&quot;:5.0,&quot;edge&quot;:-0.3,&quot;coverage&quot;:50.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;50% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Inkjet&quot;,&quot;slug&quot;:&quot;inkjet&quot;,&quot;score&quot;:103,&quot;modelOdds&quot;:9.66,&quot;marketOdds&quot;:5.5,&quot;probability&quot;:10.4,&quot;edge&quot;:-7.8,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Meticulously&quot;,&quot;slug&quot;:&quot;meticulously&quot;,&quot;score&quot;:95,&quot;modelOdds&quot;:19.85,&quot;marketOdds&quot;:17.0,&quot;probability&quot;:5.0,&quot;edge&quot;:-0.9,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Arabian Blue&quot;,&quot;slug&quot;:&quot;arabian-blue&quot;,&quot;score&quot;:93,&quot;modelOdds&quot;:22.77,&quot;marketOdds&quot;:21.0,&quot;probability&quot;:4.4,&quot;edge&quot;:-0.4,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Gilded Call&quot;,&quot;slug&quot;:&quot;gilded-call&quot;,&quot;score&quot;:92,&quot;modelOdds&quot;:47.23,&quot;marketOdds&quot;:67.0,&quot;probability&quot;:2.1,&quot;edge&quot;:0.6,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Waqqad&quot;,&quot;slug&quot;:&quot;waqqad&quot;,&quot;score&quot;:91,&quot;modelOdds&quot;:24.16,&quot;marketOdds&quot;:23.0,&quot;probability&quot;:4.1,&quot;edge&quot;:-0.2,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]}]"><div class="decision-heading"><div><span class="decision-kicker">Inside the calculation</span><h2 id="decision-title">How the model decided</h2><p>Watch the real evidence groups build toward the published model result.</p></div><div class="decision-controls"><label for="decision-horse">Horse</label><select id="decision-horse"><option value="iwasjustsaying">Iwasjustsaying</option><option value="talamon">Talamon</option><option value="united-authority">United Authority</option><option value="revoked">Revoked</option><option value="inkjet">Inkjet</option><option value="meticulously">Meticulously</option><option value="arabian-blue">Arabian Blue</option><option value="gilded-call">Gilded Call</option><option value="waqqad">Waqqad</option></select><button class="decision-play" type="button">▶ Play decision</button></div></div><div class="decision-stage"><div class="decision-track" aria-hidden="true"><span class="decision-neutral">Neutral</span><div class="decision-progress"></div><div class="decision-horse">🏇</div></div><div class="decision-live" aria-live="polite"><span class="decision-icon">🏁</span><div><b class="decision-factor">Ready</b><span class="decision-detail">Choose a horse and play its evidence journey.</span></div><strong class="decision-meter">50</strong></div><div class="decision-ticks" role="list"></div><div class="decision-result" hidden></div></div><p class="decision-note">Factor movement is an explanatory evidence scale. The published Composite Score and Model 100% price remain authoritative; value is shown only after modelling.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -398,109 +425,109 @@
     <tr>
       <td>1</td>
       <td><span id="horse-iwasjustsaying" class="horse-anchor-target">Iwasjustsaying</span></td>
-      <td>3.25</td>
-      <td>3.05</td>
+      <td>3.50</td>
+      <td>3.15</td>
       <td>2.29</td>
-      <td><span class="edge-pill edge-positive">+2.0pp</span></td>
-      <td>1st · 548</td>
+      <td><span class="edge-pill edge-positive">+3.2pp</span></td>
+      <td>1st · 547</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔✔✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>77.4%</td>
-      <td><div class="model-view-cell">📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver ⚠️ One-Dimensional 🧠 Model-history +1% (n=1, avg 10.0) context-fitness context-connection-risk</div></td>
+      <td>76.4%</td>
+      <td><div class="model-view-cell">⚠️ One-Dimensional 🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 10.0) context-fitness context-connection-risk</div></td>
     </tr>
     <tr>
       <td>8</td>
       <td><span id="horse-talamon" class="horse-anchor-target">Talamon</span></td>
       <td>7.50</td>
-      <td>7.73</td>
+      <td>7.63</td>
       <td>4.35</td>
-      <td><span class="edge-pill edge-negative">-0.4pp</span></td>
+      <td><span class="edge-pill edge-negative">-0.2pp</span></td>
       <td>2nd · 339</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>43.4%</td>
-      <td><div class="model-view-cell">📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 9.9)</div></td>
+      <td>44.2%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 9.9)</div></td>
     </tr>
     <tr>
       <td>9</td>
       <td><span id="horse-united-authority" class="horse-anchor-target">United Authority</span></td>
-      <td>2.88</td>
-      <td>4.58</td>
+      <td>2.50</td>
+      <td>4.14</td>
       <td>8.26</td>
-      <td><span class="edge-pill edge-negative">-12.9pp</span></td>
+      <td><span class="edge-pill edge-negative">-15.8pp</span></td>
       <td>3rd · 298</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>62.2%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.55) context-fitness-risk</div></td>
+      <td>66.6%</td>
+      <td><div class="model-view-cell">💰 Value · 🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.55) context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>7</td>
       <td><span id="horse-revoked" class="horse-anchor-target">Revoked</span></td>
-      <td>26.00</td>
-      <td>24.86</td>
+      <td>19.00</td>
+      <td>20.16</td>
       <td>15.70</td>
-      <td><span class="edge-pill edge-positive">+0.2pp</span></td>
+      <td><span class="edge-pill edge-negative">-0.3pp</span></td>
       <td>4th · 127</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>14.8%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.25) context-connection context-fitness</div></td>
+      <td>18.2%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.25) context-connection context-fitness</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-inkjet" class="horse-anchor-target">Inkjet</span></td>
-      <td>5.00</td>
-      <td>9.21</td>
+      <td>5.50</td>
+      <td>9.66</td>
       <td>29.82</td>
-      <td><span class="edge-pill edge-negative">-9.1pp</span></td>
+      <td><span class="edge-pill edge-negative">-7.8pp</span></td>
       <td>5th · 103</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>36.9%</td>
-      <td><div class="model-view-cell">💰 Value · 📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver context-fitness-risk</div></td>
+      <td>35.7%</td>
+      <td><div class="model-view-cell">💰 Value · 🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>6</td>
       <td><span id="horse-meticulously" class="horse-anchor-target">Meticulously</span></td>
-      <td>15.00</td>
-      <td>18.58</td>
-      <td>34.38</td>
-      <td><span class="edge-pill edge-negative">-1.3pp</span></td>
+      <td>17.00</td>
+      <td>19.85</td>
+      <td>34.35</td>
+      <td><span class="edge-pill edge-negative">-0.8pp</span></td>
       <td>6th · 95</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>19.4%</td>
+      <td>18.2%</td>
       <td><div class="model-view-cell">🌟 Improver Field 🧬 Unexposed Improver context-risk context-connection-risk context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>2</td>
       <td><span id="horse-arabian-blue" class="horse-anchor-target">Arabian Blue</span></td>
       <td>21.00</td>
-      <td>23.06</td>
-      <td>34.91</td>
+      <td>22.77</td>
+      <td>34.87</td>
       <td><span class="edge-pill edge-negative">-0.4pp</span></td>
       <td>7th · 93</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>16.1%</td>
+      <td>16.4%</td>
       <td><div class="model-view-cell">🌟 Improver Field 🧬 Unexposed Improver context-connection</div></td>
     </tr>
     <tr>
       <td>4</td>
       <td><span id="horse-gilded-call" class="horse-anchor-target">Gilded Call</span></td>
-      <td>41.00</td>
-      <td>35.14</td>
-      <td>35.09</td>
-      <td><span class="edge-pill edge-positive">+0.4pp</span></td>
+      <td>67.00</td>
+      <td>47.23</td>
+      <td>35.05</td>
+      <td><span class="edge-pill edge-positive">+0.6pp</span></td>
       <td>8th · 92</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>11.1%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver</div></td>
+      <td>8.3%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧬 Unexposed Improver</div></td>
     </tr>
     <tr>
       <td>10</td>
       <td><span id="horse-waqqad" class="horse-anchor-target">Waqqad</span></td>
-      <td>17.00</td>
-      <td>20.23</td>
-      <td>35.15</td>
-      <td><span class="edge-pill edge-negative">-0.9pp</span></td>
+      <td>23.00</td>
+      <td>24.16</td>
+      <td>35.12</td>
+      <td><span class="edge-pill edge-negative">-0.2pp</span></td>
       <td>9th · 91</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>18.8%</td>
+      <td>16.0%</td>
       <td><div class="model-view-cell">🌟 Improver Field 🧬 Unexposed Improver context-fitness-risk</div></td>
     </tr>
   </tbody>
@@ -603,41 +630,41 @@
     <tr>
       <td>1</td>
       <td>Iwasjustsaying</td>
-      <td>3.25</td>
+      <td>3.50</td>
       <td>2.24</td>
-      <td>44.68</td>
-      <td>3.98</td>
-      <td>3.86</td>
-      <td>3.05</td>
+      <td>44.64</td>
+      <td>4.26</td>
+      <td>4.12</td>
+      <td>3.15</td>
       <td>2.29</td>
-      <td>32.83</td>
-      <td>30.77</td>
-      <td>25.12</td>
-      <td>2.06</td>
-      <td>7.71</td>
-      <td>122.48</td>
+      <td>31.72</td>
+      <td>28.57</td>
+      <td>23.45</td>
+      <td>3.15</td>
+      <td>8.27</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>77.36</td>
-      <td>67.78</td>
-      <td>9.57</td>
-      <td>0.189</td>
+      <td>76.38</td>
+      <td>66.42</td>
+      <td>9.96</td>
+      <td>0.256</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
-      <td>548</td>
+      <td>547</td>
       <td>leicester</td>
       <td>flat</td>
       <td>turf</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>547.566458</td>
+      <td>547.404679</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>53.125</td>
@@ -681,42 +708,42 @@
       <td>+6.6%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver ⚠️ One-Dimensional 🧠 Model-history +1% (n=1, avg 10.0) context-fitness context-connection-risk</td>
+      <td>⚠️ One-Dimensional 🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 10.0) context-fitness context-connection-risk</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>8</td>
       <td>Talamon</td>
       <td>7.50</td>
       <td>6.66</td>
-      <td>15.01</td>
-      <td>9.19</td>
-      <td>9.00</td>
-      <td>7.73</td>
+      <td>15.02</td>
+      <td>9.14</td>
+      <td>8.94</td>
+      <td>7.63</td>
       <td>4.35</td>
-      <td>12.94</td>
+      <td>13.10</td>
       <td>13.33</td>
-      <td>10.89</td>
-      <td>-0.39</td>
-      <td>2.05</td>
-      <td>122.48</td>
+      <td>10.94</td>
+      <td>-0.23</td>
+      <td>2.16</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>43.40</td>
-      <td>37.19</td>
-      <td>6.21</td>
-      <td>-0.031</td>
+      <td>44.16</td>
+      <td>38.20</td>
+      <td>5.96</td>
+      <td>-0.002</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>339</td>
       <td>leicester</td>
@@ -749,7 +776,7 @@
       <td>-0.002445</td>
       <td>78.0</td>
       <td>R2 Prominent/Place</td>
-      <td>66.0</td>
+      <td>66.1</td>
       <td>45.2</td>
       <td>63.8</td>
       <td>83.8</td>
@@ -769,42 +796,42 @@
       <td>+5.9%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 9.9)</td>
+      <td>🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 9.9)</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>9</td>
       <td>United Authority</td>
-      <td>2.88</td>
-      <td>8.21</td>
-      <td>12.18</td>
-      <td>3.52</td>
-      <td>3.61</td>
-      <td>4.58</td>
+      <td>2.50</td>
+      <td>8.19</td>
+      <td>12.21</td>
+      <td>3.05</td>
+      <td>3.13</td>
+      <td>4.14</td>
       <td>8.26</td>
-      <td>21.85</td>
-      <td>34.78</td>
-      <td>28.40</td>
-      <td>-12.94</td>
-      <td>-6.55</td>
-      <td>122.48</td>
+      <td>24.17</td>
+      <td>40.00</td>
+      <td>32.83</td>
+      <td>-15.83</td>
+      <td>-8.66</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>62.25</td>
-      <td>72.23</td>
-      <td>-9.98</td>
-      <td>-0.516</td>
+      <td>66.57</td>
+      <td>77.77</td>
+      <td>-11.19</td>
+      <td>-0.530</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>298</td>
       <td>leicester</td>
@@ -813,7 +840,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>297.596671</td>
+      <td>298.082299</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>40.000</td>
@@ -837,10 +864,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>65.1</td>
+      <td>65.2</td>
       <td>47.6</td>
       <td>71.8</td>
-      <td>85.8</td>
+      <td>85.7</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -856,43 +883,43 @@
       <td>ATR weakened</td>
       <td>-1.4%</td>
       <td></td>
-      <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.55) context-fitness-risk</td>
+      <td>✖️</td>
+      <td>🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.55) context-fitness-risk</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>7</td>
       <td>Revoked</td>
-      <td>26.00</td>
-      <td>18.90</td>
+      <td>19.00</td>
+      <td>18.89</td>
       <td>5.29</td>
-      <td>31.85</td>
-      <td>30.95</td>
-      <td>24.86</td>
+      <td>23.15</td>
+      <td>22.74</td>
+      <td>20.16</td>
       <td>15.70</td>
-      <td>4.02</td>
-      <td>3.85</td>
-      <td>3.14</td>
-      <td>0.18</td>
-      <td>0.88</td>
-      <td>122.48</td>
+      <td>4.96</td>
+      <td>5.26</td>
+      <td>4.32</td>
+      <td>-0.30</td>
+      <td>0.64</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>14.80</td>
-      <td>11.12</td>
-      <td>3.68</td>
-      <td>-0.066</td>
+      <td>18.23</td>
+      <td>15.43</td>
+      <td>2.80</td>
+      <td>-0.219</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>127</td>
       <td>leicester</td>
@@ -901,7 +928,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>126.865018</td>
+      <td>126.895544</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>56.250</td>
@@ -925,10 +952,10 @@
       <td>0.033923</td>
       <td>100.0</td>
       <td>R3 Midfield/Unclear</td>
-      <td>27.6</td>
-      <td>22.7</td>
-      <td>25.9</td>
-      <td>58.6</td>
+      <td>31.0</td>
+      <td>17.7</td>
+      <td>33.4</td>
+      <td>66.1</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -945,42 +972,42 @@
       <td>-3.0%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.25) context-connection context-fitness</td>
+      <td>🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.25) context-connection context-fitness</td>
       <td>50.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>5</td>
       <td>Inkjet</td>
-      <td>5.00</td>
-      <td>21.12</td>
+      <td>5.50</td>
+      <td>21.13</td>
       <td>4.73</td>
-      <td>6.12</td>
-      <td>6.36</td>
-      <td>9.21</td>
+      <td>6.70</td>
+      <td>6.93</td>
+      <td>9.66</td>
       <td>29.82</td>
-      <td>10.86</td>
-      <td>20.00</td>
-      <td>16.33</td>
-      <td>-9.14</td>
-      <td>-5.47</td>
-      <td>122.48</td>
+      <td>10.35</td>
+      <td>18.18</td>
+      <td>14.92</td>
+      <td>-7.83</td>
+      <td>-4.57</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>36.90</td>
-      <td>51.76</td>
-      <td>-14.86</td>
-      <td>-0.793</td>
+      <td>35.66</td>
+      <td>49.78</td>
+      <td>-14.12</td>
+      <td>-0.753</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>103</td>
       <td>leicester</td>
@@ -989,7 +1016,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>102.655915</td>
+      <td>102.577219</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>50.000</td>
@@ -1033,42 +1060,42 @@
       <td>+3.5%</td>
       <td>ATR 1</td>
       <td>✖️</td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver context-fitness-risk</td>
+      <td>🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver context-fitness-risk</td>
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>6</td>
       <td>Meticulously</td>
-      <td>15.00</td>
+      <td>17.00</td>
       <td>21.85</td>
       <td>4.58</td>
-      <td>18.37</td>
-      <td>18.33</td>
-      <td>18.58</td>
-      <td>34.38</td>
-      <td>5.38</td>
-      <td>6.67</td>
-      <td>5.44</td>
-      <td>-1.29</td>
-      <td>-0.06</td>
-      <td>122.48</td>
+      <td>20.71</td>
+      <td>20.55</td>
+      <td>19.85</td>
+      <td>34.35</td>
+      <td>5.04</td>
+      <td>5.88</td>
+      <td>4.83</td>
+      <td>-0.85</td>
+      <td>0.21</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>19.35</td>
-      <td>20.28</td>
-      <td>-0.93</td>
-      <td>-0.458</td>
+      <td>18.25</td>
+      <td>18.97</td>
+      <td>-0.72</td>
+      <td>-0.377</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>95</td>
       <td>leicester</td>
@@ -1077,9 +1104,9 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>96.251700</td>
+      <td>96.227260</td>
       <td>-1.07717</td>
-      <td>-1.036794</td>
+      <td>-1.036531</td>
       <td>50.000</td>
       <td></td>
       <td>connection,fitness</td>
@@ -1101,10 +1128,10 @@
       <td>-0.033698</td>
       <td>100.0</td>
       <td>R3 Midfield/Unclear</td>
-      <td>34.8</td>
-      <td>29.5</td>
-      <td>41.5</td>
-      <td>80.3</td>
+      <td>33.0</td>
+      <td>27.2</td>
+      <td>40.1</td>
+      <td>76.3</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1125,38 +1152,38 @@
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>2</td>
       <td>Arabian Blue</td>
       <td>21.00</td>
-      <td>22.12</td>
+      <td>22.11</td>
       <td>4.52</td>
-      <td>25.72</td>
-      <td>25.35</td>
-      <td>23.06</td>
-      <td>34.91</td>
-      <td>4.34</td>
+      <td>25.59</td>
+      <td>25.19</td>
+      <td>22.77</td>
+      <td>34.87</td>
+      <td>4.39</td>
       <td>4.76</td>
-      <td>3.89</td>
-      <td>-0.42</td>
-      <td>0.45</td>
-      <td>122.48</td>
+      <td>3.91</td>
+      <td>-0.37</td>
+      <td>0.48</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>16.08</td>
-      <td>14.19</td>
-      <td>1.89</td>
-      <td>-0.285</td>
+      <td>16.45</td>
+      <td>14.50</td>
+      <td>1.95</td>
+      <td>-0.255</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>93</td>
       <td>leicester</td>
@@ -1192,7 +1219,7 @@
       <td>22.8</td>
       <td>21.0</td>
       <td>28.5</td>
-      <td>54.1</td>
+      <td>54.2</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1213,38 +1240,38 @@
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>4</td>
       <td>Gilded Call</td>
-      <td>41.00</td>
-      <td>22.21</td>
+      <td>67.00</td>
+      <td>22.20</td>
       <td>4.50</td>
-      <td>50.22</td>
-      <td>48.26</td>
-      <td>35.14</td>
-      <td>35.09</td>
-      <td>2.85</td>
-      <td>2.44</td>
-      <td>1.99</td>
-      <td>0.41</td>
-      <td>0.85</td>
-      <td>122.48</td>
+      <td>81.63</td>
+      <td>76.91</td>
+      <td>47.23</td>
+      <td>35.05</td>
+      <td>2.12</td>
+      <td>1.49</td>
+      <td>1.23</td>
+      <td>0.62</td>
+      <td>0.89</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>11.10</td>
-      <td>7.56</td>
-      <td>3.54</td>
-      <td>0.166</td>
+      <td>8.31</td>
+      <td>5.00</td>
+      <td>3.31</td>
+      <td>0.598</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>92</td>
       <td>leicester</td>
@@ -1253,7 +1280,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>91.634965</td>
+      <td>91.607522</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>50.000</td>
@@ -1277,10 +1304,10 @@
       <td>0.006792</td>
       <td>100.0</td>
       <td>R4 Weak/Lay</td>
-      <td>14.8</td>
+      <td>14.2</td>
       <td>27.8</td>
-      <td>18.4</td>
-      <td>36.7</td>
+      <td>17.5</td>
+      <td>35.4</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1297,42 +1324,42 @@
       <td>+1.8%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver</td>
+      <td>🌟 Improver Field 📘 ATR 🧬 Unexposed Improver</td>
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>10</td>
       <td>Waqqad</td>
-      <td>17.00</td>
+      <td>23.00</td>
       <td>22.24</td>
       <td>4.50</td>
-      <td>20.82</td>
-      <td>20.69</td>
-      <td>20.23</td>
-      <td>35.15</td>
-      <td>4.94</td>
-      <td>5.88</td>
-      <td>4.80</td>
-      <td>-0.94</td>
-      <td>0.14</td>
-      <td>122.48</td>
+      <td>28.02</td>
+      <td>27.50</td>
+      <td>24.16</td>
+      <td>35.12</td>
+      <td>4.14</td>
+      <td>4.35</td>
+      <td>3.57</td>
+      <td>-0.21</td>
+      <td>0.57</td>
+      <td>121.83</td>
       <td>37.25</td>
-      <td>18.76</td>
-      <td>17.89</td>
-      <td>0.87</td>
-      <td>-0.372</td>
+      <td>15.99</td>
+      <td>13.94</td>
+      <td>2.05</td>
+      <td>-0.184</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.3725</td>
       <td>0.038056</td>
-      <td>0.4042</td>
-      <td>0.6737</td>
-      <td>208.8985</td>
-      <td>1.16126</td>
+      <td>0.4044</td>
+      <td>0.674</td>
+      <td>208.7368</td>
+      <td>1.16132</td>
       <td>3</td>
       <td>91</td>
       <td>leicester</td>
@@ -1341,7 +1368,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>91.339329</td>
+      <td>91.292672</td>
       <td>0.00000</td>
       <td>0.000000</td>
       <td>50.000</td>
@@ -1364,11 +1391,11 @@
       <td>-0.013692</td>
       <td>0.003736</td>
       <td>100.0</td>
-      <td>R3 Midfield/Unclear</td>
-      <td>29.0</td>
-      <td>24.0</td>
-      <td>35.2</td>
-      <td>67.6</td>
+      <td>R4 Weak/Lay</td>
+      <td>18.7</td>
+      <td>22.9</td>
+      <td>23.4</td>
+      <td>45.2</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1389,8 +1416,8 @@
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
   </tbody>
 </table></div>
@@ -1444,6 +1471,57 @@
         } else {
           window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
         }
+      }
+
+      const decisionCard = document.querySelector(".decision-card");
+      if (decisionCard) {
+        let runners = [];
+        try { runners = JSON.parse(decisionCard.dataset.runners || "[]"); } catch (error) {}
+        const chooser = decisionCard.querySelector("#decision-horse");
+        const play = decisionCard.querySelector(".decision-play");
+        const horse = decisionCard.querySelector(".decision-horse");
+        const progress = decisionCard.querySelector(".decision-progress");
+        const factor = decisionCard.querySelector(".decision-factor");
+        const detail = decisionCard.querySelector(".decision-detail");
+        const icon = decisionCard.querySelector(".decision-icon");
+        const meter = decisionCard.querySelector(".decision-meter");
+        const ticks = decisionCard.querySelector(".decision-ticks");
+        const result = decisionCard.querySelector(".decision-result");
+        let runToken = 0;
+        const wait = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+        const selected = () => runners.find(item => item.slug === chooser.value) || runners[0];
+        function resetDecision() {
+          runToken += 1; horse.style.left = "50%"; progress.style.width = "0"; progress.style.transform = "scaleX(1)";
+          progress.style.background = "rgba(8,122,69,.16)"; factor.textContent = "Ready";
+          detail.textContent = "Play this horse’s evidence journey."; icon.textContent = "🏁"; meter.textContent = "50";
+          ticks.innerHTML = ""; result.hidden = true; result.innerHTML = "";
+        }
+        async function runDecision() {
+          const item = selected(); if (!item) return; resetDecision(); const token = runToken; play.disabled = true;
+          let evidence = 50; await wait(reduceMotion ? 0 : 250);
+          for (const step of item.steps) {
+            if (token !== runToken) return;
+            evidence = Math.max(8, Math.min(92, evidence + Number(step.delta || 0)));
+            icon.textContent = step.icon; factor.textContent = step.label + " " + (step.delta > 0 ? "+" : "") + step.delta;
+            detail.textContent = step.detail; meter.textContent = Math.round(evidence); horse.style.left = evidence + "%";
+            const distance = Math.abs(evidence - 50); progress.style.width = distance + "%";
+            progress.style.transform = evidence < 50 ? "scaleX(-1)" : "scaleX(1)";
+            progress.style.background = evidence < 50 ? "rgba(180,35,24,.15)" : "rgba(8,122,69,.16)";
+            const chip = document.createElement("span"); chip.className = "decision-tick " + (step.delta > .4 ? "up" : step.delta < -.4 ? "down" : "");
+            chip.setAttribute("role","listitem"); chip.textContent = step.icon + " " + step.label + " " + (step.delta > 0 ? "+" : "") + step.delta; ticks.appendChild(chip);
+            await wait(reduceMotion ? 0 : 820);
+          }
+          if (token !== runToken) return;
+          const price = item.modelOdds == null ? "—" : item.modelOdds.toFixed(2);
+          const chance = item.probability == null ? "—" : item.probability.toFixed(1) + "%";
+          const market = item.marketOdds == null ? "—" : item.marketOdds.toFixed(2);
+          let value = "Market comparison unavailable.";
+          if (item.edge != null) value = item.edge > 0 ? `<strong>Potential value:</strong> model edge +${item.edge.toFixed(1)}pp.` : `No positive model edge (${item.edge.toFixed(1)}pp).`;
+          factor.textContent = "Published model result"; detail.textContent = "The authoritative output replaces the explanatory journey score."; icon.textContent = "🏇"; meter.textContent = item.score;
+          result.innerHTML = `<strong>${item.horse}</strong> · Model chance ${chance} · Model price ${price} · Market ${market}<br>${value}`;
+          result.hidden = false; play.disabled = false;
+        }
+        chooser.addEventListener("change", resetDecision); play.addEventListener("click", runDecision); resetDecision();
       }
 
       const table = document.getElementById("racecard-table");

@@ -102,6 +102,29 @@
       0%, 100% { transform: scaleX(-1) translateY(0) rotate(0deg); }
       50% { transform: scaleX(-1) translateY(-3px) rotate(-1.5deg); }
     }
+    .decision-card { margin: 14px 0 16px; overflow: hidden; border: 1px solid #cfd9e4; border-radius: 18px; background: #fff; box-shadow: var(--shadow); }
+    .decision-heading { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 17px 18px; color: #fff; background: linear-gradient(135deg,#2b1749,#193a51); }
+    .decision-heading h2 { margin: 2px 0 4px; font-size: clamp(1.15rem,2vw,1.55rem); }
+    .decision-heading p { margin: 0; color: #dfe8f4; font-size: .8rem; }
+    .decision-kicker { color: #f3cf45; font-size: .69rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .decision-controls { display: grid; grid-template-columns: auto minmax(150px,230px) auto; gap: 7px; align-items: center; }
+    .decision-controls label { font-size: .72rem; font-weight: 850; }
+    .decision-controls select, .decision-play { min-height: 39px; border: 1px solid rgba(255,255,255,.34); border-radius: 9px; padding: 7px 10px; font: inherit; font-weight: 750; }
+    .decision-play { color: #2b2100; background: #f3cf45; cursor: pointer; }
+    .decision-stage { padding: 18px; background: radial-gradient(circle at 80% 0,rgba(30,136,229,.10),transparent 35%),#f8fafc; }
+    .decision-track { position: relative; height: 74px; overflow: hidden; border: 1px solid #c8d5df; border-radius: 14px; background: linear-gradient(90deg,#f5dddd 0 49.6%,#e8edf2 49.6% 50.4%,#dff2e5 50.4% 100%); }
+    .decision-track::after { content:""; position:absolute; left:50%; top:0; bottom:0; border-left:2px dashed rgba(19,36,60,.35); }
+    .decision-neutral { position:absolute; z-index:2; left:50%; top:5px; transform:translateX(-50%); color:#516075; font-size:.67rem; font-weight:850; text-transform:uppercase; }
+    .decision-progress { position:absolute; left:50%; top:0; bottom:0; width:0; background:rgba(8,122,69,.16); transition:width .55s ease, transform .55s ease, background .3s ease; transform-origin:left; }
+    .decision-horse { position:absolute; z-index:3; left:50%; top:31px; font-size:2.05rem; transform:translateX(-50%) scaleX(-1); transition:left .55s cubic-bezier(.2,.8,.2,1); filter:drop-shadow(0 3px 2px rgba(20,49,25,.25)); }
+    .decision-live { display:grid; grid-template-columns:auto 1fr auto; gap:11px; align-items:center; min-height:65px; margin-top:12px; padding:10px 12px; border:1px solid #dce4eb; border-radius:12px; background:#fff; }
+    .decision-icon { font-size:1.55rem; } .decision-factor,.decision-detail { display:block; } .decision-detail { margin-top:2px; color:var(--muted); font-size:.76rem; }
+    .decision-meter { min-width:54px; color:var(--navy); font-size:1.45rem; text-align:right; font-variant-numeric:tabular-nums; }
+    .decision-ticks { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+    .decision-tick { padding:5px 8px; border:1px solid #dbe3ea; border-radius:999px; background:#fff; color:#526177; font-size:.7rem; font-weight:800; }
+    .decision-tick.up { color:#087a45; border-color:#afd6bf; background:#edf8f1; } .decision-tick.down { color:#a32920; border-color:#e4b9b5; background:#fff1f0; }
+    .decision-result { margin-top:12px; padding:12px 14px; border:1px solid #e4c54b; border-radius:12px; color:#fff; background:linear-gradient(135deg,#13243c,#244667); }
+    .decision-result strong { color:#ffe36b; } .decision-note { margin:0; padding:9px 14px 11px; color:var(--muted); background:#f5f8fa; font-size:.74rem; text-align:center; }
     .table-shell { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--panel); box-shadow: var(--shadow); }
     table { width: 100%; border-collapse: separate; border-spacing: 0; }
     #racecard-table { min-width: 1160px; }
@@ -140,6 +163,8 @@
       .model-order-heading { display: block; padding: 13px 14px 12px; }
       .model-order-actions { align-items: flex-end; justify-content: space-between; gap: 8px; margin-top: 6px; }
       .model-order-heading p { text-align: left; } .model-race-replay { min-height: 34px; padding: 6px 9px; font-size: .68rem; }
+      .decision-heading { display:block; padding:14px; } .decision-controls { grid-template-columns:1fr; margin-top:12px; } .decision-controls label { display:none; }
+      .decision-play,.decision-controls select { width:100%; } .decision-stage { padding:12px; }
       .model-track { padding-top: 12px; padding-bottom: 12px; } .model-lane { min-height: 69px; }
       .runner-card { gap: 6px; max-width: min(154px,47vw); padding: 6px 7px 6px 6px; }
       .runner-rank { min-width: 31px; height: 31px; font-size: .66rem; } .runner-copy strong { font-size: .79rem; }
@@ -166,6 +191,7 @@
       html { scroll-behavior: auto; }
       .model-order-card .model-runner, .model-order-card .runner-card, .model-order-card .runner-horse { animation: none !important; transition: none !important; }
       .model-order-card.animation-enabled .model-race-replay { display: none; }
+      .decision-horse,.decision-progress { transition:none !important; }
     }
   </style>
 <style data-racing-inline="racing-ui.css">
@@ -378,7 +404,8 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 12 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="lunar-empress" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="4"><a class="runner-card" href="#horse-lunar-empress" aria-label="1st: Lunar Empress"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Lunar Empress</strong><span class="runner-numbers"><span>Real <b>4.33</b></span><span>Score <b>597</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="shenata" style="--track-position:74.83%;--race-quarter:23.21%;--race-mid:43.86%;--race-late:66.57%;--race-overshoot:75.38%" data-cloth="9"><a class="runner-card" href="#horse-shenata" aria-label="2nd: Shenata"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Shenata</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>437</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="churchill-bond" style="--track-position:71.56%;--race-quarter:22.39%;--race-mid:42.06%;--race-late:63.70%;--race-overshoot:72.11%" data-cloth="1"><a class="runner-card" href="#horse-churchill-bond" aria-label="3rd: Churchill Bond"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Churchill Bond</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>380</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="autumn-gray" style="--track-position:71.28%;--race-quarter:22.32%;--race-mid:41.90%;--race-late:63.44%;--race-overshoot:71.83%" data-cloth="5"><a class="runner-card" href="#horse-autumn-gray" aria-label="4th: Autumn Gray"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Autumn Gray</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>375</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="katiraya" style="--track-position:70.19%;--race-quarter:22.05%;--race-mid:41.30%;--race-late:62.49%;--race-overshoot:70.74%" data-cloth="8"><a class="runner-card" href="#horse-katiraya" aria-label="5th: Katiraya"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Katiraya</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>356</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="cloughleagh-bridge" style="--track-position:61.08%;--race-quarter:19.77%;--race-mid:36.29%;--race-late:54.47%;--race-overshoot:61.63%" data-cloth="6"><a class="runner-card" href="#horse-cloughleagh-bridge" aria-label="6th: Cloughleagh Bridge"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Cloughleagh Bridge</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>197</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="green-nature" style="--track-position:57.64%;--race-quarter:18.91%;--race-mid:34.40%;--race-late:51.44%;--race-overshoot:58.19%" data-cloth="7"><a class="runner-card" href="#horse-green-nature" aria-label="7th: Green Nature"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Green Nature</strong><span class="runner-numbers"><span>Real <b>17.00</b></span><span>Score <b>137</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="armarones-girl" style="--track-position:57.06%;--race-quarter:18.77%;--race-mid:34.08%;--race-late:50.94%;--race-overshoot:57.61%" data-cloth="2"><a class="runner-card" href="#horse-armarones-girl" aria-label="8th: Armarone&#x27;s Girl"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Armarone&#x27;s Girl</strong><span class="runner-numbers"><span>Real <b>151.00</b></span><span>Score <b>127</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="evies-delight" style="--track-position:56.32%;--race-quarter:18.58%;--race-mid:33.68%;--race-late:50.28%;--race-overshoot:56.87%" data-cloth="10"><a class="runner-card" href="#horse-evies-delight" aria-label="9th: Evie&#x27;s Delight"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Evie&#x27;s Delight</strong><span class="runner-numbers"><span>Real <b>201.00</b></span><span>Score <b>114</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="estado-de-la-luna" style="--track-position:56.26%;--race-quarter:18.57%;--race-mid:33.64%;--race-late:50.23%;--race-overshoot:56.81%" data-cloth="3"><a class="runner-card" href="#horse-estado-de-la-luna" aria-label="10th: Estado De La Luna"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Estado De La Luna</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>113</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="peitseoga" style="--track-position:55.11%;--race-quarter:18.28%;--race-mid:33.01%;--race-late:49.22%;--race-overshoot:55.66%" data-cloth="11"><a class="runner-card" href="#horse-peitseoga" aria-label="11th: Peitseoga"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Peitseoga</strong><span class="runner-numbers"><span>Real <b>101.00</b></span><span>Score <b>93</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="mary-doll" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="12"><a class="runner-card" href="#horse-mary-doll" aria-label="12th: Mary Doll"><span class="runner-rank">12th</span><span class="runner-copy"><strong>Mary Doll</strong><span class="runner-numbers"><span>Real <b>67.00</b></span><span>Score <b>91</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p>Top to bottom is the predicted order. Horizontal separation reflects the composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 12 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="lunar-empress" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="4"><a class="runner-card" href="#horse-lunar-empress" aria-label="1st: Lunar Empress"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Lunar Empress</strong><span class="runner-numbers"><span>Real <b>4.33</b></span><span>Score <b>597</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="shenata" style="--track-position:74.83%;--race-quarter:23.21%;--race-mid:43.86%;--race-late:66.57%;--race-overshoot:75.38%" data-cloth="9"><a class="runner-card" href="#horse-shenata" aria-label="2nd: Shenata"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Shenata</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>437</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="churchill-bond" style="--track-position:71.56%;--race-quarter:22.39%;--race-mid:42.06%;--race-late:63.70%;--race-overshoot:72.11%" data-cloth="1"><a class="runner-card" href="#horse-churchill-bond" aria-label="3rd: Churchill Bond"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Churchill Bond</strong><span class="runner-numbers"><span>Real <b>3.50</b></span><span>Score <b>380</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="autumn-gray" style="--track-position:71.28%;--race-quarter:22.32%;--race-mid:41.90%;--race-late:63.44%;--race-overshoot:71.83%" data-cloth="5"><a class="runner-card" href="#horse-autumn-gray" aria-label="4th: Autumn Gray"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Autumn Gray</strong><span class="runner-numbers"><span>Real <b>5.00</b></span><span>Score <b>375</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="katiraya" style="--track-position:70.19%;--race-quarter:22.05%;--race-mid:41.30%;--race-late:62.49%;--race-overshoot:70.74%" data-cloth="8"><a class="runner-card" href="#horse-katiraya" aria-label="5th: Katiraya"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Katiraya</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>356</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="cloughleagh-bridge" style="--track-position:61.08%;--race-quarter:19.77%;--race-mid:36.29%;--race-late:54.47%;--race-overshoot:61.63%" data-cloth="6"><a class="runner-card" href="#horse-cloughleagh-bridge" aria-label="6th: Cloughleagh Bridge"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Cloughleagh Bridge</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>197</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="green-nature" style="--track-position:57.64%;--race-quarter:18.91%;--race-mid:34.40%;--race-late:51.44%;--race-overshoot:58.19%" data-cloth="7"><a class="runner-card" href="#horse-green-nature" aria-label="7th: Green Nature"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Green Nature</strong><span class="runner-numbers"><span>Real <b>19.00</b></span><span>Score <b>137</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="armarones-girl" style="--track-position:57.06%;--race-quarter:18.77%;--race-mid:34.08%;--race-late:50.94%;--race-overshoot:57.61%" data-cloth="2"><a class="runner-card" href="#horse-armarones-girl" aria-label="8th: Armarone&#x27;s Girl"><span class="runner-rank">8th</span><span class="runner-copy"><strong>Armarone&#x27;s Girl</strong><span class="runner-numbers"><span>Real <b>151.00</b></span><span>Score <b>127</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="evies-delight" style="--track-position:56.32%;--race-quarter:18.58%;--race-mid:33.68%;--race-late:50.28%;--race-overshoot:56.87%" data-cloth="10"><a class="runner-card" href="#horse-evies-delight" aria-label="9th: Evie&#x27;s Delight"><span class="runner-rank">9th</span><span class="runner-copy"><strong>Evie&#x27;s Delight</strong><span class="runner-numbers"><span>Real <b>201.00</b></span><span>Score <b>114</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="estado-de-la-luna" style="--track-position:56.26%;--race-quarter:18.57%;--race-mid:33.64%;--race-late:50.23%;--race-overshoot:56.81%" data-cloth="3"><a class="runner-card" href="#horse-estado-de-la-luna" aria-label="10th: Estado De La Luna"><span class="runner-rank">10th</span><span class="runner-copy"><strong>Estado De La Luna</strong><span class="runner-numbers"><span>Real <b>23.00</b></span><span>Score <b>113</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="peitseoga" style="--track-position:55.11%;--race-quarter:18.28%;--race-mid:33.01%;--race-late:49.22%;--race-overshoot:55.66%" data-cloth="11"><a class="runner-card" href="#horse-peitseoga" aria-label="11th: Peitseoga"><span class="runner-rank">11th</span><span class="runner-copy"><strong>Peitseoga</strong><span class="runner-numbers"><span>Real <b>41.00</b></span><span>Score <b>93</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="mary-doll" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="12"><a class="runner-card" href="#horse-mary-doll" aria-label="12th: Mary Doll"><span class="runner-rank">12th</span><span class="runner-copy"><strong>Mary Doll</strong><span class="runner-numbers"><span>Real <b>67.00</b></span><span>Score <b>91</b></span></span></span></a><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="decision-card" aria-labelledby="decision-title" data-runners="[{&quot;horse&quot;:&quot;Lunar Empress&quot;,&quot;slug&quot;:&quot;lunar-empress&quot;,&quot;score&quot;:597,&quot;modelOdds&quot;:4.31,&quot;marketOdds&quot;:4.33,&quot;probability&quot;:23.2,&quot;edge&quot;:0.1,&quot;coverage&quot;:75.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:0.8,&quot;detail&quot;:&quot;75% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Shenata&quot;,&quot;slug&quot;:&quot;shenata&quot;,&quot;score&quot;:437,&quot;modelOdds&quot;:6.45,&quot;marketOdds&quot;:5.0,&quot;probability&quot;:15.5,&quot;edge&quot;:-4.5,&quot;coverage&quot;:50.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;50% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Churchill Bond&quot;,&quot;slug&quot;:&quot;churchill-bond&quot;,&quot;score&quot;:380,&quot;modelOdds&quot;:5.85,&quot;marketOdds&quot;:3.5,&quot;probability&quot;:17.1,&quot;edge&quot;:-11.5,&quot;coverage&quot;:50.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;50% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Autumn Gray&quot;,&quot;slug&quot;:&quot;autumn-gray&quot;,&quot;score&quot;:375,&quot;modelOdds&quot;:7.28,&quot;marketOdds&quot;:5.0,&quot;probability&quot;:13.7,&quot;edge&quot;:-6.3,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:5.0,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Katiraya&quot;,&quot;slug&quot;:&quot;katiraya&quot;,&quot;score&quot;:356,&quot;modelOdds&quot;:7.98,&quot;marketOdds&quot;:5.5,&quot;probability&quot;:12.5,&quot;edge&quot;:-5.7,&quot;coverage&quot;:50.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-5.0,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:2.0,&quot;detail&quot;:&quot;Atr positive&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;50% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Cloughleagh Bridge&quot;,&quot;slug&quot;:&quot;cloughleagh-bridge&quot;,&quot;score&quot;:197,&quot;modelOdds&quot;:24.86,&quot;marketOdds&quot;:23.0,&quot;probability&quot;:4.0,&quot;edge&quot;:-0.3,&quot;coverage&quot;:87.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Fit with today’s race grade.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:2.9,&quot;detail&quot;:&quot;88% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Green Nature&quot;,&quot;slug&quot;:&quot;green-nature&quot;,&quot;score&quot;:137,&quot;modelOdds&quot;:24.72,&quot;marketOdds&quot;:19.0,&quot;probability&quot;:4.0,&quot;edge&quot;:-1.3,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Armarone&#x27;s Girl&quot;,&quot;slug&quot;:&quot;armarones-girl&quot;,&quot;score&quot;:127,&quot;modelOdds&quot;:84.22,&quot;marketOdds&quot;:151.0,&quot;probability&quot;:1.2,&quot;edge&quot;:0.5,&quot;coverage&quot;:50.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:2.5,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;50% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Evie&#x27;s Delight&quot;,&quot;slug&quot;:&quot;evies-delight&quot;,&quot;score&quot;:114,&quot;modelOdds&quot;:101.87,&quot;marketOdds&quot;:201.0,&quot;probability&quot;:1.0,&quot;edge&quot;:0.5,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Estado De La Luna&quot;,&quot;slug&quot;:&quot;estado-de-la-luna&quot;,&quot;score&quot;:113,&quot;modelOdds&quot;:28.8,&quot;marketOdds&quot;:23.0,&quot;probability&quot;:3.5,&quot;edge&quot;:-0.8,&quot;coverage&quot;:37.5,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Suitability for today’s ground.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:-7.6,&quot;detail&quot;:&quot;Evidence at today’s trip.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:4.2,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-5.4,&quot;detail&quot;:&quot;38% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Peitseoga&quot;,&quot;slug&quot;:&quot;peitseoga&quot;,&quot;score&quot;:93,&quot;modelOdds&quot;:41.77,&quot;marketOdds&quot;:41.0,&quot;probability&quot;:2.4,&quot;edge&quot;:0.0,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]},{&quot;horse&quot;:&quot;Mary Doll&quot;,&quot;slug&quot;:&quot;mary-doll&quot;,&quot;score&quot;:91,&quot;modelOdds&quot;:55.78,&quot;marketOdds&quot;:67.0,&quot;probability&quot;:1.8,&quot;edge&quot;:0.3,&quot;coverage&quot;:0.0,&quot;steps&quot;:[{&quot;label&quot;:&quot;Going&quot;,&quot;icon&quot;:&quot;🌦️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable going evidence.&quot;},{&quot;label&quot;:&quot;Distance&quot;,&quot;icon&quot;:&quot;↔️&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable distance evidence.&quot;},{&quot;label&quot;:&quot;Class&quot;,&quot;icon&quot;:&quot;🏆&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No dependable class evidence.&quot;},{&quot;label&quot;:&quot;Form &amp; history&quot;,&quot;icon&quot;:&quot;📈&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;Recent form and comparable historical performance.&quot;},{&quot;label&quot;:&quot;Connections&quot;,&quot;icon&quot;:&quot;🤝&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No exceptional trainer/jockey signal.&quot;},{&quot;label&quot;:&quot;Race adjustments&quot;,&quot;icon&quot;:&quot;🎯&quot;,&quot;delta&quot;:0.0,&quot;detail&quot;:&quot;No material draw, track-bias or ATR adjustment.&quot;},{&quot;label&quot;:&quot;Data reliability&quot;,&quot;icon&quot;:&quot;🛡️&quot;,&quot;delta&quot;:-3.3,&quot;detail&quot;:&quot;0% runner-data coverage.&quot;}]}]"><div class="decision-heading"><div><span class="decision-kicker">Inside the calculation</span><h2 id="decision-title">How the model decided</h2><p>Watch the real evidence groups build toward the published model result.</p></div><div class="decision-controls"><label for="decision-horse">Horse</label><select id="decision-horse"><option value="lunar-empress">Lunar Empress</option><option value="shenata">Shenata</option><option value="churchill-bond">Churchill Bond</option><option value="autumn-gray">Autumn Gray</option><option value="katiraya">Katiraya</option><option value="cloughleagh-bridge">Cloughleagh Bridge</option><option value="green-nature">Green Nature</option><option value="armarones-girl">Armarone&#x27;s Girl</option><option value="evies-delight">Evie&#x27;s Delight</option><option value="estado-de-la-luna">Estado De La Luna</option><option value="peitseoga">Peitseoga</option><option value="mary-doll">Mary Doll</option></select><button class="decision-play" type="button">▶ Play decision</button></div></div><div class="decision-stage"><div class="decision-track" aria-hidden="true"><span class="decision-neutral">Neutral</span><div class="decision-progress"></div><div class="decision-horse">🏇</div></div><div class="decision-live" aria-live="polite"><span class="decision-icon">🏁</span><div><b class="decision-factor">Ready</b><span class="decision-detail">Choose a horse and play its evidence journey.</span></div><strong class="decision-meter">50</strong></div><div class="decision-ticks" role="list"></div><div class="decision-result" hidden></div></div><p class="decision-note">Factor movement is an explanatory evidence scale. The published Composite Score and Model 100% price remain authoritative; value is shown only after modelling.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -399,145 +426,145 @@
       <td>4</td>
       <td><span id="horse-lunar-empress" class="horse-anchor-target">Lunar Empress</span></td>
       <td>4.33</td>
-      <td>4.27</td>
+      <td>4.31</td>
       <td>2.92</td>
-      <td><span class="edge-pill edge-positive">+0.3pp</span></td>
+      <td><span class="edge-pill edge-positive">+0.1pp</span></td>
       <td>1st · 597</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>61.4%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=3, avg 6.34) context-connection-risk</div></td>
+      <td>61.0%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=3, avg 6.34) context-connection-risk</div></td>
     </tr>
     <tr>
       <td>9</td>
       <td><span id="horse-shenata" class="horse-anchor-target">Shenata</span></td>
       <td>5.00</td>
-      <td>6.40</td>
+      <td>6.45</td>
       <td>5.54</td>
-      <td><span class="edge-pill edge-negative">-4.4pp</span></td>
+      <td><span class="edge-pill edge-negative">-4.5pp</span></td>
       <td>2nd · 437</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>47.0%</td>
-      <td><div class="model-view-cell">📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.4)</div></td>
+      <td>46.6%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.4)</div></td>
     </tr>
     <tr>
       <td>1</td>
       <td><span id="horse-churchill-bond" class="horse-anchor-target">Churchill Bond</span></td>
       <td>3.50</td>
-      <td>5.81</td>
+      <td>5.85</td>
       <td>9.89</td>
-      <td><span class="edge-pill edge-negative">-11.4pp</span></td>
+      <td><span class="edge-pill edge-negative">-11.5pp</span></td>
       <td>3rd · 380</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>50.4%</td>
-      <td><div class="model-view-cell">📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=2, avg 5.88) context-fitness</div></td>
+      <td>50.1%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 🎯 Galway draw fit 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 5.88) context-fitness</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-autumn-gray" class="horse-anchor-target">Autumn Gray</span></td>
       <td>5.00</td>
-      <td>7.23</td>
+      <td>7.28</td>
       <td>10.17</td>
-      <td><span class="edge-pill edge-negative">-6.2pp</span></td>
+      <td><span class="edge-pill edge-negative">-6.3pp</span></td>
       <td>4th · 375</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>42.3%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk 🧠 Model-history +1% (n=1, avg 10.0) context-fitness</div></td>
+      <td>42.0%</td>
+      <td><div class="model-view-cell">⚠️ Galway draw risk 🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 10.0) context-fitness</div></td>
     </tr>
     <tr>
       <td>8</td>
       <td><span id="horse-katiraya" class="horse-anchor-target">Katiraya</span></td>
       <td>5.50</td>
-      <td>7.92</td>
+      <td>7.98</td>
       <td>11.28</td>
-      <td><span class="edge-pill edge-negative">-5.6pp</span></td>
+      <td><span class="edge-pill edge-negative">-5.7pp</span></td>
       <td>5th · 356</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>38.4%</td>
-      <td><div class="model-view-cell">📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=2, avg 6.19) context-connection-risk</div></td>
+      <td>38.1%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 🎯 Galway draw fit 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.19) context-connection-risk</div></td>
     </tr>
     <tr>
       <td>6</td>
       <td><span id="horse-cloughleagh-bridge" class="horse-anchor-target">Cloughleagh Bridge</span></td>
       <td>23.00</td>
-      <td>24.68</td>
+      <td>24.86</td>
       <td>21.44</td>
       <td><span class="edge-pill edge-negative">-0.3pp</span></td>
       <td>6th · 197</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>14.1%</td>
+      <td>14.0%</td>
       <td><div class="model-view-cell">🌟 Improver Field 🧠 Model-history −1% (n=2, avg 1.89)</div></td>
     </tr>
     <tr>
       <td>7</td>
       <td><span id="horse-green-nature" class="horse-anchor-target">Green Nature</span></td>
-      <td>17.00</td>
-      <td>23.00</td>
+      <td>19.00</td>
+      <td>24.72</td>
       <td>37.32</td>
-      <td><span class="edge-pill edge-negative">-1.5pp</span></td>
+      <td><span class="edge-pill edge-negative">-1.2pp</span></td>
       <td>7th · 137</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>15.5%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=1, avg 6.5) context-fitness</div></td>
+      <td>14.2%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🎯 Galway draw fit 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.5) context-fitness</div></td>
     </tr>
     <tr>
       <td>2</td>
       <td><span id="horse-armarones-girl" class="horse-anchor-target">Armarone&#x27;s Girl</span></td>
       <td>151.00</td>
-      <td>83.62</td>
+      <td>84.22</td>
       <td>39.30</td>
       <td><span class="edge-pill edge-positive">+0.5pp</span></td>
       <td>8th · 127</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
       <td>4.5%</td>
-      <td><div class="model-view-cell">💰 Value · 📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history −0% (n=2, avg 4.22)</div></td>
+      <td><div class="model-view-cell">💰 Value · 🌟 Improver Field 📘 ATR 🎯 Galway draw fit 🧬 Unexposed Improver 🧠 Model-history −0% (n=2, avg 4.22)</div></td>
     </tr>
     <tr>
       <td>10</td>
       <td><span id="horse-evies-delight" class="horse-anchor-target">Evie&#x27;s Delight</span></td>
       <td>201.00</td>
-      <td>101.15</td>
+      <td>101.87</td>
       <td>42.21</td>
       <td><span class="edge-pill edge-positive">+0.5pp</span></td>
       <td>9th · 114</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
       <td>3.5%</td>
-      <td><div class="model-view-cell">💰 Value · 📘 ATR 🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk 🧠 Model-history −0% (n=1, avg 2.73) context-fitness</div></td>
+      <td><div class="model-view-cell">💰 Value · ⚠️ Galway draw risk 🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history −0% (n=1, avg 2.73) context-fitness</div></td>
     </tr>
     <tr>
       <td>3</td>
       <td><span id="horse-estado-de-la-luna" class="horse-anchor-target">Estado De La Luna</span></td>
       <td>23.00</td>
-      <td>28.60</td>
+      <td>28.80</td>
       <td>42.31</td>
       <td><span class="edge-pill edge-negative">-0.9pp</span></td>
       <td>10th · 113</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖✖</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>11.6%</td>
-      <td><div class="model-view-cell">📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.53) context-connection context-fitness</div></td>
+      <td>11.5%</td>
+      <td><div class="model-view-cell">🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.53) context-connection context-fitness</div></td>
     </tr>
     <tr>
       <td>11</td>
       <td><span id="horse-peitseoga" class="horse-anchor-target">Peitseoga</span></td>
-      <td>101.00</td>
-      <td>70.16</td>
-      <td>47.05</td>
-      <td><span class="edge-pill edge-positive">+0.4pp</span></td>
+      <td>41.00</td>
+      <td>41.77</td>
+      <td>47.04</td>
+      <td><span class="edge-pill edge-negative">-0.0pp</span></td>
       <td>11th · 93</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>5.0%</td>
-      <td><div class="model-view-cell">🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk</div></td>
+      <td>8.5%</td>
+      <td><div class="model-view-cell">⚠️ Galway draw risk 🌟 Improver Field 🧬 Unexposed Improver</div></td>
     </tr>
     <tr>
       <td>12</td>
       <td><span id="horse-mary-doll" class="horse-anchor-target">Mary Doll</span></td>
       <td>67.00</td>
-      <td>55.38</td>
+      <td>55.78</td>
       <td>47.45</td>
       <td><span class="edge-pill edge-positive">+0.3pp</span></td>
       <td>12th · 91</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>6.2%</td>
-      <td><div class="model-view-cell">🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk</div></td>
+      <td>6.1%</td>
+      <td><div class="model-view-cell">⚠️ Galway draw risk 🌟 Improver Field 🧬 Unexposed Improver</div></td>
     </tr>
   </tbody>
 </table></div>
@@ -642,21 +669,21 @@
       <td>4.33</td>
       <td>3.29</td>
       <td>30.43</td>
-      <td>5.55</td>
-      <td>5.32</td>
-      <td>4.27</td>
+      <td>5.58</td>
+      <td>5.35</td>
+      <td>4.31</td>
       <td>2.92</td>
-      <td>23.39</td>
+      <td>23.23</td>
       <td>23.08</td>
-      <td>18.02</td>
-      <td>0.32</td>
-      <td>5.37</td>
-      <td>128.05</td>
+      <td>17.91</td>
+      <td>0.15</td>
+      <td>5.32</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>61.44</td>
-      <td>52.42</td>
+      <td>61.02</td>
+      <td>52.01</td>
       <td>9.02</td>
-      <td>0.038</td>
+      <td>0.024</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -717,12 +744,12 @@
       <td>+2.4%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=3, avg 6.34) context-connection-risk</td>
+      <td>🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=3, avg 6.34) context-connection-risk</td>
       <td>75.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>9</td>
@@ -730,21 +757,21 @@
       <td>5.00</td>
       <td>7.08</td>
       <td>14.12</td>
-      <td>6.40</td>
-      <td>6.38</td>
-      <td>6.40</td>
+      <td>6.44</td>
+      <td>6.43</td>
+      <td>6.45</td>
       <td>5.54</td>
-      <td>15.63</td>
+      <td>15.52</td>
       <td>20.00</td>
-      <td>15.62</td>
-      <td>-4.37</td>
-      <td>0.01</td>
-      <td>128.05</td>
+      <td>15.52</td>
+      <td>-4.48</td>
+      <td>-0.00</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>47.02</td>
-      <td>46.94</td>
-      <td>0.08</td>
-      <td>-0.372</td>
+      <td>46.60</td>
+      <td>46.53</td>
+      <td>0.07</td>
+      <td>-0.385</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -805,12 +832,12 @@
       <td>+4.3%</td>
       <td>ATR 3</td>
       <td></td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.4)</td>
+      <td>🌟 Improver Field 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.4)</td>
       <td>50.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>1</td>
@@ -818,21 +845,21 @@
       <td>3.50</td>
       <td>9.26</td>
       <td>10.80</td>
-      <td>4.48</td>
-      <td>4.65</td>
-      <td>5.81</td>
+      <td>4.51</td>
+      <td>4.68</td>
+      <td>5.85</td>
       <td>9.89</td>
-      <td>17.21</td>
+      <td>17.09</td>
       <td>28.57</td>
-      <td>22.31</td>
-      <td>-11.36</td>
-      <td>-5.11</td>
-      <td>128.05</td>
+      <td>22.17</td>
+      <td>-11.49</td>
+      <td>-5.08</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>50.44</td>
-      <td>59.91</td>
-      <td>-9.47</td>
-      <td>-0.641</td>
+      <td>50.06</td>
+      <td>59.59</td>
+      <td>-9.53</td>
+      <td>-0.651</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -893,12 +920,12 @@
       <td>+4.1%</td>
       <td>ATR 2</td>
       <td></td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=2, avg 5.88) context-fitness</td>
+      <td>🌟 Improver Field 🎯 Galway draw fit 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 5.88) context-fitness</td>
       <td>50.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>5</td>
@@ -906,21 +933,21 @@
       <td>5.00</td>
       <td>9.48</td>
       <td>10.55</td>
-      <td>6.40</td>
-      <td>6.50</td>
-      <td>7.23</td>
+      <td>6.44</td>
+      <td>6.54</td>
+      <td>7.28</td>
       <td>10.17</td>
-      <td>13.84</td>
+      <td>13.74</td>
       <td>20.00</td>
-      <td>15.62</td>
-      <td>-6.16</td>
+      <td>15.52</td>
+      <td>-6.26</td>
       <td>-1.78</td>
-      <td>128.05</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>42.26</td>
-      <td>46.54</td>
-      <td>-4.28</td>
-      <td>-0.548</td>
+      <td>41.95</td>
+      <td>46.18</td>
+      <td>-4.23</td>
+      <td>-0.558</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -981,12 +1008,12 @@
       <td>+3.1%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk 🧠 Model-history +1% (n=1, avg 10.0) context-fitness</td>
+      <td>⚠️ Galway draw risk 🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +1% (n=1, avg 10.0) context-fitness</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>8</td>
@@ -994,21 +1021,21 @@
       <td>5.50</td>
       <td>10.34</td>
       <td>9.67</td>
-      <td>7.04</td>
-      <td>7.15</td>
-      <td>7.92</td>
+      <td>7.09</td>
+      <td>7.19</td>
+      <td>7.98</td>
       <td>11.28</td>
-      <td>12.62</td>
+      <td>12.54</td>
       <td>18.18</td>
-      <td>14.20</td>
-      <td>-5.56</td>
+      <td>14.11</td>
+      <td>-5.65</td>
       <td>-1.57</td>
-      <td>128.05</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>38.38</td>
-      <td>44.28</td>
-      <td>-5.91</td>
-      <td>-0.577</td>
+      <td>38.14</td>
+      <td>43.95</td>
+      <td>-5.81</td>
+      <td>-0.586</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1069,12 +1096,12 @@
       <td>+6.2%</td>
       <td>ATR 1</td>
       <td></td>
-      <td>📘 ATR+ 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=2, avg 6.19) context-connection-risk</td>
+      <td>🌟 Improver Field 🎯 Galway draw fit 📘 ATR+ 🧬 Unexposed Improver 🧠 Model-history +0% (n=2, avg 6.19) context-connection-risk</td>
       <td>50.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>6</td>
@@ -1082,21 +1109,21 @@
       <td>23.00</td>
       <td>21.34</td>
       <td>4.69</td>
-      <td>29.45</td>
-      <td>28.59</td>
-      <td>24.68</td>
+      <td>29.64</td>
+      <td>28.78</td>
+      <td>24.86</td>
       <td>21.44</td>
-      <td>4.05</td>
+      <td>4.02</td>
       <td>4.35</td>
-      <td>3.40</td>
-      <td>-0.30</td>
-      <td>0.66</td>
-      <td>128.05</td>
+      <td>3.37</td>
+      <td>-0.32</td>
+      <td>0.65</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>14.14</td>
-      <td>11.63</td>
-      <td>2.51</td>
-      <td>-0.304</td>
+      <td>13.96</td>
+      <td>11.56</td>
+      <td>2.40</td>
+      <td>-0.321</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1161,30 +1188,30 @@
       <td>87.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>7</td>
       <td>Green Nature</td>
-      <td>17.00</td>
+      <td>19.00</td>
       <td>27.52</td>
       <td>3.63</td>
-      <td>21.77</td>
-      <td>21.88</td>
-      <td>23.00</td>
+      <td>24.49</td>
+      <td>24.45</td>
+      <td>24.72</td>
       <td>37.32</td>
-      <td>4.35</td>
-      <td>5.88</td>
-      <td>4.59</td>
-      <td>-1.54</td>
-      <td>-0.25</td>
-      <td>128.05</td>
+      <td>4.05</td>
+      <td>5.26</td>
+      <td>4.08</td>
+      <td>-1.22</td>
+      <td>-0.04</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>15.48</td>
-      <td>15.91</td>
-      <td>-0.43</td>
-      <td>-0.611</td>
+      <td>14.24</td>
+      <td>14.16</td>
+      <td>0.08</td>
+      <td>-0.576</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1201,7 +1228,7 @@
       <td>0.000</td>
       <td>0.298</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>137.296111</td>
+      <td>137.283526</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>53.125</td>
@@ -1225,10 +1252,10 @@
       <td>-0.008124</td>
       <td>78.0</td>
       <td>R3 Midfield/Unclear</td>
-      <td>31.6</td>
-      <td>15.7</td>
-      <td>40.5</td>
-      <td>61.3</td>
+      <td>31.4</td>
+      <td>20.7</td>
+      <td>39.8</td>
+      <td>60.8</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1245,12 +1272,12 @@
       <td>+0.6%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history +0% (n=1, avg 6.5) context-fitness</td>
+      <td>🌟 Improver Field 📘 ATR 🎯 Galway draw fit 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.5) context-fitness</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>2</td>
@@ -1258,21 +1285,21 @@
       <td>151.00</td>
       <td>28.67</td>
       <td>3.49</td>
-      <td>193.36</td>
-      <td>169.92</td>
-      <td>83.62</td>
+      <td>194.61</td>
+      <td>171.07</td>
+      <td>84.22</td>
       <td>39.30</td>
-      <td>1.20</td>
+      <td>1.19</td>
       <td>0.66</td>
-      <td>0.52</td>
+      <td>0.51</td>
       <td>0.53</td>
-      <td>0.68</td>
-      <td>128.05</td>
+      <td>0.67</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>4.55</td>
-      <td>1.82</td>
-      <td>2.73</td>
-      <td>1.216</td>
+      <td>4.52</td>
+      <td>1.85</td>
+      <td>2.67</td>
+      <td>1.193</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1333,12 +1360,12 @@
       <td>-2.6%</td>
       <td></td>
       <td>💰</td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🎯 Galway draw fit 🧠 Model-history −0% (n=2, avg 4.22)</td>
+      <td>🌟 Improver Field 📘 ATR 🎯 Galway draw fit 🧬 Unexposed Improver 🧠 Model-history −0% (n=2, avg 4.22)</td>
       <td>50.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>10</td>
@@ -1346,21 +1373,21 @@
       <td>201.00</td>
       <td>30.33</td>
       <td>3.30</td>
-      <td>257.38</td>
-      <td>222.95</td>
-      <td>101.15</td>
+      <td>259.05</td>
+      <td>224.46</td>
+      <td>101.87</td>
       <td>42.21</td>
-      <td>0.99</td>
+      <td>0.98</td>
       <td>0.50</td>
       <td>0.39</td>
-      <td>0.49</td>
+      <td>0.48</td>
       <td>0.60</td>
-      <td>128.05</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>3.53</td>
-      <td>1.45</td>
+      <td>3.52</td>
+      <td>1.43</td>
       <td>2.08</td>
-      <td>1.436</td>
+      <td>1.415</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1421,12 +1448,12 @@
       <td>-3.2%</td>
       <td></td>
       <td>💰</td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk 🧠 Model-history −0% (n=1, avg 2.73) context-fitness</td>
+      <td>⚠️ Galway draw risk 🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history −0% (n=1, avg 2.73) context-fitness</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>3</td>
@@ -1434,21 +1461,21 @@
       <td>23.00</td>
       <td>30.39</td>
       <td>3.29</td>
-      <td>29.45</td>
-      <td>29.23</td>
-      <td>28.60</td>
+      <td>29.64</td>
+      <td>29.43</td>
+      <td>28.80</td>
       <td>42.31</td>
-      <td>3.50</td>
+      <td>3.47</td>
       <td>4.35</td>
-      <td>3.40</td>
-      <td>-0.85</td>
+      <td>3.37</td>
+      <td>-0.88</td>
       <td>0.10</td>
-      <td>128.05</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>11.58</td>
-      <td>12.09</td>
-      <td>-0.52</td>
-      <td>-0.571</td>
+      <td>11.46</td>
+      <td>12.00</td>
+      <td>-0.54</td>
+      <td>-0.583</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1509,34 +1536,34 @@
       <td>-1.4%</td>
       <td></td>
       <td></td>
-      <td>📘 ATR 🌟 Improver Field 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.53) context-connection context-fitness</td>
+      <td>🌟 Improver Field 📘 ATR 🧬 Unexposed Improver 🧠 Model-history +0% (n=1, avg 6.53) context-connection context-fitness</td>
       <td>37.5</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>11</td>
       <td>Peitseoga</td>
-      <td>101.00</td>
-      <td>33.03</td>
+      <td>41.00</td>
+      <td>33.02</td>
       <td>3.03</td>
-      <td>129.33</td>
-      <td>117.59</td>
-      <td>70.16</td>
-      <td>47.05</td>
-      <td>1.43</td>
-      <td>0.99</td>
-      <td>0.77</td>
-      <td>0.44</td>
-      <td>0.65</td>
-      <td>128.05</td>
+      <td>52.84</td>
+      <td>50.85</td>
+      <td>41.77</td>
+      <td>47.04</td>
+      <td>2.39</td>
+      <td>2.44</td>
+      <td>1.89</td>
+      <td>-0.04</td>
+      <td>0.50</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>5.03</td>
-      <td>2.90</td>
-      <td>2.13</td>
-      <td>0.497</td>
+      <td>8.48</td>
+      <td>6.68</td>
+      <td>1.79</td>
+      <td>-0.256</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1553,7 +1580,7 @@
       <td>0.000</td>
       <td>-0.171</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>93.005226</td>
+      <td>93.043570</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>8.625</td>
@@ -1577,10 +1604,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R4 Weak/Lay</td>
-      <td>19.6</td>
-      <td>27.7</td>
-      <td>24.2</td>
-      <td>47.1</td>
+      <td>22.5</td>
+      <td>22.7</td>
+      <td>27.9</td>
+      <td>53.5</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1597,12 +1624,12 @@
       <td>+0.0%</td>
       <td></td>
       <td></td>
-      <td>🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk</td>
+      <td>⚠️ Galway draw risk 🌟 Improver Field 🧬 Unexposed Improver</td>
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
     <tr>
       <td>12</td>
@@ -1610,21 +1637,21 @@
       <td>67.00</td>
       <td>33.25</td>
       <td>3.01</td>
-      <td>85.79</td>
-      <td>80.08</td>
-      <td>55.38</td>
+      <td>86.35</td>
+      <td>80.62</td>
+      <td>55.78</td>
       <td>47.45</td>
-      <td>1.81</td>
+      <td>1.79</td>
       <td>1.49</td>
-      <td>1.17</td>
-      <td>0.31</td>
-      <td>0.64</td>
-      <td>128.05</td>
+      <td>1.16</td>
+      <td>0.30</td>
+      <td>0.63</td>
+      <td>128.88</td>
       <td>41.69</td>
-      <td>6.15</td>
-      <td>4.10</td>
-      <td>2.05</td>
-      <td>0.083</td>
+      <td>6.06</td>
+      <td>4.06</td>
+      <td>2.00</td>
+      <td>0.062</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.416875</td>
@@ -1665,10 +1692,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R4 Weak/Lay</td>
-      <td>20.9</td>
+      <td>18.2</td>
       <td>24.6</td>
-      <td>27.3</td>
-      <td>50.0</td>
+      <td>23.9</td>
+      <td>44.1</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1685,12 +1712,12 @@
       <td>+0.0%</td>
       <td></td>
       <td></td>
-      <td>🌟 Improver Field 🧬 Unexposed Improver ⚠️ Galway draw risk</td>
+      <td>⚠️ Galway draw risk 🌟 Improver Field 🧬 Unexposed Improver</td>
       <td>0.0</td>
       <td>2026.09.06-contracts-v3-integrity</td>
       <td>2026.09.06-p4.23-elo-four-area-overlap</td>
-      <td>20260908_123702</td>
-      <td>2026-09-08 12:37:02</td>
+      <td>20260908_131959</td>
+      <td>2026-09-08 13:19:59</td>
     </tr>
   </tbody>
 </table></div>
@@ -1744,6 +1771,57 @@
         } else {
           window.requestAnimationFrame(() => window.requestAnimationFrame(startFirstModelRace));
         }
+      }
+
+      const decisionCard = document.querySelector(".decision-card");
+      if (decisionCard) {
+        let runners = [];
+        try { runners = JSON.parse(decisionCard.dataset.runners || "[]"); } catch (error) {}
+        const chooser = decisionCard.querySelector("#decision-horse");
+        const play = decisionCard.querySelector(".decision-play");
+        const horse = decisionCard.querySelector(".decision-horse");
+        const progress = decisionCard.querySelector(".decision-progress");
+        const factor = decisionCard.querySelector(".decision-factor");
+        const detail = decisionCard.querySelector(".decision-detail");
+        const icon = decisionCard.querySelector(".decision-icon");
+        const meter = decisionCard.querySelector(".decision-meter");
+        const ticks = decisionCard.querySelector(".decision-ticks");
+        const result = decisionCard.querySelector(".decision-result");
+        let runToken = 0;
+        const wait = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+        const selected = () => runners.find(item => item.slug === chooser.value) || runners[0];
+        function resetDecision() {
+          runToken += 1; horse.style.left = "50%"; progress.style.width = "0"; progress.style.transform = "scaleX(1)";
+          progress.style.background = "rgba(8,122,69,.16)"; factor.textContent = "Ready";
+          detail.textContent = "Play this horse’s evidence journey."; icon.textContent = "🏁"; meter.textContent = "50";
+          ticks.innerHTML = ""; result.hidden = true; result.innerHTML = "";
+        }
+        async function runDecision() {
+          const item = selected(); if (!item) return; resetDecision(); const token = runToken; play.disabled = true;
+          let evidence = 50; await wait(reduceMotion ? 0 : 250);
+          for (const step of item.steps) {
+            if (token !== runToken) return;
+            evidence = Math.max(8, Math.min(92, evidence + Number(step.delta || 0)));
+            icon.textContent = step.icon; factor.textContent = step.label + " " + (step.delta > 0 ? "+" : "") + step.delta;
+            detail.textContent = step.detail; meter.textContent = Math.round(evidence); horse.style.left = evidence + "%";
+            const distance = Math.abs(evidence - 50); progress.style.width = distance + "%";
+            progress.style.transform = evidence < 50 ? "scaleX(-1)" : "scaleX(1)";
+            progress.style.background = evidence < 50 ? "rgba(180,35,24,.15)" : "rgba(8,122,69,.16)";
+            const chip = document.createElement("span"); chip.className = "decision-tick " + (step.delta > .4 ? "up" : step.delta < -.4 ? "down" : "");
+            chip.setAttribute("role","listitem"); chip.textContent = step.icon + " " + step.label + " " + (step.delta > 0 ? "+" : "") + step.delta; ticks.appendChild(chip);
+            await wait(reduceMotion ? 0 : 820);
+          }
+          if (token !== runToken) return;
+          const price = item.modelOdds == null ? "—" : item.modelOdds.toFixed(2);
+          const chance = item.probability == null ? "—" : item.probability.toFixed(1) + "%";
+          const market = item.marketOdds == null ? "—" : item.marketOdds.toFixed(2);
+          let value = "Market comparison unavailable.";
+          if (item.edge != null) value = item.edge > 0 ? `<strong>Potential value:</strong> model edge +${item.edge.toFixed(1)}pp.` : `No positive model edge (${item.edge.toFixed(1)}pp).`;
+          factor.textContent = "Published model result"; detail.textContent = "The authoritative output replaces the explanatory journey score."; icon.textContent = "🏇"; meter.textContent = item.score;
+          result.innerHTML = `<strong>${item.horse}</strong> · Model chance ${chance} · Model price ${price} · Market ${market}<br>${value}`;
+          result.hidden = false; play.disabled = false;
+        }
+        chooser.addEventListener("change", resetDecision); play.addEventListener("click", runDecision); resetDecision();
       }
 
       const table = document.getElementById("racecard-table");
