@@ -6498,7 +6498,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">16 Oct 2026, 13:10</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">16 Oct 2026, 14:30</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -8653,6 +8653,14 @@ window.renderRacingView = async () => {
     </div>`;
   };
 
+  const modelAdviceNoteHTML = (entry) => {
+    if (entry?.advice_price_provenance !== 'model_snapshot_price_verify_before_bet') return '';
+    const status = entry?.current_model_qualified === false
+      ? 'Previously advised; no current model qualification.'
+      : 'Recorded model advice.';
+    return `<small class="shortlist-reason" title="${escHTML(entry?.current_model_reason || '')}">${escHTML(status)} Advised odds: ${escHTML(entry?.advised_odds ?? '-')}. Verify current price and terms.</small>`;
+  };
+
   const mainShortlistRow = (entry, rowClass = "") => {
     const tags = tagSet(entry).slice(0, 4);
     const back = entry?.bf_back_odds ?? "-";
@@ -8660,7 +8668,7 @@ window.renderRacingView = async () => {
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
-      <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div></td>
+      <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div>${modelAdviceNoteHTML(entry)}</td>
       <td data-label="Market / Model / Raw">${mainShortlistInlinePricesHTML(entry)}</td>
       <td data-label="Betfair Back / Lay">${bfExchangeHTML(back, lay)}</td>
       <td data-label="Tags">${shortlistTagsHTML(tags)}</td>
@@ -8800,6 +8808,7 @@ window.renderRacingView = async () => {
       </div>
       <div class="mobile-card-evidence">
         <div class="mobile-evidence-list">${mobileEvidenceTagsHTML(tags, 3)}</div>
+        ${modelAdviceNoteHTML(entry)}
       </div>
       <div class="mobile-card-footer">
         ${myBetButtonHTML(entry, shortlistType, shortlistType, "Add to Betslip")}
@@ -10641,7 +10650,7 @@ const getShortlistType = (entry) => {
   );
 
   // The main shortlist and email share the same carried-forward advice list:
-  // verified execution tickets plus the user's ELO two-main-area rule.
+  // verified execution tickets plus recorded advice from every model route.
   const displayedRunnerLookup = new Map(allEntries.map(entry => [shortlistRunnerKey(entry),entry]));
   const dailyDecisionPayload = RacingStore.snapshot?.data['daily_decisions.json'] || {};
   const carriedAdviceRows = Array.isArray(dailyDecisionPayload.advised_rows)
@@ -10672,6 +10681,10 @@ const getShortlistType = (entry) => {
         quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         execution_quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         advice_status:decision.advice_status || 'advised_until_race_start',
+        advice_price_provenance:decision.price_provenance,
+        current_model_qualified:decision.current_model_qualified,
+        current_model_type:decision.current_model_type,
+        current_model_reason:decision.current_model_reason,
         advised_odds:decision.price ?? decision.advised_odds ?? entry.advised_odds,
         bookie_odds:entry.bookie_odds ?? entry.real_odds ?? decision.price};
     })
