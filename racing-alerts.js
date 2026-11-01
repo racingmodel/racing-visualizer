@@ -4,7 +4,7 @@
  const update=()=>{
   const payload=RacingStore.snapshot?.data['daily_decisions.json'];if(!payload)return;
   const age=Date.now()-Date.parse(payload.generated_at_utc);
-  const fresh=age>=-5000 && age<=300000;
+  const fresh=age>=-5000 && age<=1000*Number(payload.risk_policy?.quote_max_age_seconds||300);
   const rows=fresh?payload.rows.filter(RacingStore.isReady):[];
   const current=new Set(rows.map(r=>`${r.race_start_utc}|${r.course}|${r.horse}|${r.route}`));
   if(previous && localStorage.getItem('racing_notifications')==='on' && 'Notification'in window && Notification.permission==='granted'){

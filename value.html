@@ -6414,7 +6414,7 @@
     const current=Number(now),age=current-timestamp;
     if(Number.isFinite(start) && start<=current){result.execution_status='closed';result.execution_reason='race_started';}
     else if(result.execution_status==='ready'){
-      const reason=!Number.isFinite(start)?'invalid_race_time':!Number.isFinite(timestamp)?'missing_quote_timestamp':age < -5000?'future_timestamp':age > 300000?'stale_quote':null;
+      const reason=!Number.isFinite(start)?'invalid_race_time':!Number.isFinite(timestamp)?'missing_quote_timestamp':age < -5000?'future_timestamp':age > 1000*Number(row?.quote_max_age_seconds||300)?'stale_quote':null;
       if(reason){result.execution_status='watch';result.execution_reason=reason;}
     }
     return result;
@@ -6435,7 +6435,7 @@
  const start=()=>{
   const root=document.getElementById('racing-upgrade');if(!root || !window.RacingStore)return;
   root.classList.add('racing-upgrade');
-  root.innerHTML=`<nav class="ru-nav" aria-label="Racing tools"><a aria-current="page" href="value.html">Today</a><a href="racefinder.html">Race Finder</a><a href="race_lab.html">Race Lab</a><a href="model_evidence_report.html">Performance</a></nav><div class="ru-heading"><div><span class="ru-eyebrow">Verified decision support</span><h2>Today's actions</h2><p>Fresh offers first. Ratings elsewhere are analysis; only a Ready card is actionable.</p></div><div id="ru-status" class="ru-release" role="status" aria-live="polite">Loading a verified release…</div></div><div class="ru-toolbar"><label>Show <select id="ru-filter"><option value="ready">Ready now</option><option value="watch">Watch / blocked</option><option value="all">All candidates</option></select></label><label>Search <input id="ru-search" type="search" placeholder="Horse or course"></label><button id="ru-refresh" type="button">Refresh</button><button id="ru-notify" type="button">Enable notifications</button></div><div id="ru-cards" class="ru-grid"></div><details><summary>Complete performance record</summary><label>Scope <select id="ru-scope"><option value="all">All advice, including retired routes</option><option value="active">Current routes</option><option value="retired">Retired routes</option></select></label><div id="ru-evidence"></div></details><details><summary>Research forecasts — not betting advice</summary><p>Unpromoted forecasts. They cannot create bets or change the Ready list.</p><div id="ru-research"></div></details><details><summary>Offer calculator</summary><p>Use probabilities as percentages. Each-way EV is per £1 win + £1 place.</p><div class="ru-toolbar"><label>Win % <input id="ru-pw" type="number" min="0" max="100" value="10"></label><label>Place % <input id="ru-pp" type="number" min="0" max="100" value="35"></label><label>Decimal odds <input id="ru-odds" type="number" min="1.01" step="0.1" value="12"></label><label>Place fraction <select id="ru-fraction"><option value="0.2">1/5</option><option value="0.25">1/4</option></select></label></div><p id="ru-calculation" role="status"></p></details>`;
+  root.innerHTML=`<nav class="ru-nav" aria-label="Racing tools"><a aria-current="page" href="value.html">Today</a><a href="racefinder.html">Race Finder</a><a href="race_lab.html">Race Lab</a><a href="model_evidence_report.html">Performance</a></nav><div class="ru-heading"><div><span class="ru-eyebrow">Verified decision support</span><h2>Today's actions</h2><p>Fresh offers first. Ratings elsewhere are analysis; only a Ready card is actionable.</p></div><div id="ru-status" class="ru-release" role="status" aria-live="polite">Loading a verified release…</div></div><div class="ru-toolbar"><label>Show <select id="ru-filter"><option value="ready">Ready now</option><option value="watch">Watch / blocked</option><option value="all">All candidates</option></select></label><label>Search <input id="ru-search" type="search" placeholder="Horse or course"></label><button id="ru-refresh" type="button">Refresh</button><button id="ru-notify" type="button">Enable notifications</button></div><div id="ru-cards" class="ru-grid"></div><details><summary>Legacy proxy record</summary><label>Scope <select id="ru-scope"><option value="all">All advice, including retired routes</option><option value="active">Current routes</option><option value="retired">Retired routes</option></select></label><div id="ru-evidence"></div></details><details><summary>Research forecasts — not betting advice</summary><p>Unpromoted forecasts. They cannot create bets or change the Ready list.</p><div id="ru-research"></div></details><details><summary>Offer calculator</summary><p>Use probabilities as percentages. Each-way EV is per £1 win + £1 place.</p><div class="ru-toolbar"><label>Win % <input id="ru-pw" type="number" min="0" max="100" value="10"></label><label>Place % <input id="ru-pp" type="number" min="0" max="100" value="35"></label><label>Decimal odds <input id="ru-odds" type="number" min="1.01" step="0.1" value="12"></label><label>Place fraction <select id="ru-fraction"><option value="0.2">1/5</option><option value="0.25">1/4</option></select></label></div><p id="ru-calculation" role="status"></p></details>`;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=(v,d=2)=>v==null?'—':Number(v).toFixed(d);
   function calculate(){const p=+root.querySelector('#ru-pw').value/100,q=+root.querySelector('#ru-pp').value/100,o=+root.querySelector('#ru-odds').value,f=+root.querySelector('#ru-fraction').value;root.querySelector('#ru-calculation').textContent=(p<0||q<p||q>1||o<=1)?'Enter valid odds and a place probability at least as high as win probability.':`Win EV £${fmt(p*o-1)}; each-way EV £${fmt(p*o+q*(1+(o-1)*f)-2)}; lay EV £${fmt((1-p)*.98-p*(o-1))} per £1 lay stake, liability £${fmt(o-1)} (2% commission assumption).`;}
@@ -6445,8 +6445,8 @@
    const age=(now-new Date(payload.generated_at_utc))/60000;
    const universe=snap.manifest.race_universe||{};
    const ledger=snap.data['shortlist_backtest.json']||{},allSummary=ledger.all_advice_summary||ledger.summary||{};
-   const allRecord=allSummary.settled?` Complete record: ${allSummary.settled} settled, P/L £${fmt(allSummary.pl)}, ROI ${fmt(allSummary.roi_pct)}%.`:'';
-   root.querySelector('#ru-status').textContent=`Verified release ${snap.manifest.run_id} · ${universe.races??'—'} races / ${universe.runners??'—'} runners · ${age.toFixed(1)} min old · ${payload.summary.ready} Ready when published.${allRecord} ${age>5?'Prices must be refreshed before use.':''}`;
+   const allRecord=allSummary.settled?` Legacy proxy record: ${allSummary.settled} settled, P/L £${fmt(allSummary.pl)}, ROI ${fmt(allSummary.roi_pct)}%.`:'';
+   root.querySelector('#ru-status').textContent=`Verified release ${snap.manifest.run_id} · ${universe.races??'—'} races / ${universe.runners??'—'} runners · ${age.toFixed(1)} min old · ${payload.rows.filter(r=>RacingStore.isReady(r)).length} Ready now.${allRecord} ${age*60>Number(payload.risk_policy?.quote_max_age_seconds||300)?'Prices must be refreshed before use.':''}`;
    let rows=payload.rows.map(r=>RacingStore.decisionState(r,now));
    if(root.dataset.raceTime)rows=rows.filter(r=>String(r.race_datetime||'').includes(root.dataset.raceTime) && String(r.course||'').toLowerCase()===root.dataset.course.toLowerCase());
    const filter=root.querySelector('#ru-filter').value,query=root.querySelector('#ru-search').value.toLowerCase();
@@ -6458,7 +6458,7 @@
    let advice=scope==='active'?(ledger.rows||[]):scope==='retired'?(ledger.archived_rows||[]):ledger.all_advice_rows||[...(ledger.rows||[]),...(ledger.archived_rows||[])];
    let settled=advice.filter(r=>r.settled),pl=settled.reduce((s,r)=>s+(+r.pl||0),0),stake=settled.reduce((s,r)=>s+(+r.settled_stake||0),0);
    let basis={};settled.forEach(r=>{const k=r.settlement_basis||'Legacy / unclassified';basis[k]??={n:0,pl:0};basis[k].n++;basis[k].pl+=+r.pl||0;});
-   root.querySelector('#ru-evidence').innerHTML=`<p><strong>${settled.length}</strong> settled / ${advice.length} retained · P/L <strong>${fmt(pl)}</strong> · stake ${fmt(stake)} · ROI ${stake?fmt(100*pl/stake):'—'}%</p><p>Retired advice stays in the all-advice record. Legacy and simulated prices are not executable-price proof.</p><div class="ru-table-wrap"><table><thead><tr><th>Settlement evidence</th><th>Settled</th><th>P/L</th></tr></thead><tbody>${Object.entries(basis).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.pl)}</td></tr>`).join('')}</tbody></table></div>`;
+   root.querySelector('#ru-evidence').innerHTML=`<p><strong>${settled.length}</strong> settled / ${advice.length} retained · P/L <strong>${fmt(pl)}</strong> · stake ${fmt(stake)} · ROI ${stake?fmt(100*pl/stake):'—'}%</p><p>Legacy price proxies are excluded from exact captured-ticket evidence. See the separate execution performance report; these are recommendations, not confirmed placed bets.</p><div class="ru-table-wrap"><table><thead><tr><th>Settlement evidence</th><th>Settled</th><th>P/L</th></tr></thead><tbody>${Object.entries(basis).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.pl)}</td></tr>`).join('')}</tbody></table></div>`;
   }
   root.addEventListener('input',e=>{if(e.target.id.startsWith('ru-p')||e.target.id==='ru-odds'||e.target.id==='ru-fraction')calculate();else render();});
   root.addEventListener('change',render);
@@ -6498,7 +6498,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">31 Oct 2026, 23:31</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">01 Nov 2026, 10:46</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -10657,14 +10657,14 @@ const getShortlistType = (entry) => {
     ? dailyDecisionPayload.advised_rows
     : [];
   const currentReadyRows = (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
-    .filter(decision => decision?.execution_status === 'ready');
+    .filter(decision => RacingStore.isReady(decision));
   const currentDecisionLookup = new Map(
     (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
       .map(decision => [shortlistRunnerKey(decision), decision])
   );
   // New releases carry immutable execution advice forward until post.  The
   // fallback keeps older daily_decisions.json deployments fully compatible.
-  const visibleAdviceRows = carriedAdviceRows.length ? carriedAdviceRows : currentReadyRows;
+  const visibleAdviceRows = currentReadyRows;
   const uniqueVisibleAdviceRows = [...new Map(
     visibleAdviceRows.map(decision => [shortlistRunnerKey(decision), decision])
   ).values()];
@@ -10678,6 +10678,7 @@ const getShortlistType = (entry) => {
       return {...entry,shortlist_type:decision.route,
         execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
         race_start_utc:decision.race_start_utc,
+        quote_max_age_seconds:decision.quote_max_age_seconds,
         quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         execution_quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         advice_status:decision.advice_status || 'advised_until_race_start',
@@ -10686,7 +10687,7 @@ const getShortlistType = (entry) => {
         current_model_type:decision.current_model_type,
         current_model_reason:decision.current_model_reason,
         advised_odds:decision.price ?? decision.advised_odds ?? entry.advised_odds,
-        bookie_odds:entry.bookie_odds ?? entry.real_odds ?? decision.price};
+        bookie_odds:decision.price};
     })
     .map(entry => p5SupportKeys.has(shortlistRunnerKey(entry))
       ? {
@@ -11240,7 +11241,7 @@ const getShortlistType = (entry) => {
  const update=()=>{
   const payload=RacingStore.snapshot?.data['daily_decisions.json'];if(!payload)return;
   const age=Date.now()-Date.parse(payload.generated_at_utc);
-  const fresh=age>=-5000 && age<=300000;
+  const fresh=age>=-5000 && age<=1000*Number(payload.risk_policy?.quote_max_age_seconds||300);
   const rows=fresh?payload.rows.filter(RacingStore.isReady):[];
   const current=new Set(rows.map(r=>`${r.race_start_utc}|${r.course}|${r.horse}|${r.route}`));
   if(previous && localStorage.getItem('racing_notifications')==='on' && 'Notification'in window && Notification.permission==='granted'){

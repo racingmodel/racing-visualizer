@@ -57,7 +57,7 @@
     const current=Number(now),age=current-timestamp;
     if(Number.isFinite(start) && start<=current){result.execution_status='closed';result.execution_reason='race_started';}
     else if(result.execution_status==='ready'){
-      const reason=!Number.isFinite(start)?'invalid_race_time':!Number.isFinite(timestamp)?'missing_quote_timestamp':age < -5000?'future_timestamp':age > 300000?'stale_quote':null;
+      const reason=!Number.isFinite(start)?'invalid_race_time':!Number.isFinite(timestamp)?'missing_quote_timestamp':age < -5000?'future_timestamp':age > 1000*Number(row?.quote_max_age_seconds||300)?'stale_quote':null;
       if(reason){result.execution_status='watch';result.execution_reason=reason;}
     }
     return result;
