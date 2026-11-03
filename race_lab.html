@@ -167,8 +167,28 @@
     }
     return result;
   }
+  function isModelSelection(row, now=new Date()){
+    const start=ukDate(row?.race_start_utc||row?.race_datetime).getTime();
+    const stamp=ukDate(row?.model_snapshot_at).getTime();
+    return row?.shortlist_status==='qualified' && row?.current_model_qualified===true
+      && !!row?.route && row?.input_universe_verified===true && !row?.field_changed_after_model
+      && !row?.non_runner && !['REMOVED','REMOVED_VACANT','NON_RUNNER','NR','N/R','NON RUNNER','WITHDRAWN'].includes(String(row?.bf_runner_status||'').toUpperCase())
+      && Number.isFinite(start) && start>Number(now) && Number.isFinite(stamp) && stamp<=Number(now) && stamp<start;
+  }
+  function currentShortlistRows(payload, now=new Date()){
+    const selected=new Map();
+    const identity=r=>`${ukDate(r.race_start_utc||r.race_datetime).toISOString()}|${String(r.course||'').trim().toLowerCase()}|${String(r.horse||'').trim().toLowerCase()}`;
+    for(const row of payload?.model_shortlist_rows||[]){
+      if(payload.run_id && row.run_id===payload.run_id && isModelSelection(row,now))selected.set(identity(row),{...row});
+    }
+    const age=Number(now)-ukDate(payload?.generated_at_utc).getTime();
+    if(Number.isFinite(age) && age>=-5000 && age<=1000*Number(payload?.risk_policy?.quote_max_age_seconds||300)){
+      for(const row of payload?.rows||[])if(decisionState(row,now).execution_status==='ready')selected.set(identity(row),{...row});
+    }
+    return [...selected.values()].sort((a,b)=>ukDate(a.race_start_utc||a.race_datetime)-ukDate(b.race_start_utc||b.race_datetime));
+  }
   const ready=refresh();ready.catch(()=>{});
-  window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,
+  window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,isModelSelection,currentShortlistRows,
     async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
     subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
     onError(fn){events.addEventListener('error',fn);},

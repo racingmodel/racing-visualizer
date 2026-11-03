@@ -6419,8 +6419,28 @@
     }
     return result;
   }
+  function isModelSelection(row, now=new Date()){
+    const start=ukDate(row?.race_start_utc||row?.race_datetime).getTime();
+    const stamp=ukDate(row?.model_snapshot_at).getTime();
+    return row?.shortlist_status==='qualified' && row?.current_model_qualified===true
+      && !!row?.route && row?.input_universe_verified===true && !row?.field_changed_after_model
+      && !row?.non_runner && !['REMOVED','REMOVED_VACANT','NON_RUNNER','NR','N/R','NON RUNNER','WITHDRAWN'].includes(String(row?.bf_runner_status||'').toUpperCase())
+      && Number.isFinite(start) && start>Number(now) && Number.isFinite(stamp) && stamp<=Number(now) && stamp<start;
+  }
+  function currentShortlistRows(payload, now=new Date()){
+    const selected=new Map();
+    const identity=r=>`${ukDate(r.race_start_utc||r.race_datetime).toISOString()}|${String(r.course||'').trim().toLowerCase()}|${String(r.horse||'').trim().toLowerCase()}`;
+    for(const row of payload?.model_shortlist_rows||[]){
+      if(payload.run_id && row.run_id===payload.run_id && isModelSelection(row,now))selected.set(identity(row),{...row});
+    }
+    const age=Number(now)-ukDate(payload?.generated_at_utc).getTime();
+    if(Number.isFinite(age) && age>=-5000 && age<=1000*Number(payload?.risk_policy?.quote_max_age_seconds||300)){
+      for(const row of payload?.rows||[])if(decisionState(row,now).execution_status==='ready')selected.set(identity(row),{...row});
+    }
+    return [...selected.values()].sort((a,b)=>ukDate(a.race_start_utc||a.race_datetime)-ukDate(b.race_start_utc||b.race_datetime));
+  }
   const ready=refresh();ready.catch(()=>{});
-  window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,
+  window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,isModelSelection,currentShortlistRows,
     async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
     subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
     onError(fn){events.addEventListener('error',fn);},
@@ -6498,7 +6518,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 Nov 2026, 18:11</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">03 Nov 2026, 18:35</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -8655,10 +8675,13 @@ window.renderRacingView = async () => {
 
   const modelAdviceNoteHTML = (entry) => {
     if (entry?.advice_price_provenance !== 'model_snapshot_price_verify_before_bet') return '';
+    if (entry?.current_model_qualified === false) {
+      return `<small class="shortlist-reason">Previously advised; no current model qualification. Advised odds: ${escHTML(entry?.advised_odds ?? '-')}. Verify current price and terms.</small>`;
+    }
     const status = entry?.current_model_qualified === false
       ? 'Previously advised; no current model qualification.'
-      : 'Recorded model advice.';
-    return `<small class="shortlist-reason" title="${escHTML(entry?.current_model_reason || '')}">${escHTML(status)} Advised odds: ${escHTML(entry?.advised_odds ?? '-')}. Verify current price and terms.</small>`;
+      : 'Current model selection.';
+    return `<small class="shortlist-reason" title="${escHTML(entry?.current_model_reason || '')}">${escHTML(status)} Snapshot odds: ${escHTML(entry?.bookie_odds ?? '-')}. Verify current price and each-way terms.</small>`;
   };
 
   const mainShortlistRow = (entry, rowClass = "") => {
@@ -10144,8 +10167,9 @@ const inFieldRange = (fieldSize, lo, hi) => {
 
   
 const getShortlistType = (entry) => {
-    if (entry?.execution_status && entry.execution_status !== 'ready') return '';
-    if (entry?.execution_status === 'ready' && !RacingStore.isReady(entry)) return '';
+    const modelSelection=RacingStore.isModelSelection({...entry,route:entry?.route||entry?.shortlist_type});
+    if (!modelSelection && entry?.execution_status && entry.execution_status !== 'ready') return '';
+    if (!modelSelection && entry?.execution_status === 'ready' && !RacingStore.isReady(entry)) return '';
     // The backend is the single authority for a current model run.  The
     // browser only remaps a generic EW label into the appropriate extra-place
     // display bucket; it must not independently reject an advised selection.
@@ -10649,33 +10673,29 @@ const getShortlistType = (entry) => {
       .map(shortlistRunnerKey)
   );
 
-  // The main shortlist and email share the same carried-forward advice list:
-  // verified execution tickets plus recorded advice from every model route.
+  // Main shortlist and email share the current model/verified-offer contract.
   const displayedRunnerLookup = new Map(allEntries.map(entry => [shortlistRunnerKey(entry),entry]));
   const dailyDecisionPayload = RacingStore.snapshot?.data['daily_decisions.json'] || {};
-  const carriedAdviceRows = Array.isArray(dailyDecisionPayload.advised_rows)
-    ? dailyDecisionPayload.advised_rows
-    : [];
-  const currentReadyRows = (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
-    .filter(decision => RacingStore.isReady(decision));
   const currentDecisionLookup = new Map(
     (Array.isArray(dailyDecisionPayload.rows) ? dailyDecisionPayload.rows : [])
       .map(decision => [shortlistRunnerKey(decision), decision])
   );
-  // New releases carry immutable execution advice forward until post.  The
-  // fallback keeps older daily_decisions.json deployments fully compatible.
-  const visibleAdviceRows = currentReadyRows;
+  // No reconstruction from old advice: use the current published candidate set.
+  const visibleAdviceRows = RacingStore.currentShortlistRows(dailyDecisionPayload);
   const uniqueVisibleAdviceRows = [...new Map(
     visibleAdviceRows.map(decision => [shortlistRunnerKey(decision), decision])
   ).values()];
   const allCurrentShortlistItems = uniqueVisibleAdviceRows
     .map(decision => {
       const currentDecision=currentDecisionLookup.get(shortlistRunnerKey(decision));
-      const liveState=currentDecision
-        ? RacingStore.decisionState(currentDecision)
-        : RacingStore.decisionState({...decision,execution_status:'ready'});
+      const liveState=decision.shortlist_status==='qualified'
+        ? decision
+        : RacingStore.decisionState(currentDecision || decision);
       const entry=displayedRunnerLookup.get(shortlistRunnerKey(decision)) || decision;
-      return {...entry,shortlist_type:decision.route,
+      return {...entry,shortlist_type:decision.route,route:decision.route,
+        shortlist_status:decision.shortlist_status,
+        model_snapshot_at:decision.model_snapshot_at,
+        run_id:decision.run_id,
         execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
         race_start_utc:decision.race_start_utc,
         quote_max_age_seconds:decision.quote_max_age_seconds,
@@ -10723,8 +10743,6 @@ const getShortlistType = (entry) => {
     .sort((a,b) => parseRaceDT(a.race_datetime) - parseRaceDT(b.race_datetime));
 
   const shortlistItems = allCurrentShortlistItems.filter(e => !raceHasStarted(e));
-  // A carried-forward published selection remains in Today's shortlist until
-  // the off even if its latest mutable value_bets row says watch/not-live.
   // Never render the same runner in Today and Was Value simultaneously.
   const activePublishedKeys = new Set(shortlistItems.map(shortlistRunnerKey));
   wasValueEntries = wasValueEntries.filter(entry => !activePublishedKeys.has(shortlistRunnerKey(entry)));
@@ -11210,8 +11228,9 @@ const getShortlistType = (entry) => {
   const scheduleReadiness=()=>{
     clearTimeout(window._racingReadinessTimer);
     const now=Date.now(),deadlines=[];
-    for(const row of RacingStore.snapshot?.data['daily_decisions.json']?.rows || []){
-      if(row.execution_status!=='ready')continue;
+    const payload=RacingStore.snapshot?.data['daily_decisions.json']||{};
+    for(const row of [...(payload.rows||[]),...(payload.model_shortlist_rows||[])]){
+      if(row.execution_status!=='ready' && row.shortlist_status!=='qualified')continue;
       const quote=RacingStore.ukDate(row.quote_timestamp).getTime()+300000;
       const start=RacingStore.ukDate(row.race_start_utc||row.race_datetime).getTime();
       for(const deadline of [quote,start])if(Number.isFinite(deadline) && deadline>=now)deadlines.push(deadline);
@@ -11240,9 +11259,7 @@ const getShortlistType = (entry) => {
  let previous=null;
  const update=()=>{
   const payload=RacingStore.snapshot?.data['daily_decisions.json'];if(!payload)return;
-  const age=Date.now()-Date.parse(payload.generated_at_utc);
-  const fresh=age>=-5000 && age<=1000*Number(payload.risk_policy?.quote_max_age_seconds||300);
-  const rows=fresh?payload.rows.filter(RacingStore.isReady):[];
+  const rows=RacingStore.currentShortlistRows(payload);
   const current=new Set(rows.map(r=>`${r.race_start_utc}|${r.course}|${r.horse}|${r.route}`));
   if(previous && localStorage.getItem('racing_notifications')==='on' && 'Notification'in window && Notification.permission==='granted'){
    const added=rows.filter(r=>!previous.has(`${r.race_start_utc}|${r.course}|${r.horse}|${r.route}`));
