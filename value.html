@@ -6358,14 +6358,38 @@
 /* A single immutable, hash-checked snapshot for tables, cards and notifications. */
 (() => {
   'use strict';
-  const names=['release_integrity.json','value_bets.json','placepot_picks.json','ai_bets.json','racing_products.json','shortlist_backtest.json','p5_shadow_predictions.json','historic_systems.json','daily_decisions.json','p6_predictions.json','race_finder_data.json','race_simulation_insights.json','extra_places.txt'];
   const events=new EventTarget(); let snapshot=null, inflight=null, error=null;
+  const files=new Map();
   const hash=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))), b=>b.toString(16).padStart(2,'0')).join('');
-  async function read(url){
+  async function read(url, cache='no-store'){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-    try{const r=await fetch(url,{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
+    try{const r=await fetch(url,{cache,signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
     catch(e){if(e.name==='AbortError')throw new Error(`Loading timed out: ${url.split('?')[0]}. Retrying automatically.`);throw e;}
     finally{clearTimeout(timer);}
+  }
+  async function load(manifest,name){
+    const digest=manifest.files[name];
+    if(!digest)return name.endsWith('.txt')?'':[];
+    const key=`${name}:${digest}`;
+    if(!files.has(key)){
+      const request=(async()=>{
+        // Verify every response, including resources reused from browser cache.
+        const text=await read(`${name}?release=${encodeURIComponent(digest)}`,'no-cache');
+        if(await hash(text)!==digest)throw new Error(`Release still updating: ${name}`);
+        const data=name.endsWith('.txt')?text:JSON.parse(text);
+        if(name==='race_finder_data.json'){
+          const universe=manifest.race_universe||{};
+          if(data?.run_id!==manifest.run_id || Number(data?.summary?.races)!==Number(universe.races)
+             || Number(data?.summary?.runners)!==Number(universe.runners)){
+            throw new Error('Published race universe mismatch');
+          }
+        }
+        return data;
+      })();
+      files.set(key,request);
+      request.catch(()=>{if(files.get(key)===request)files.delete(key);});
+    }
+    return files.get(key);
   }
   async function refresh(){
     if(inflight)return inflight;
@@ -6375,23 +6399,26 @@
         if(!manifest.files || !manifest.run_id)throw new Error('Release manifest invalid');
         if(manifest.integrity?.status!=='passed')throw new Error('Release integrity was not verified');
         const revision=JSON.stringify(manifest.files);
-        if(snapshot?.revision===revision){error=null;return snapshot;}
+        if(snapshot?.revision===revision){
+          const recovered=error;error=null;
+          if(recovered)events.dispatchEvent(new Event('change'));
+          return snapshot;
+        }
         const data={};
-        await Promise.all(names.map(async name=>{
-          if(!manifest.files[name]){data[name]=name.endsWith('.txt')?'':[];return;}
-          const text=await read(`${name}?release=${encodeURIComponent(manifest.run_id)}`);
-          if(await hash(text)!==manifest.files[name])throw new Error(`Release still updating: ${name}`);
-          data[name]=name.endsWith('.txt')?text:JSON.parse(text);
-        }));
-        if(!Array.isArray(data['value_bets.json']) || !Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
+        const core=['release_integrity.json','daily_decisions.json'];
+        await Promise.all(core.map(async name=>{data[name]=await load(manifest,name);}));
+        if(!Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
         if(data['daily_decisions.json'].run_id!==manifest.run_id)throw new Error('Decision release mismatch');
         const integrity=data['release_integrity.json'];
         if(integrity?.status!=='passed'||integrity?.run_id!==manifest.run_id)throw new Error('Release integrity report mismatch');
-        const finder=data['race_finder_data.json'];
-        if(finder?.run_id!==manifest.run_id)throw new Error('Race Finder release mismatch');
-        const universe=manifest.race_universe||{};
-        if(Number(finder?.summary?.races)!==Number(universe.races)||Number(finder?.summary?.runners)!==Number(universe.runners))throw new Error('Published race universe mismatch');
+        for(const name of Object.keys(snapshot?.data||{})){
+          if(!core.includes(name) && manifest.files[name] && manifest.files[name]===snapshot.manifest.files[name]){
+            data[name]=snapshot.data[name];
+          }
+        }
         snapshot=Object.freeze({manifest,data,revision,receivedAt:new Date().toISOString()});error=null;
+        const keep=new Set(Object.entries(manifest.files).map(([name,digest])=>`${name}:${digest}`));
+        for(const key of files.keys())if(!keep.has(key))files.delete(key);
         events.dispatchEvent(new Event('change'));return snapshot;
       } catch(e){error=e;events.dispatchEvent(new Event('error'));throw e;}
       finally {inflight=null;}
@@ -6441,12 +6468,20 @@
   }
   const ready=refresh();ready.catch(()=>{});
   window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,isModelSelection,currentShortlistRows,
-    async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
+    async get(name){
+      const pinned=snapshot||await refresh();
+      if(Object.hasOwn(pinned.data,name))return pinned.data[name];
+      const data=await load(pinned.manifest,name);
+      if(snapshot!==pinned)return this.get(name);
+      pinned.data[name]=data;
+      return data;
+    },
     subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
     onError(fn){events.addEventListener('error',fn);},
     isReady(row){return decisionState(row).execution_status==='ready';}
   };
   setInterval(()=>refresh().catch(()=>{}),60000);
+  if(typeof window.addEventListener==='function')window.addEventListener('focus',()=>refresh().catch(()=>{}));
 })();
 
 </script><script data-racing-inline="racing-dashboard.js">
@@ -6464,7 +6499,7 @@
    const payload=snap.data['daily_decisions.json'];const now=new Date();
    const age=(now-new Date(payload.generated_at_utc))/60000;
    const universe=snap.manifest.race_universe||{};
-   const ledger=snap.data['shortlist_backtest.json']||{},allSummary=ledger.all_advice_summary||ledger.summary||{};
+    const ledger=snap.data['shortlist_backtest.json']||{},allSummary=ledger.all_advice_summary||ledger.summary||payload.record_summary||{};
    const allRecord=allSummary.settled?` Legacy proxy record: ${allSummary.settled} settled, P/L £${fmt(allSummary.pl)}, ROI ${fmt(allSummary.roi_pct)}%.`:'';
    root.querySelector('#ru-status').textContent=`Verified release ${snap.manifest.run_id} · ${universe.races??'—'} races / ${universe.runners??'—'} runners · ${age.toFixed(1)} min old · ${payload.rows.filter(r=>RacingStore.isReady(r)).length} Ready now.${allRecord} ${age*60>Number(payload.risk_policy?.quote_max_age_seconds||300)?'Prices must be refreshed before use.':''}`;
    let rows=payload.rows.map(r=>RacingStore.decisionState(r,now));
@@ -6481,7 +6516,15 @@
    root.querySelector('#ru-evidence').innerHTML=`<p><strong>${settled.length}</strong> settled / ${advice.length} retained · P/L <strong>${fmt(pl)}</strong> · stake ${fmt(stake)} · ROI ${stake?fmt(100*pl/stake):'—'}%</p><p>Legacy price proxies are excluded from exact captured-ticket evidence. See the separate execution performance report; these are recommendations, not confirmed placed bets.</p><div class="ru-table-wrap"><table><thead><tr><th>Settlement evidence</th><th>Settled</th><th>P/L</th></tr></thead><tbody>${Object.entries(basis).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.pl)}</td></tr>`).join('')}</tbody></table></div>`;
   }
   root.addEventListener('input',e=>{if(e.target.id.startsWith('ru-p')||e.target.id==='ru-odds'||e.target.id==='ru-fraction')calculate();else render();});
-  root.addEventListener('change',render);
+   root.addEventListener('change',render);
+   root.addEventListener('toggle',event=>{
+    const panel=event.target;
+    if(!panel.open)return;
+    const names=[];
+    if(panel.querySelector('#ru-research'))names.push('p6_predictions.json');
+    if(panel.querySelector('#ru-evidence'))names.push('shortlist_backtest.json');
+    Promise.all(names.map(name=>RacingStore.get(name))).then(render).catch(()=>{});
+   },true);
   root.querySelector('#ru-refresh').addEventListener('click',()=>RacingStore.refresh().catch(()=>{}));
   root.querySelector('#ru-notify').addEventListener('click',async()=>{if(!('Notification'in window)){alert('This browser does not support notifications.');return;}const p=await Notification.requestPermission();localStorage.setItem('racing_notifications',p==='granted'?'on':'off');root.querySelector('#ru-notify').textContent=p==='granted'?'Notifications enabled':'Notifications unavailable';});
   RacingStore.subscribe(render);RacingStore.onError(()=>{root.querySelector('#ru-status').textContent=`Refresh unavailable: ${RacingStore.error.message}. Previous snapshot is retained; check quote age.`;});
@@ -6518,7 +6561,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">17 Nov 2026, 21:55</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">18 Nov 2026, 11:22</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -6557,37 +6600,7 @@
       <div class="overview-card"><span>Next model selection</span><strong id="dashboard-next-selection">Loading…</strong></div>
     </section>
 
-    <details id="shortlist-backtest-card" class="backtest-card" aria-live="polite">
-      <summary class="backtest-head">
-        <div class="backtest-title">📊 Live Shortlist Backtest <span class="backtest-collapse-indicator">▶</span> <span id="backtest-heading-pills" class="backtest-heading-pills"></span></div>
-        <div id="backtest-updated" class="backtest-updated">Loading shortlist_backtest.json…</div>
-      </summary>
-      <div id="backtest-summary-grid" class="backtest-summary-grid">
-        <div class="backtest-stat"><span>Status</span><strong>Loading…</strong></div>
-      </div>
-      <div id="backtest-type-row" class="backtest-type-row"></div>
-      <div id="backtest-daily-breakdown" class="backtest-daily-breakdown"></div>
-      <details class="backtest-details">
-        <summary>📋 Recent tracked shortlist selections</summary>
-        <div class="backtest-table-wrap">
-          <table id="backtest-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Race</th>
-                <th>Horse</th>
-                <th>Odds</th>
-                <th>Stake</th>
-                <th>Result</th>
-                <th>P/L</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </details>
-    </details>
+
 
 
 <details id="my-bets-section" class="section-card section-mybets">
@@ -6663,6 +6676,38 @@
         </div>
         <div id="mobile-shortlist-list" class="mobile-shortlist-list" aria-label="Today's mobile bet and lay shortlist"></div>
       </div>
+    </details>
+
+    <details id="shortlist-backtest-card" class="backtest-card" aria-live="polite">
+      <summary class="backtest-head">
+        <div class="backtest-title">📊 Live Shortlist Backtest <span class="backtest-collapse-indicator">▶</span> <span id="backtest-heading-pills" class="backtest-heading-pills"></span></div>
+        <div id="backtest-updated" class="backtest-updated">Loading shortlist_backtest.json…</div>
+      </summary>
+      <div id="backtest-summary-grid" class="backtest-summary-grid">
+        <div class="backtest-stat"><span>Status</span><strong>Loading…</strong></div>
+      </div>
+      <div id="backtest-type-row" class="backtest-type-row"></div>
+      <div id="backtest-daily-breakdown" class="backtest-daily-breakdown"></div>
+      <details class="backtest-details">
+        <summary>📋 Recent tracked shortlist selections</summary>
+        <div class="backtest-table-wrap">
+          <table id="backtest-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Race</th>
+                <th>Horse</th>
+                <th>Odds</th>
+                <th>Stake</th>
+                <th>Result</th>
+                <th>P/L</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </details>
     </details>
 
     <details id="race-products-section" class="section-card section-placepot">
@@ -7329,14 +7374,19 @@ window.renderRacingView = async () => {
     }).join("");
   };
 
-  let valueData = await safeJSON('value_bets.json');
-  let placepotData = await safeJSON('placepot_picks.json');
-  let aiData = await safeJSON('ai_bets.json');
-  let productData = await safeJSON('racing_products.json');
-  let shortlistBacktestData = await safeJSON('shortlist_backtest.json');
+  const isOpen = id => document.getElementById(id)?.open;
+  const optionalData = (name, load) => load ? safeJSON(name) : Promise.resolve([]);
+  let [valueData, placepotData, aiData, productData, shortlistBacktestData, p5Data, historicData] =
+    await Promise.all([
+      safeJSON('value_bets.json'),
+      optionalData('placepot_picks.json', isOpen('race-products-section')),
+      optionalData('ai_bets.json', isOpen('machine-learning-section')),
+      optionalData('racing_products.json', isOpen('race-products-section')),
+      optionalData('shortlist_backtest.json', isOpen('shortlist-backtest-card')),
+      optionalData('p5_shadow_predictions.json', isOpen('machine-learning-section')),
+      optionalData('historic_systems.json', isOpen('historic-systems-section'))
+    ]);
   shortlistBacktestData = {...shortlistBacktestData, rows: shortlistBacktestData.all_advice_rows || [...(shortlistBacktestData.rows||[]), ...(shortlistBacktestData.archived_rows||[])], summary:shortlistBacktestData.all_advice_summary || shortlistBacktestData.summary};
-  let p5Data = await safeJSON('p5_shadow_predictions.json');
-  let historicData = await safeJSON('historic_systems.json');
 
   // Hard safety: a malformed/missing helper JSON must never blank the page.
   if (!Array.isArray(valueData)) valueData = [];
@@ -8666,22 +8716,26 @@ window.renderRacingView = async () => {
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
     const raw = entry?.raw_odds ?? "-";
     const marketLabel = "Real odds";
-    return `<div class="shortlist-core-prices" aria-label="Market, model and raw odds">
+    return `<div class="shortlist-core-prices" aria-label="Real odds, Raw and Model 100%">
       <span class="desktop-price-box"><small>${marketLabel}</small><strong>${escHTML(market)}</strong></span>
-      <span class="desktop-price-box is-model"><small>Model</small><strong>${escHTML(model)}</strong></span>
       <span class="desktop-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
+      <span class="desktop-price-box is-model"><small>Model 100%</small><strong>${escHTML(model)}</strong></span>
     </div>`;
   };
 
   const modelAdviceNoteHTML = (entry) => {
+    if (entry?.execution_status === 'ready' && RacingStore.isReady(entry)) {
+      const stamp = RacingStore.ukDate(entry.quote_timestamp);
+      const minutes = Math.max(0,Math.floor((Date.now()-stamp.getTime())/60000));
+      const age = minutes < 1 ? 'under 1 min old' : `${minutes} min old`;
+      const terms = entry.offer_places && entry.offer_fraction ? ` · ${entry.offer_places} places at ${entry.offer_fraction} of odds` : '';
+      return `<small class="shortlist-reason"><strong>Ready</strong> · ${escHTML(entry.offer_bookmaker || 'Verified quote')} · ${age}${escHTML(terms)}</small>`;
+    }
     if (entry?.advice_price_provenance !== 'model_snapshot_price_verify_before_bet') return '';
     if (entry?.current_model_qualified === false) {
       return `<small class="shortlist-reason">Previously advised; no current model qualification. Advised odds: ${escHTML(entry?.advised_odds ?? '-')}. Verify current price and terms.</small>`;
     }
-    const status = entry?.current_model_qualified === false
-      ? 'Previously advised; no current model qualification.'
-      : 'Current model selection.';
-    return `<small class="shortlist-reason" title="${escHTML(entry?.current_model_reason || '')}">${escHTML(status)} Snapshot odds: ${escHTML(entry?.bookie_odds ?? '-')}. Verify current price and each-way terms.</small>`;
+    return `<small class="shortlist-reason" title="${escHTML(entry?.current_model_reason || '')}"><strong>Model selection</strong> · price and terms unverified</small>`;
   };
 
   const mainShortlistRow = (entry, rowClass = "") => {
@@ -8691,8 +8745,8 @@ window.renderRacingView = async () => {
     return `<tr${rowClass ? ` class="${rowClass}"` : ""}>
       <td data-label="Bet">${typeBadgeHTML(entry.shortlist_type)}</td>
       <td data-label="Race">${shortlistRaceCellHTML(entry)}</td>
-      <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div>${modelAdviceNoteHTML(entry)}</td>
-      <td data-label="Market / Model / Raw">${mainShortlistInlinePricesHTML(entry)}</td>
+      <td data-label="Horse"><div class="desktop-shortlist-horse">${racecardHorseLinkHTML(entry, entry.horse, "shortlist-horse-name shortlist-horse-link")}</div></td>
+      <td data-label="Real / Raw / Model 100%">${mainShortlistInlinePricesHTML(entry)}${modelAdviceNoteHTML(entry)}</td>
       <td data-label="Betfair Back / Lay">${bfExchangeHTML(back, lay)}</td>
       <td data-label="Tags">${shortlistTagsHTML(tags)}</td>
       <td data-label="Result">${resultBadgeHTML(entry)}</td>
@@ -10699,10 +10753,15 @@ const getShortlistType = (entry) => {
         execution_status:liveState.execution_status,execution_reason:liveState.execution_reason,
         race_start_utc:decision.race_start_utc,
         quote_max_age_seconds:decision.quote_max_age_seconds,
-        quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
+        quote_timestamp:decision.quote_timestamp ?? currentDecision?.quote_timestamp ?? null,
         execution_quote_timestamp:currentDecision?.quote_timestamp ?? entry?.bf_captured_at_utc ?? entry?.bf_updated ?? decision.quote_timestamp,
         advice_status:decision.advice_status || 'advised_until_race_start',
         advice_price_provenance:decision.price_provenance,
+        offer_bookmaker:decision.offer_bookmaker,
+        offer_places:decision.places,
+        offer_fraction:decision.place_fraction,
+        bf_back_odds:currentDecision?.bf_back_odds ?? entry.bf_back_odds,
+        bf_lay_odds:currentDecision?.bf_lay_odds ?? entry.bf_lay_odds,
         current_model_qualified:decision.current_model_qualified,
         current_model_type:decision.current_model_type,
         current_model_reason:decision.current_model_reason,
@@ -11114,7 +11173,15 @@ const getShortlistType = (entry) => {
   };
 
   try {
-    renderShortlistBacktest(shortlistBacktestData);
+    if (isOpen('shortlist-backtest-card')) {
+      renderShortlistBacktest(shortlistBacktestData);
+    } else {
+      const record = RacingStore.snapshot?.data['daily_decisions.json']?.record_summary;
+      const banner = document.getElementById('backtest-updated');
+      if (banner) banner.textContent = record?.settled != null
+        ? `${record.settled} settled · ${moneyFmt(Number(record.pl || 0))} legacy P/L`
+        : 'Open the record to load results.';
+    }
   } catch (e) {
     console.error("⚠️ Shortlist backtest render failed but value sections will continue:", e);
   }
@@ -11231,7 +11298,8 @@ const getShortlistType = (entry) => {
     const payload=RacingStore.snapshot?.data['daily_decisions.json']||{};
     for(const row of [...(payload.rows||[]),...(payload.model_shortlist_rows||[])]){
       if(row.execution_status!=='ready' && row.shortlist_status!=='qualified')continue;
-      const quote=RacingStore.ukDate(row.quote_timestamp).getTime()+300000;
+      const age=Number(row.quote_max_age_seconds ?? payload.risk_policy?.quote_max_age_seconds ?? 300);
+      const quote=RacingStore.ukDate(row.quote_timestamp).getTime()+age*1000;
       const start=RacingStore.ukDate(row.race_start_utc||row.race_datetime).getTime();
       for(const deadline of [quote,start])if(Number.isFinite(deadline) && deadline>=now)deadlines.push(deadline);
     }
@@ -11247,6 +11315,10 @@ const getShortlistType = (entry) => {
   // Subscribe before the first request settles so a later successful retry
   // can populate the page even when the first release request failed.
   RacingStore.subscribe(render);
+  const lazyPanels=new Set(['shortlist-backtest-card','race-products-section','machine-learning-section','historic-systems-section']);
+  document.addEventListener('toggle',event=>{
+    if(event.target.open && lazyPanels.has(event.target.id))render();
+  },true);
   RacingStore.onError(()=>showError(RacingStore.error));
   RacingStore.ready.then(render,showError);
 })();

@@ -287,14 +287,38 @@
 /* A single immutable, hash-checked snapshot for tables, cards and notifications. */
 (() => {
   'use strict';
-  const names=['release_integrity.json','value_bets.json','placepot_picks.json','ai_bets.json','racing_products.json','shortlist_backtest.json','p5_shadow_predictions.json','historic_systems.json','daily_decisions.json','p6_predictions.json','race_finder_data.json','race_simulation_insights.json','extra_places.txt'];
   const events=new EventTarget(); let snapshot=null, inflight=null, error=null;
+  const files=new Map();
   const hash=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))), b=>b.toString(16).padStart(2,'0')).join('');
-  async function read(url){
+  async function read(url, cache='no-store'){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-    try{const r=await fetch(url,{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
+    try{const r=await fetch(url,{cache,signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
     catch(e){if(e.name==='AbortError')throw new Error(`Loading timed out: ${url.split('?')[0]}. Retrying automatically.`);throw e;}
     finally{clearTimeout(timer);}
+  }
+  async function load(manifest,name){
+    const digest=manifest.files[name];
+    if(!digest)return name.endsWith('.txt')?'':[];
+    const key=`${name}:${digest}`;
+    if(!files.has(key)){
+      const request=(async()=>{
+        // Verify every response, including resources reused from browser cache.
+        const text=await read(`${name}?release=${encodeURIComponent(digest)}`,'no-cache');
+        if(await hash(text)!==digest)throw new Error(`Release still updating: ${name}`);
+        const data=name.endsWith('.txt')?text:JSON.parse(text);
+        if(name==='race_finder_data.json'){
+          const universe=manifest.race_universe||{};
+          if(data?.run_id!==manifest.run_id || Number(data?.summary?.races)!==Number(universe.races)
+             || Number(data?.summary?.runners)!==Number(universe.runners)){
+            throw new Error('Published race universe mismatch');
+          }
+        }
+        return data;
+      })();
+      files.set(key,request);
+      request.catch(()=>{if(files.get(key)===request)files.delete(key);});
+    }
+    return files.get(key);
   }
   async function refresh(){
     if(inflight)return inflight;
@@ -304,23 +328,26 @@
         if(!manifest.files || !manifest.run_id)throw new Error('Release manifest invalid');
         if(manifest.integrity?.status!=='passed')throw new Error('Release integrity was not verified');
         const revision=JSON.stringify(manifest.files);
-        if(snapshot?.revision===revision){error=null;return snapshot;}
+        if(snapshot?.revision===revision){
+          const recovered=error;error=null;
+          if(recovered)events.dispatchEvent(new Event('change'));
+          return snapshot;
+        }
         const data={};
-        await Promise.all(names.map(async name=>{
-          if(!manifest.files[name]){data[name]=name.endsWith('.txt')?'':[];return;}
-          const text=await read(`${name}?release=${encodeURIComponent(manifest.run_id)}`);
-          if(await hash(text)!==manifest.files[name])throw new Error(`Release still updating: ${name}`);
-          data[name]=name.endsWith('.txt')?text:JSON.parse(text);
-        }));
-        if(!Array.isArray(data['value_bets.json']) || !Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
+        const core=['release_integrity.json','daily_decisions.json'];
+        await Promise.all(core.map(async name=>{data[name]=await load(manifest,name);}));
+        if(!Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
         if(data['daily_decisions.json'].run_id!==manifest.run_id)throw new Error('Decision release mismatch');
         const integrity=data['release_integrity.json'];
         if(integrity?.status!=='passed'||integrity?.run_id!==manifest.run_id)throw new Error('Release integrity report mismatch');
-        const finder=data['race_finder_data.json'];
-        if(finder?.run_id!==manifest.run_id)throw new Error('Race Finder release mismatch');
-        const universe=manifest.race_universe||{};
-        if(Number(finder?.summary?.races)!==Number(universe.races)||Number(finder?.summary?.runners)!==Number(universe.runners))throw new Error('Published race universe mismatch');
+        for(const name of Object.keys(snapshot?.data||{})){
+          if(!core.includes(name) && manifest.files[name] && manifest.files[name]===snapshot.manifest.files[name]){
+            data[name]=snapshot.data[name];
+          }
+        }
         snapshot=Object.freeze({manifest,data,revision,receivedAt:new Date().toISOString()});error=null;
+        const keep=new Set(Object.entries(manifest.files).map(([name,digest])=>`${name}:${digest}`));
+        for(const key of files.keys())if(!keep.has(key))files.delete(key);
         events.dispatchEvent(new Event('change'));return snapshot;
       } catch(e){error=e;events.dispatchEvent(new Event('error'));throw e;}
       finally {inflight=null;}
@@ -370,12 +397,20 @@
   }
   const ready=refresh();ready.catch(()=>{});
   window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,isModelSelection,currentShortlistRows,
-    async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
+    async get(name){
+      const pinned=snapshot||await refresh();
+      if(Object.hasOwn(pinned.data,name))return pinned.data[name];
+      const data=await load(pinned.manifest,name);
+      if(snapshot!==pinned)return this.get(name);
+      pinned.data[name]=data;
+      return data;
+    },
     subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
     onError(fn){events.addEventListener('error',fn);},
     isReady(row){return decisionState(row).execution_status==='ready';}
   };
   setInterval(()=>refresh().catch(()=>{}),60000);
+  if(typeof window.addEventListener==='function')window.addEventListener('focus',()=>refresh().catch(()=>{}));
 })();
 
 </script><script data-racing-inline="racing-dashboard.js">
@@ -393,7 +428,7 @@
    const payload=snap.data['daily_decisions.json'];const now=new Date();
    const age=(now-new Date(payload.generated_at_utc))/60000;
    const universe=snap.manifest.race_universe||{};
-   const ledger=snap.data['shortlist_backtest.json']||{},allSummary=ledger.all_advice_summary||ledger.summary||{};
+    const ledger=snap.data['shortlist_backtest.json']||{},allSummary=ledger.all_advice_summary||ledger.summary||payload.record_summary||{};
    const allRecord=allSummary.settled?` Legacy proxy record: ${allSummary.settled} settled, P/L £${fmt(allSummary.pl)}, ROI ${fmt(allSummary.roi_pct)}%.`:'';
    root.querySelector('#ru-status').textContent=`Verified release ${snap.manifest.run_id} · ${universe.races??'—'} races / ${universe.runners??'—'} runners · ${age.toFixed(1)} min old · ${payload.rows.filter(r=>RacingStore.isReady(r)).length} Ready now.${allRecord} ${age*60>Number(payload.risk_policy?.quote_max_age_seconds||300)?'Prices must be refreshed before use.':''}`;
    let rows=payload.rows.map(r=>RacingStore.decisionState(r,now));
@@ -410,7 +445,15 @@
    root.querySelector('#ru-evidence').innerHTML=`<p><strong>${settled.length}</strong> settled / ${advice.length} retained · P/L <strong>${fmt(pl)}</strong> · stake ${fmt(stake)} · ROI ${stake?fmt(100*pl/stake):'—'}%</p><p>Legacy price proxies are excluded from exact captured-ticket evidence. See the separate execution performance report; these are recommendations, not confirmed placed bets.</p><div class="ru-table-wrap"><table><thead><tr><th>Settlement evidence</th><th>Settled</th><th>P/L</th></tr></thead><tbody>${Object.entries(basis).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v.n}</td><td>${fmt(v.pl)}</td></tr>`).join('')}</tbody></table></div>`;
   }
   root.addEventListener('input',e=>{if(e.target.id.startsWith('ru-p')||e.target.id==='ru-odds'||e.target.id==='ru-fraction')calculate();else render();});
-  root.addEventListener('change',render);
+   root.addEventListener('change',render);
+   root.addEventListener('toggle',event=>{
+    const panel=event.target;
+    if(!panel.open)return;
+    const names=[];
+    if(panel.querySelector('#ru-research'))names.push('p6_predictions.json');
+    if(panel.querySelector('#ru-evidence'))names.push('shortlist_backtest.json');
+    Promise.all(names.map(name=>RacingStore.get(name))).then(render).catch(()=>{});
+   },true);
   root.querySelector('#ru-refresh').addEventListener('click',()=>RacingStore.refresh().catch(()=>{}));
   root.querySelector('#ru-notify').addEventListener('click',async()=>{if(!('Notification'in window)){alert('This browser does not support notifications.');return;}const p=await Notification.requestPermission();localStorage.setItem('racing_notifications',p==='granted'?'on':'off');root.querySelector('#ru-notify').textContent=p==='granted'?'Notifications enabled':'Notifications unavailable';});
   RacingStore.subscribe(render);RacingStore.onError(()=>{root.querySelector('#ru-status').textContent=`Refresh unavailable: ${RacingStore.error.message}. Previous snapshot is retained; check quote age.`;});
@@ -436,7 +479,7 @@
       </div>
     </header>
     <p class="reader-note"><strong>Quick read:</strong> Model odds are the calibrated 100% price used for final decisions. Raw odds are the independent score-only view. A bet still needs the available market price to meet the model's break-even price and the shortlist evidence gates.</p>
-    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p><span class="model-stage-status" aria-live="polite">Seven model areas build the finishing order.</span> Horizontal separation reflects the final composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 7 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="mortgage-man" data-stage-positions="[19.45,32.9,46.34,84.0,84.0,84.0,84.0]" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="4"><a class="runner-card" href="#horse-mortgage-man" aria-label="1st: Mortgage Man"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Mortgage Man</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>220</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="yorgunnarock" data-stage-positions="[6.0,6.0,6.0,75.15,75.15,75.15,75.15]" style="--track-position:75.15%;--race-quarter:23.29%;--race-mid:44.03%;--race-late:66.85%;--race-overshoot:75.70%" data-cloth="6"><a class="runner-card" href="#horse-yorgunnarock" aria-label="2nd: Yorgunnarock"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Yorgunnarock</strong><span class="runner-numbers"><span>Real <b>9.00</b></span><span>Score <b>184</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>-7.6</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>-5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>-5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="jimmy-the-jet" data-stage-positions="[6.0,18.92,31.84,68.03,68.03,68.03,68.03]" style="--track-position:68.03%;--race-quarter:21.51%;--race-mid:40.11%;--race-late:60.58%;--race-overshoot:68.58%" data-cloth="2"><a class="runner-card" href="#horse-jimmy-the-jet" aria-label="3rd: Jimmy The Jet"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Jimmy The Jet</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>155</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>-2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="rio-blue" data-stage-positions="[6.0,6.0,6.0,6.0,58.69,58.69,58.69]" style="--track-position:58.69%;--race-quarter:19.17%;--race-mid:34.98%;--race-late:52.36%;--race-overshoot:59.24%" data-cloth="5"><a class="runner-card" href="#horse-rio-blue" aria-label="4th: Rio Blue"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Rio Blue</strong><span class="runner-numbers"><span>Real <b>3.00</b></span><span>Score <b>117</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>+1.8</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="browney-bank" data-stage-positions="[6.0,6.0,6.0,6.0,58.19,58.19,58.19]" style="--track-position:58.19%;--race-quarter:19.05%;--race-mid:34.71%;--race-late:51.93%;--race-overshoot:58.74%" data-cloth="1"><a class="runner-card" href="#horse-browney-bank" aria-label="5th: Browney Bank"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Browney Bank</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>115</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>+1.8</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="max-potential" data-stage-positions="[6.0,6.0,6.0,6.0,6.0,56.47,56.47]" style="--track-position:56.47%;--race-quarter:18.62%;--race-mid:33.76%;--race-late:50.42%;--race-overshoot:57.02%" data-cloth="3"><a class="runner-card" href="#horse-max-potential" aria-label="6th: Max Potential"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Max Potential</strong><span class="runner-numbers"><span>Real <b>1.91</b></span><span>Score <b>108</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>+2</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="angelas-rose" data-stage-positions="[13.0,20.0,27.0,34.0,41.0,48.0,55.0]" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="7"><a class="runner-card" href="#horse-angelas-rose" aria-label="7th: Angela&#x27;s Rose"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Angela&#x27;s Rose</strong><span class="runner-numbers"><span>Real <b>34.00</b></span><span>Score <b>102</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
+    <section class="model-order-card" aria-labelledby="model-order-title"><div class="model-order-heading"><div><span class="model-order-kicker">At a glance</span><h2 id="model-order-title">Model finishing order</h2></div><div class="model-order-actions"><p><span class="model-stage-status" aria-live="polite">Seven model areas build the finishing order.</span> Horizontal separation reflects the final composite-score gap.</p><button class="model-race-replay" type="button" aria-label="Replay the model finishing-order animation">↻ Replay race</button></div></div><div class="model-track-scroll"><div class="model-track" role="list" aria-label="Model ranking of 7 runners"><div class="finish-line" aria-hidden="true"><span>🏁</span></div><div class="model-lane" role="listitem"><div class="model-runner podium-1" data-horse-slug="mortgage-man" data-stage-positions="[19.45,32.9,46.34,84.0,84.0,84.0,84.0]" style="--track-position:84.00%;--race-quarter:25.50%;--race-mid:48.90%;--race-late:74.64%;--race-overshoot:84.55%" data-cloth="4"><a class="runner-card" href="#horse-mortgage-man" aria-label="1st: Mortgage Man"><span class="runner-rank">1st</span><span class="runner-copy"><strong>Mortgage Man</strong><span class="runner-numbers"><span>Real <b>26.00</b></span><span>Score <b>220</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-2" data-horse-slug="jimmy-the-jet" data-stage-positions="[6.0,18.92,31.84,68.03,68.03,68.03,68.03]" style="--track-position:68.03%;--race-quarter:21.51%;--race-mid:40.11%;--race-late:60.58%;--race-overshoot:68.58%" data-cloth="2"><a class="runner-card" href="#horse-jimmy-the-jet" aria-label="2nd: Jimmy The Jet"><span class="runner-rank">2nd</span><span class="runner-copy"><strong>Jimmy The Jet</strong><span class="runner-numbers"><span>Real <b>12.00</b></span><span>Score <b>155</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>-2.5</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>+2.5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner podium-3" data-horse-slug="yorgunnarock" data-stage-positions="[6.0,6.0,6.0,61.64,61.64,61.64,61.64]" style="--track-position:61.64%;--race-quarter:19.91%;--race-mid:36.60%;--race-late:54.96%;--race-overshoot:62.19%" data-cloth="6"><a class="runner-card" href="#horse-yorgunnarock" aria-label="3rd: Yorgunnarock"><span class="runner-rank">3rd</span><span class="runner-copy"><strong>Yorgunnarock</strong><span class="runner-numbers"><span>Real <b>13.00</b></span><span>Score <b>129</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>-7.6</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>-5</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>-5</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>+7</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-5.4</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="rio-blue" data-stage-positions="[6.0,6.0,6.0,6.0,58.69,58.69,58.69]" style="--track-position:58.69%;--race-quarter:19.17%;--race-mid:34.98%;--race-late:52.36%;--race-overshoot:59.24%" data-cloth="5"><a class="runner-card" href="#horse-rio-blue" aria-label="4th: Rio Blue"><span class="runner-rank">4th</span><span class="runner-copy"><strong>Rio Blue</strong><span class="runner-numbers"><span>Real <b>4.50</b></span><span>Score <b>117</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>+1.8</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="browney-bank" data-stage-positions="[6.0,6.0,6.0,6.0,58.19,58.19,58.19]" style="--track-position:58.19%;--race-quarter:19.05%;--race-mid:34.71%;--race-late:51.93%;--race-overshoot:58.74%" data-cloth="1"><a class="runner-card" href="#horse-browney-bank" aria-label="5th: Browney Bank"><span class="runner-rank">5th</span><span class="runner-copy"><strong>Browney Bank</strong><span class="runner-numbers"><span>Real <b>5.50</b></span><span>Score <b>115</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>+1.8</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="max-potential" data-stage-positions="[6.0,6.0,6.0,6.0,6.0,56.47,56.47]" style="--track-position:56.47%;--race-quarter:18.62%;--race-mid:33.76%;--race-late:50.42%;--race-overshoot:57.02%" data-cloth="3"><a class="runner-card" href="#horse-max-potential" aria-label="6th: Max Potential"><span class="runner-rank">6th</span><span class="runner-copy"><strong>Max Potential</strong><span class="runner-numbers"><span>Real <b>1.80</b></span><span>Score <b>108</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>+2</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div><div class="model-lane" role="listitem"><div class="model-runner" data-horse-slug="angelas-rose" data-stage-positions="[13.0,20.0,27.0,34.0,41.0,48.0,55.0]" style="--track-position:55.00%;--race-quarter:18.25%;--race-mid:32.95%;--race-late:49.12%;--race-overshoot:55.55%" data-cloth="7"><a class="runner-card" href="#horse-angelas-rose" aria-label="7th: Angela&#x27;s Rose"><span class="runner-rank">7th</span><span class="runner-copy"><strong>Angela&#x27;s Rose</strong><span class="runner-numbers"><span>Real <b>81.00</b></span><span>Score <b>102</b></span></span></span></a><span class="runner-evidence-trail"><span class="runner-evidence-chip" data-stage="1">🌦️ Going <b>0</b></span><span class="runner-evidence-chip" data-stage="2">↔️ Distance <b>0</b></span><span class="runner-evidence-chip" data-stage="3">🏆 Class <b>0</b></span><span class="runner-evidence-chip" data-stage="4">📈 Form &amp; history <b>0</b></span><span class="runner-evidence-chip" data-stage="5">🤝 Connections <b>0</b></span><span class="runner-evidence-chip" data-stage="6">🎯 Race adjustments <b>0</b></span><span class="runner-evidence-chip" data-stage="7">🛡️ Data reliability <b>-8</b></span></span><span class="runner-horse" aria-hidden="true">🏇</span></div></div></div></div><p class="model-order-note">The spacing is a score comparison, not a prediction of winning distances.</p></section>
     <div class="table-shell"><table border="1" class="dataframe racecard-table" id="racecard-table">
   <thead>
     <tr style="text-align: right;">
@@ -457,85 +500,85 @@
       <td>4</td>
       <td><span id="horse-mortgage-man" class="horse-anchor-target">Mortgage Man</span></td>
       <td>26.00</td>
-      <td>9.75</td>
-      <td>2.27</td>
-      <td><span class="edge-pill edge-positive">+6.4pp</span></td>
+      <td>7.74</td>
+      <td>2.16</td>
+      <td><span class="edge-pill edge-positive">+9.1pp</span></td>
       <td>1st · 220</td>
       <td><div class="fit-list"><span class="fit-chip fit-good"><b>G</b><span>✔</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>21.6%</td>
+      <td>26.9%</td>
       <td><div class="model-view-cell">💰 Value · 📘 ATR 🧠 Model-history +0% (n=1, avg 8.11) context-connection-risk</div></td>
-    </tr>
-    <tr>
-      <td>6</td>
-      <td><span id="horse-yorgunnarock" class="horse-anchor-target">Yorgunnarock</span></td>
-      <td>9.00</td>
-      <td>6.37</td>
-      <td>4.32</td>
-      <td><span class="edge-pill edge-positive">+4.6pp</span></td>
-      <td>2nd · 184</td>
-      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>31.9%</td>
-      <td><div class="model-view-cell">📘 ATR 🧠 Model-history +0% (n=1, avg 5.9)</div></td>
     </tr>
     <tr>
       <td>2</td>
       <td><span id="horse-jimmy-the-jet" class="horse-anchor-target">Jimmy The Jet</span></td>
-      <td>13.00</td>
-      <td>9.74</td>
-      <td>8.20</td>
-      <td><span class="edge-pill edge-positive">+2.6pp</span></td>
-      <td>3rd · 155</td>
+      <td>12.00</td>
+      <td>7.97</td>
+      <td>4.11</td>
+      <td><span class="edge-pill edge-positive">+4.2pp</span></td>
+      <td>2nd · 155</td>
       <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖</span></span><span class="fit-chip fit-good"><b>D</b><span>✔</span></span><span class="fit-chip fit-good"><b>C</b><span>✔</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
-      <td>21.6%</td>
+      <td>26.2%</td>
       <td><div class="model-view-cell">💰 Value · 📘 ATR 🧠 Model-history +0% (n=1, avg 7.2) context-connection-risk</div></td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><span id="horse-yorgunnarock" class="horse-anchor-target">Yorgunnarock</span></td>
+      <td>13.00</td>
+      <td>10.17</td>
+      <td>7.80</td>
+      <td><span class="edge-pill edge-positive">+2.1pp</span></td>
+      <td>3rd · 129</td>
+      <td><div class="fit-list"><span class="fit-chip fit-bad"><b>G</b><span>✖✖✖</span></span><span class="fit-chip fit-bad"><b>D</b><span>✖✖</span></span><span class="fit-chip fit-bad"><b>C</b><span>✖✖</span></span><span class="fit-chip fit-good"><b>F</b><span>✔✔✔</span></span></div></td>
+      <td>20.9%</td>
+      <td><div class="model-view-cell">💰 Value · 📘 ATR 🧠 Model-history +0% (n=1, avg 5.9)</div></td>
     </tr>
     <tr>
       <td>5</td>
       <td><span id="horse-rio-blue" class="horse-anchor-target">Rio Blue</span></td>
-      <td>3.00</td>
-      <td>4.89</td>
-      <td>15.58</td>
-      <td><span class="edge-pill edge-negative">-12.9pp</span></td>
+      <td>4.50</td>
+      <td>5.69</td>
+      <td>14.82</td>
+      <td><span class="edge-pill edge-negative">-4.6pp</span></td>
       <td>4th · 117</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>40.0%</td>
+      <td>35.5%</td>
       <td><div class="model-view-cell">📘 ATR 🔥 Hot Trainer context-connection</div></td>
     </tr>
     <tr>
       <td>1</td>
       <td><span id="horse-browney-bank" class="horse-anchor-target">Browney Bank</span></td>
       <td>5.50</td>
-      <td>7.29</td>
-      <td>18.72</td>
-      <td><span class="edge-pill edge-negative">-4.5pp</span></td>
+      <td>6.56</td>
+      <td>26.57</td>
+      <td><span class="edge-pill edge-negative">-2.9pp</span></td>
       <td>5th · 115</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>28.2%</td>
+      <td>31.3%</td>
       <td><div class="model-view-cell">🔥 Hot Jockey context-connection-risk</div></td>
     </tr>
     <tr>
       <td>3</td>
       <td><span id="horse-max-potential" class="horse-anchor-target">Max Potential</span></td>
-      <td>1.91</td>
-      <td>3.91</td>
-      <td>21.43</td>
-      <td><span class="edge-pill edge-negative">-26.8pp</span></td>
+      <td>1.80</td>
+      <td>3.41</td>
+      <td>30.94</td>
+      <td><span class="edge-pill edge-negative">-26.2pp</span></td>
       <td>6th · 108</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>47.9%</td>
+      <td>53.4%</td>
       <td><div class="model-view-cell">💰 Value · 📘 ATR+ context-fitness-risk</div></td>
     </tr>
     <tr>
       <td>7</td>
       <td><span id="horse-angelas-rose" class="horse-anchor-target">Angela&#x27;s Rose</span></td>
-      <td>34.00</td>
-      <td>24.67</td>
-      <td>23.92</td>
-      <td><span class="edge-pill edge-positive">+1.1pp</span></td>
+      <td>81.00</td>
+      <td>38.81</td>
+      <td>35.49</td>
+      <td><span class="edge-pill edge-positive">+1.3pp</span></td>
       <td>7th · 102</td>
       <td><div class="fit-list"><span class="fit-chip fit-neutral"><b>G</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>D</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>C</b><span>❔</span></span><span class="fit-chip fit-neutral"><b>F</b><span>❔</span></span></div></td>
-      <td>8.8%</td>
-      <td><div class="model-view-cell">context-connection-risk</div></td>
+      <td>5.7%</td>
+      <td><div class="model-view-cell">💰 Value · context-connection-risk</div></td>
     </tr>
   </tbody>
 </table></div>
@@ -649,6 +692,8 @@
       <th>_market_prob_fair</th>
       <th>_raw_prob</th>
       <th>_fundamental_prob</th>
+      <th>_trend_score</th>
+      <th>Model Temperature</th>
       <th>Model Top 2 %</th>
       <th>Model Top 3 %</th>
       <th>Model Top 4 %</th>
@@ -669,31 +714,31 @@
       <td>4</td>
       <td>Mortgage Man</td>
       <td>26.00</td>
-      <td>2.43</td>
-      <td>41.07</td>
-      <td>33.67</td>
-      <td>29.37</td>
-      <td>9.75</td>
-      <td>2.27</td>
-      <td>10.25</td>
+      <td>1.82</td>
+      <td>54.90</td>
+      <td>30.44</td>
+      <td>26.17</td>
+      <td>7.74</td>
+      <td>2.16</td>
+      <td>12.91</td>
       <td>3.85</td>
-      <td>2.97</td>
-      <td>6.41</td>
-      <td>7.28</td>
-      <td>129.49</td>
+      <td>3.29</td>
+      <td>9.07</td>
+      <td>9.63</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>21.55</td>
-      <td>7.04</td>
-      <td>14.52</td>
-      <td>1.959</td>
+      <td>26.95</td>
+      <td>8.14</td>
+      <td>18.81</td>
+      <td>2.975</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>220</td>
       <td>hexham</td>
@@ -749,10 +794,10 @@
       <td>💰</td>
       <td>📘 ATR 🧠 Model-history +0% (n=1, avg 8.11) context-connection-risk</td>
       <td>37.5</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
       <td>[{'stage': 'base_categories', 'score': 398.5138}, {'stage': 'pre_course_rules', 'score': 398.5138}, {'stage': 'post_course_rules', 'score': 398.5138}, {'stage': 'pre_model_history', 'score': 218.7044}, {'stage': 'post_model_history', 'score': 219.6404}, {'stage': 'post_generic_overlay', 'score': 219.6404}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 219.6404}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 219.6404, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.037 (61); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 219.6404}]</td>
@@ -766,134 +811,17 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.102523</td>
-      <td>0.029703</td>
-      <td>0.440256</td>
-      <td>0.410692</td>
-      <td>21.55</td>
-      <td>34.21</td>
-      <td>48.67</td>
-      <td>65.61</td>
-      <td>85.62</td>
-      <td>Turf</td>
-      <td>Good</td>
-      <td>NH Flat</td>
-      <td>other</td>
-      <td>NaN</td>
-      <td>https://www.sportinglife.com/racing/racecards/2026-11-18/hexham/racecard/949058/quinnbet-open-nh-flat-race-gbb-race</td>
-      <td>provider_meeting_race_code</td>
-      <td>100.0</td>
-    </tr>
-    <tr>
-      <td>6</td>
-      <td>Yorgunnarock</td>
-      <td>9.00</td>
-      <td>4.64</td>
-      <td>21.55</td>
-      <td>11.65</td>
-      <td>10.84</td>
-      <td>6.37</td>
-      <td>4.32</td>
-      <td>15.70</td>
-      <td>11.11</td>
-      <td>8.58</td>
-      <td>4.59</td>
-      <td>7.12</td>
-      <td>129.49</td>
-      <td>37.21</td>
-      <td>31.87</td>
-      <td>19.79</td>
-      <td>12.08</td>
-      <td>0.242</td>
-      <td>100.0</td>
-      <td>100.0</td>
-      <td>0.372143</td>
-      <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
-      <td>2</td>
-      <td>184</td>
-      <td>hexham</td>
-      <td>jumps</td>
-      <td>turf</td>
+      <td>0.129147</td>
+      <td>0.032855</td>
+      <td>0.462706</td>
+      <td>0.548975</td>
       <td>0.0</td>
-      <td>0.0</td>
-      <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>183.983452</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>20.125</td>
-      <td></td>
-      <td></td>
-      <td></td>
-      <td>2026.07.26-p4-live-context-v1</td>
-      <td>99.820162</td>
-      <td>16.666667</td>
-      <td>1.0</td>
-      <td>0.18</td>
-      <td>unknown</td>
-      <td>0.25</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.019943</td>
-      <td>1.010417</td>
-      <td>0.000000</td>
-      <td>0.000000</td>
-      <td>100.0</td>
-      <td>R2 Prominent/Place</td>
-      <td>67.0</td>
-      <td>62.0</td>
-      <td>57.5</td>
-      <td>87.7</td>
-      <td>0.0</td>
-      <td>Low</td>
-      <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>[insufficient_history]</td>
-      <td>None</td>
-      <td>2026.08.28-revival-watch-p2.0</td>
-      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
-      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
-      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
-      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
-      <td>ATR 2nd pick ATR improvement likely ATR outpaced ATR weakened</td>
-      <td>+1.7%</td>
-      <td>ATR 2</td>
-      <td></td>
-      <td>📘 ATR 🧠 Model-history +0% (n=1, avg 5.9)</td>
-      <td>37.5</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
-      <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
-      <td>7</td>
-      <td>True</td>
-      <td>[{'stage': 'base_categories', 'score': 301.1478}, {'stage': 'pre_course_rules', 'score': 301.1478}, {'stage': 'post_course_rules', 'score': 301.1478}, {'stage': 'pre_model_history', 'score': 183.7604}, {'stage': 'post_model_history', 'score': 183.9835}, {'stage': 'post_generic_overlay', 'score': 183.9835}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 183.9835}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 183.9835, 'positive_families': [], 'negative_families': [], 'evidence': ''}, {'stage': 'world_context_final', 'score': 183.9835}]</td>
-      <td>{'recent_form_normalized': 0.6, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.46934659602903184, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.06494658128716929, 'form': 0.5524821325091752, 'market': 0.09224137931034483, 'connections': 0.375, 'raw': 0.6042682421427659}, 'horse': 'Yorgunnarock', 'trainer': 'T: W Coltherd', 'jockey': 'J: D R Fox', 'going_suitability': 0.04654527198419776, 'distance_suitability': 0.07160811074491963, 'class_suitability': 0.07160811074491963, 'suitability_score': 0.06494658128716929, 'form_score': 0.5524821325091752, 'past_perf_score': 0.09854794864567164, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.4751281325532139, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🧠 Model-history +0% (n=1, avg 5.9)'], 'model_hist_n': 1, 'model_hist_avg': 5.9, 'model_hist_mult': 1.0012, 'atr_score_adj': 0.017, 'atr_confidence': 0.6, 'atr_flags': 'ATR 2nd pick ATR improvement likely ATR outpaced ATR weakened', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 183.98345230390373, 'trend_delta': 0.0, 'final_composite_score': 183.9835, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': ''}</td>
-      <td>7</td>
-      <td>7</td>
-      <td>active_and_total</td>
-      <td>949058</td>
-      <td>[{"horse": "Browney Bank", "horse_id": 1245693, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Jimmy The Jet", "horse_id": 1219499, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Max Potential", "horse_id": 1245694, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Mortgage Man", "horse_id": 1223158, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Rio Blue", "horse_id": 1245695, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Yorgunnarock", "horse_id": 1221503, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Angela's Rose", "horse_id": 1245692, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}]</td>
-      <td>provider_embedded_race_and_non_runner_panel</td>
-      <td>False</td>
-      <td>Good-good to soft in places</td>
-      <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.156983</td>
-      <td>0.085809</td>
-      <td>0.231714</td>
-      <td>0.215479</td>
-      <td>31.87</td>
-      <td>48.41</td>
-      <td>64.95</td>
-      <td>80.64</td>
-      <td>93.70</td>
+      <td>1.16959</td>
+      <td>26.95</td>
+      <td>42.17</td>
+      <td>58.58</td>
+      <td>75.99</td>
+      <td>93.08</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>
@@ -906,32 +834,32 @@
     <tr>
       <td>2</td>
       <td>Jimmy The Jet</td>
-      <td>13.00</td>
-      <td>7.81</td>
-      <td>12.81</td>
-      <td>16.83</td>
-      <td>15.75</td>
-      <td>9.74</td>
-      <td>8.20</td>
-      <td>10.27</td>
-      <td>7.69</td>
-      <td>5.94</td>
-      <td>2.58</td>
-      <td>4.33</td>
-      <td>129.49</td>
+      <td>12.00</td>
+      <td>7.27</td>
+      <td>13.76</td>
+      <td>14.05</td>
+      <td>13.11</td>
+      <td>7.97</td>
+      <td>4.11</td>
+      <td>12.54</td>
+      <td>8.33</td>
+      <td>7.12</td>
+      <td>4.21</td>
+      <td>5.42</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>21.58</td>
-      <td>13.88</td>
-      <td>7.70</td>
-      <td>0.069</td>
+      <td>26.23</td>
+      <td>17.34</td>
+      <td>8.89</td>
+      <td>0.344</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>155</td>
       <td>hexham</td>
@@ -940,7 +868,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>154.504226</td>
+      <td>154.515564</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>38.875</td>
@@ -963,10 +891,10 @@
       <td>0.000000</td>
       <td>-0.014752</td>
       <td>100.0</td>
-      <td>R3 Midfield/Unclear</td>
-      <td>48.7</td>
-      <td>44.1</td>
-      <td>43.8</td>
+      <td>R2 Prominent/Place</td>
+      <td>56.1</td>
+      <td>52.1</td>
+      <td>51.6</td>
       <td>100.0</td>
       <td>0.0</td>
       <td>Low</td>
@@ -987,14 +915,14 @@
       <td>💰</td>
       <td>📘 ATR 🧠 Model-history +0% (n=1, avg 7.2) context-connection-risk</td>
       <td>37.5</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
-      <td>[{'stage': 'base_categories', 'score': 359.5516}, {'stage': 'pre_course_rules', 'score': 359.5516}, {'stage': 'post_course_rules', 'score': 359.5516}, {'stage': 'pre_model_history', 'score': 154.0319}, {'stage': 'post_model_history', 'score': 154.5042}, {'stage': 'post_generic_overlay', 'score': 154.5042}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 154.5042}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 154.5042, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.015 (126); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 154.5042}]</td>
-      <td>{'recent_form_normalized': 0.72, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5292000460479146, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.17533313166593137, 'form': 0.6154606915201855, 'market': 0.09022988505747126, 'connections': 0.375, 'raw': 0.5872598894329777}, 'horse': 'Jimmy The Jet', 'trainer': 'T: Lizzie Quinlan', 'jockey': 'J: Sean Quinlan', 'going_suitability': 0.12460941048413929, 'distance_suitability': 0.2108774638962357, 'class_suitability': 0.19170678536021427, 'suitability_score': 0.17533313166593137, 'form_score': 0.6154606915201855, 'past_perf_score': 0.1671935088849185, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.5235993422491614, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🧠 Model-history +0% (n=1, avg 7.2)'], 'model_hist_n': 1, 'model_hist_avg': 7.2, 'model_hist_mult': 1.0031, 'atr_score_adj': 0.02, 'atr_confidence': 0.85, 'atr_flags': 'ATR trainer in form ATR promising ATR beaten far recently', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 154.5042262779743, 'trend_delta': 0.0, 'final_composite_score': 154.5042, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E -0.015 (126); positive overlay blocked by low coverage'}</td>
+      <td>[{'stage': 'base_categories', 'score': 359.578}, {'stage': 'pre_course_rules', 'score': 359.578}, {'stage': 'post_course_rules', 'score': 359.578}, {'stage': 'pre_model_history', 'score': 154.0432}, {'stage': 'post_model_history', 'score': 154.5156}, {'stage': 'post_generic_overlay', 'score': 154.5156}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 154.5156}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 154.5156, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.015 (126); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 154.5156}]</td>
+      <td>{'recent_form_normalized': 0.72, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5292000460479146, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.17533313166593137, 'form': 0.6154606915201855, 'market': 0.09059561128526646, 'connections': 0.375, 'raw': 0.5872598894329777}, 'horse': 'Jimmy The Jet', 'trainer': 'T: Lizzie Quinlan', 'jockey': 'J: Sean Quinlan', 'going_suitability': 0.12460941048413929, 'distance_suitability': 0.2108774638962357, 'class_suitability': 0.19170678536021427, 'suitability_score': 0.17533313166593137, 'form_score': 0.6154606915201855, 'past_perf_score': 0.1671935088849185, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.5235993422491614, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🧠 Model-history +0% (n=1, avg 7.2)'], 'model_hist_n': 1, 'model_hist_avg': 7.2, 'model_hist_mult': 1.0031, 'atr_score_adj': 0.02, 'atr_confidence': 0.85, 'atr_flags': 'ATR trainer in form ATR promising ATR beaten far recently', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 154.51556407191964, 'trend_delta': 0.0, 'final_composite_score': 154.5156, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E -0.015 (126); positive overlay blocked by low coverage'}</td>
       <td>7</td>
       <td>7</td>
       <td>active_and_total</td>
@@ -1004,15 +932,138 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.102677</td>
-      <td>0.059406</td>
-      <td>0.121955</td>
-      <td>0.128052</td>
-      <td>21.58</td>
-      <td>34.25</td>
-      <td>48.73</td>
-      <td>65.67</td>
-      <td>85.66</td>
+      <td>0.125406</td>
+      <td>0.071185</td>
+      <td>0.243530</td>
+      <td>0.137635</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>26.23</td>
+      <td>41.17</td>
+      <td>57.44</td>
+      <td>74.97</td>
+      <td>92.66</td>
+      <td>Turf</td>
+      <td>Good</td>
+      <td>NH Flat</td>
+      <td>other</td>
+      <td>NaN</td>
+      <td>https://www.sportinglife.com/racing/racecards/2026-11-18/hexham/racecard/949058/quinnbet-open-nh-flat-race-gbb-race</td>
+      <td>provider_meeting_race_code</td>
+      <td>100.0</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Yorgunnarock</td>
+      <td>13.00</td>
+      <td>12.22</td>
+      <td>8.18</td>
+      <td>15.22</td>
+      <td>14.44</td>
+      <td>10.17</td>
+      <td>7.80</td>
+      <td>9.83</td>
+      <td>7.69</td>
+      <td>6.57</td>
+      <td>2.14</td>
+      <td>3.26</td>
+      <td>117.07</td>
+      <td>37.21</td>
+      <td>20.90</td>
+      <td>16.05</td>
+      <td>4.85</td>
+      <td>-0.012</td>
+      <td>100.0</td>
+      <td>100.0</td>
+      <td>0.372143</td>
+      <td>0.037857</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
+      <td>2</td>
+      <td>129</td>
+      <td>hexham</td>
+      <td>jumps</td>
+      <td>turf</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
+      <td>128.726357</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>20.125</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>2026.07.26-p4-live-context-v1</td>
+      <td>99.820162</td>
+      <td>16.666667</td>
+      <td>1.0</td>
+      <td>0.18</td>
+      <td>unknown</td>
+      <td>0.25</td>
+      <td>0.0</td>
+      <td>1.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.019943</td>
+      <td>1.010417</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>100.0</td>
+      <td>R3 Midfield/Unclear</td>
+      <td>40.1</td>
+      <td>48.5</td>
+      <td>38.1</td>
+      <td>85.9</td>
+      <td>0.0</td>
+      <td>Low</td>
+      <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
+      <td>False</td>
+      <td>False</td>
+      <td>None</td>
+      <td>[insufficient_history]</td>
+      <td>None</td>
+      <td>2026.08.28-revival-watch-p2.0</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;&lt;span style="color:#d11c1c;font-weight:bold;"&gt;✖&lt;/span&gt;</td>
+      <td>&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;&lt;span style="color:#1ca31c;font-weight:bold;"&gt;✔&lt;/span&gt;</td>
+      <td>ATR 2nd pick ATR improvement likely ATR outpaced ATR weakened</td>
+      <td>+1.7%</td>
+      <td>ATR 2</td>
+      <td>💰</td>
+      <td>📘 ATR 🧠 Model-history +0% (n=1, avg 5.9)</td>
+      <td>37.5</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.01-p4.23-route-parity-v1</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
+      <td>7</td>
+      <td>True</td>
+      <td>[{'stage': 'base_categories', 'score': 301.0027}, {'stage': 'pre_course_rules', 'score': 301.0027}, {'stage': 'post_course_rules', 'score': 301.0027}, {'stage': 'pre_model_history', 'score': 128.5703}, {'stage': 'post_model_history', 'score': 128.7264}, {'stage': 'post_generic_overlay', 'score': 128.7264}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 128.7264}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 128.7264, 'positive_families': [], 'negative_families': [], 'evidence': ''}, {'stage': 'world_context_final', 'score': 128.7264}]</td>
+      <td>{'recent_form_normalized': 0.6, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.46934659602903184, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.06494658128716929, 'form': 0.5524821325091752, 'market': 0.09022988505747126, 'connections': 0.375, 'raw': 0.6042682421427659}, 'horse': 'Yorgunnarock', 'trainer': 'T: W Coltherd', 'jockey': 'J: D R Fox', 'going_suitability': 0.04654527198419776, 'distance_suitability': 0.07160811074491963, 'class_suitability': 0.07160811074491963, 'suitability_score': 0.06494658128716929, 'form_score': 0.5524821325091752, 'past_perf_score': 0.09854794864567164, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.4751281325532139, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🧠 Model-history +0% (n=1, avg 5.9)'], 'model_hist_n': 1, 'model_hist_avg': 5.9, 'model_hist_mult': 1.0012, 'atr_score_adj': 0.017, 'atr_confidence': 0.6, 'atr_flags': 'ATR 2nd pick ATR improvement likely ATR outpaced ATR weakened', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 128.72635698225395, 'trend_delta': 0.0, 'final_composite_score': 128.7264, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': ''}</td>
+      <td>7</td>
+      <td>7</td>
+      <td>active_and_total</td>
+      <td>949058</td>
+      <td>[{"horse": "Browney Bank", "horse_id": 1245693, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Jimmy The Jet", "horse_id": 1219499, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Max Potential", "horse_id": 1245694, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Mortgage Man", "horse_id": 1223158, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Rio Blue", "horse_id": 1245695, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Yorgunnarock", "horse_id": 1221503, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}, {"horse": "Angela's Rose", "horse_id": 1245692, "provider_status": "RUNNER", "status": "ACTIVE", "withdrawal_evidence": ""}]</td>
+      <td>provider_embedded_race_and_non_runner_panel</td>
+      <td>False</td>
+      <td>Good-good to soft in places</td>
+      <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
+      <td>0.098281</td>
+      <td>0.065709</td>
+      <td>0.128173</td>
+      <td>0.081835</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>20.90</td>
+      <td>33.51</td>
+      <td>48.15</td>
+      <td>65.73</td>
+      <td>88.44</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>
@@ -1025,32 +1076,32 @@
     <tr>
       <td>5</td>
       <td>Rio Blue</td>
-      <td>3.00</td>
-      <td>14.59</td>
-      <td>6.85</td>
-      <td>3.88</td>
-      <td>3.94</td>
-      <td>4.89</td>
-      <td>15.58</td>
-      <td>20.43</td>
-      <td>33.33</td>
-      <td>25.74</td>
-      <td>-12.90</td>
-      <td>-5.31</td>
-      <td>129.49</td>
+      <td>4.50</td>
+      <td>15.33</td>
+      <td>6.52</td>
+      <td>5.27</td>
+      <td>5.25</td>
+      <td>5.69</td>
+      <td>14.82</td>
+      <td>17.58</td>
+      <td>22.22</td>
+      <td>18.98</td>
+      <td>-4.64</td>
+      <td>-1.40</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>40.04</td>
-      <td>52.86</td>
-      <td>-12.82</td>
-      <td>-0.827</td>
+      <td>35.55</td>
+      <td>43.25</td>
+      <td>-7.71</td>
+      <td>-0.605</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>117</td>
       <td>hexham</td>
@@ -1059,7 +1110,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>117.442800</td>
+      <td>116.990584</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>50.000</td>
@@ -1083,8 +1134,8 @@
       <td>0.018909</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>60.9</td>
-      <td>52.3</td>
+      <td>60.8</td>
+      <td>55.4</td>
       <td>67.6</td>
       <td>100.0</td>
       <td>0.0</td>
@@ -1106,14 +1157,14 @@
       <td></td>
       <td>📘 ATR 🔥 Hot Trainer context-connection</td>
       <td>0.0</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
-      <td>[{'stage': 'base_categories', 'score': 191.9}, {'stage': 'pre_course_rules', 'score': 191.9}, {'stage': 'post_course_rules', 'score': 191.9}, {'stage': 'pre_model_history', 'score': 117.4428}, {'stage': 'post_model_history', 'score': 117.4428}, {'stage': 'post_generic_overlay', 'score': 117.4428}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 117.4428}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 117.4428, 'positive_families': ['connection'], 'negative_families': [], 'evidence': 'rider-yard A/E +0.019 (322); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 117.4428}]</td>
-      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.11034482758620691, 'connections': 0.55, 'raw': 0.5826807913027366}, 'horse': 'Rio Blue', 'trainer': 'T: D Skelton', 'jockey': 'J: Tristan Durrell', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🔥 Hot Trainer'], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.02, 'atr_confidence': 0.6, 'atr_flags': 'ATR 3rd pick ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 117.44280031879049, 'trend_delta': 0.0, 'final_composite_score': 117.4428, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E +0.019 (322); positive overlay blocked by low coverage'}</td>
+      <td>[{'stage': 'base_categories', 'score': 191.1611}, {'stage': 'pre_course_rules', 'score': 191.1611}, {'stage': 'post_course_rules', 'score': 191.1611}, {'stage': 'pre_model_history', 'score': 116.9906}, {'stage': 'post_model_history', 'score': 116.9906}, {'stage': 'post_generic_overlay', 'score': 116.9906}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 116.9906}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 116.9906, 'positive_families': ['connection'], 'negative_families': [], 'evidence': 'rider-yard A/E +0.019 (322); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 116.9906}]</td>
+      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.09999999999999999, 'connections': 0.55, 'raw': 0.5826807913027366}, 'horse': 'Rio Blue', 'trainer': 'T: D Skelton', 'jockey': 'J: Tristan Durrell', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR', '🔥 Hot Trainer'], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.02, 'atr_confidence': 0.6, 'atr_flags': 'ATR 3rd pick ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 116.99058357002201, 'trend_delta': 0.0, 'final_composite_score': 116.9906, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E +0.019 (322); positive overlay blocked by low coverage'}</td>
       <td>7</td>
       <td>7</td>
       <td>active_and_total</td>
@@ -1123,15 +1174,17 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.204307</td>
-      <td>0.257426</td>
-      <td>0.064187</td>
-      <td>0.068537</td>
-      <td>40.04</td>
-      <td>58.28</td>
-      <td>74.44</td>
-      <td>87.60</td>
-      <td>96.57</td>
+      <td>0.175816</td>
+      <td>0.189827</td>
+      <td>0.067460</td>
+      <td>0.065217</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>35.55</td>
+      <td>53.35</td>
+      <td>70.27</td>
+      <td>85.24</td>
+      <td>96.46</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>
@@ -1145,31 +1198,31 @@
       <td>1</td>
       <td>Browney Bank</td>
       <td>5.50</td>
-      <td>15.29</td>
-      <td>6.54</td>
-      <td>7.12</td>
-      <td>7.06</td>
-      <td>7.29</td>
-      <td>18.72</td>
-      <td>13.72</td>
+      <td>16.05</td>
+      <td>6.23</td>
+      <td>6.44</td>
+      <td>6.38</td>
+      <td>6.56</td>
+      <td>26.57</td>
+      <td>15.24</td>
       <td>18.18</td>
-      <td>14.04</td>
-      <td>-4.46</td>
-      <td>-0.32</td>
-      <td>129.49</td>
+      <td>15.53</td>
+      <td>-2.94</td>
+      <td>-0.29</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>28.24</td>
-      <td>31.41</td>
-      <td>-3.17</td>
-      <td>-0.709</td>
+      <td>31.32</td>
+      <td>36.17</td>
+      <td>-4.85</td>
+      <td>-0.567</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>115</td>
       <td>hexham</td>
@@ -1225,10 +1278,10 @@
       <td></td>
       <td>🔥 Hot Jockey context-connection-risk</td>
       <td>0.0</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
       <td>[{'stage': 'base_categories', 'score': 190.9421}, {'stage': 'pre_course_rules', 'score': 190.9421}, {'stage': 'post_course_rules', 'score': 190.9421}, {'stage': 'pre_model_history', 'score': 114.5653}, {'stage': 'post_model_history', 'score': 114.5653}, {'stage': 'post_generic_overlay', 'score': 114.5653}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 114.5653}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 114.5653, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.023 (43); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 114.5653}]</td>
@@ -1242,15 +1295,17 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.137238</td>
-      <td>0.140414</td>
-      <td>0.053424</td>
-      <td>0.065417</td>
-      <td>28.24</td>
-      <td>43.61</td>
-      <td>59.80</td>
-      <td>76.35</td>
-      <td>91.66</td>
+      <td>0.152374</td>
+      <td>0.155313</td>
+      <td>0.037636</td>
+      <td>0.062287</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>31.32</td>
+      <td>48.03</td>
+      <td>64.96</td>
+      <td>81.29</td>
+      <td>95.10</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>
@@ -1263,32 +1318,32 @@
     <tr>
       <td>3</td>
       <td>Max Potential</td>
-      <td>1.91</td>
-      <td>17.11</td>
-      <td>5.84</td>
-      <td>2.47</td>
-      <td>2.56</td>
-      <td>3.91</td>
-      <td>21.43</td>
-      <td>25.57</td>
-      <td>52.38</td>
-      <td>40.45</td>
-      <td>-26.81</td>
-      <td>-14.88</td>
-      <td>129.49</td>
+      <td>1.80</td>
+      <td>18.20</td>
+      <td>5.49</td>
+      <td>2.11</td>
+      <td>2.19</td>
+      <td>3.41</td>
+      <td>30.94</td>
+      <td>29.32</td>
+      <td>55.56</td>
+      <td>47.46</td>
+      <td>-26.23</td>
+      <td>-18.14</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>47.90</td>
-      <td>69.61</td>
-      <td>-21.72</td>
-      <td>-0.946</td>
+      <td>53.37</td>
+      <td>76.39</td>
+      <td>-23.02</td>
+      <td>-0.853</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>108</td>
       <td>hexham</td>
@@ -1297,7 +1352,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>107.517228</td>
+      <td>107.838435</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>25.000</td>
@@ -1321,10 +1376,10 @@
       <td>0.000000</td>
       <td>100.0</td>
       <td>R2 Prominent/Place</td>
-      <td>65.3</td>
+      <td>65.4</td>
       <td>52.9</td>
       <td>73.6</td>
-      <td>97.4</td>
+      <td>97.2</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1344,14 +1399,14 @@
       <td>✖️</td>
       <td>📘 ATR+ context-fitness-risk</td>
       <td>12.5</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
-      <td>[{'stage': 'base_categories', 'score': 173.1356}, {'stage': 'pre_course_rules', 'score': 173.1356}, {'stage': 'post_course_rules', 'score': 173.1356}, {'stage': 'pre_model_history', 'score': 107.5172}, {'stage': 'post_model_history', 'score': 107.5172}, {'stage': 'post_generic_overlay', 'score': 107.5172}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 107.5172}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 107.5172, 'positive_families': [], 'negative_families': ['fitness'], 'evidence': 'fresh-yard A/E edge -0.027 (68); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 107.5172}]</td>
-      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.13931034482758622, 'connections': 0.375, 'raw': 0.5826807913027366}, 'horse': 'Max Potential', 'trainer': 'T: D Pipe', 'jockey': 'J: Rian Corcoran(5)', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR+'], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.035, 'atr_confidence': 0.6, 'atr_flags': 'ATR 1st pick ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 107.51722790968546, 'trend_delta': 0.0, 'final_composite_score': 107.5172, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'fresh-yard A/E edge -0.027 (68); positive overlay blocked by low coverage'}</td>
+      <td>[{'stage': 'base_categories', 'score': 173.6529}, {'stage': 'pre_course_rules', 'score': 173.6529}, {'stage': 'post_course_rules', 'score': 173.6529}, {'stage': 'pre_model_history', 'score': 107.8384}, {'stage': 'post_model_history', 'score': 107.8384}, {'stage': 'post_generic_overlay', 'score': 107.8384}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 107.8384}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 107.8384, 'positive_families': [], 'negative_families': ['fitness'], 'evidence': 'fresh-yard A/E edge -0.027 (68); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 107.8384}]</td>
+      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.14655172413793102, 'connections': 0.375, 'raw': 0.5826807913027366}, 'horse': 'Max Potential', 'trainer': 'T: D Pipe', 'jockey': 'J: Rian Corcoran(5)', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': ['📘 ATR+'], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.035, 'atr_confidence': 0.6, 'atr_flags': 'ATR 1st pick ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 107.83843480623716, 'trend_delta': 0.0, 'final_composite_score': 107.8384, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'fresh-yard A/E edge -0.027 (68); positive overlay blocked by low coverage'}</td>
       <td>7</td>
       <td>7</td>
       <td>active_and_total</td>
@@ -1361,15 +1416,17 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.255733</td>
-      <td>0.404527</td>
-      <td>0.046661</td>
-      <td>0.058446</td>
-      <td>47.90</td>
-      <td>66.65</td>
-      <td>81.46</td>
-      <td>92.01</td>
-      <td>98.09</td>
+      <td>0.293208</td>
+      <td>0.474566</td>
+      <td>0.032319</td>
+      <td>0.054935</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>53.37</td>
+      <td>72.20</td>
+      <td>85.91</td>
+      <td>94.72</td>
+      <td>99.08</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>
@@ -1382,32 +1439,32 @@
     <tr>
       <td>7</td>
       <td>Angela's Rose</td>
-      <td>34.00</td>
-      <td>18.73</td>
-      <td>5.34</td>
-      <td>44.03</td>
-      <td>41.07</td>
-      <td>24.67</td>
-      <td>23.92</td>
-      <td>4.05</td>
-      <td>2.94</td>
-      <td>2.27</td>
-      <td>1.11</td>
-      <td>1.78</td>
-      <td>129.49</td>
+      <td>81.00</td>
+      <td>20.36</td>
+      <td>4.91</td>
+      <td>94.82</td>
+      <td>85.58</td>
+      <td>38.81</td>
+      <td>35.49</td>
+      <td>2.58</td>
+      <td>1.23</td>
+      <td>1.05</td>
+      <td>1.34</td>
+      <td>1.52</td>
+      <td>117.07</td>
       <td>37.21</td>
-      <td>8.81</td>
-      <td>5.40</td>
-      <td>3.42</td>
-      <td>0.048</td>
+      <td>5.69</td>
+      <td>2.66</td>
+      <td>3.03</td>
+      <td>1.055</td>
       <td>100.0</td>
       <td>100.0</td>
       <td>0.372143</td>
       <td>0.037857</td>
-      <td>0.6174</td>
-      <td>0.7241</td>
-      <td>35.657</td>
-      <td>1.26522</td>
+      <td>0.4653</td>
+      <td>0.6139</td>
+      <td>65.1249</td>
+      <td>1.16959</td>
       <td>2</td>
       <td>102</td>
       <td>hexham</td>
@@ -1416,7 +1473,7 @@
       <td>0.0</td>
       <td>0.0</td>
       <td>2026.09.06-course-profiles-p2.4-north-america-neutral</td>
-      <td>101.738134</td>
+      <td>101.701301</td>
       <td>0.0</td>
       <td>0.0</td>
       <td>37.500</td>
@@ -1440,10 +1497,10 @@
       <td>-0.017445</td>
       <td>100.0</td>
       <td>R4 Weak/Lay</td>
-      <td>12.9</td>
+      <td>12.0</td>
       <td>28.8</td>
-      <td>17.3</td>
-      <td>32.7</td>
+      <td>16.0</td>
+      <td>30.7</td>
       <td>0.0</td>
       <td>Low</td>
       <td>Insufficient historic condition/result evidence for a Revival Watch assessment.</td>
@@ -1460,17 +1517,17 @@
       <td>ATR debutant/no history</td>
       <td>+0.0%</td>
       <td></td>
-      <td></td>
+      <td>💰</td>
       <td>context-connection-risk</td>
       <td>0.0</td>
-      <td>2026.11.01-audit-fixes-v1+20261030-us-patterns-v2</td>
+      <td>2026.11.18-release-and-settlement-v1+20261030-us-patterns-v2</td>
       <td>2026.11.01-p4.23-route-parity-v1</td>
-      <td>20261117_211307</td>
-      <td>2026-11-17 21:13:07</td>
+      <td>20261118_103842</td>
+      <td>2026-11-18 10:38:42</td>
       <td>7</td>
       <td>True</td>
-      <td>[{'stage': 'base_categories', 'score': 169.5636}, {'stage': 'pre_course_rules', 'score': 169.5636}, {'stage': 'post_course_rules', 'score': 169.5636}, {'stage': 'pre_model_history', 'score': 101.7381}, {'stage': 'post_model_history', 'score': 101.7381}, {'stage': 'post_generic_overlay', 'score': 101.7381}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 101.7381}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 101.7381, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.017 (97); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 101.7381}]</td>
-      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.08766980146290493, 'connections': 0.375, 'raw': 0.5833800002670049}, 'horse': 'Angela's Rose', 'trainer': 'T: S Corbett', 'jockey': 'J: Nathan Moscrop', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': [], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.0, 'atr_confidence': 0.45, 'atr_flags': 'ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 101.73813437511069, 'trend_delta': 0.0, 'final_composite_score': 101.7381, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E -0.017 (97); positive overlay blocked by low coverage'}</td>
+      <td>[{'stage': 'base_categories', 'score': 169.5022}, {'stage': 'pre_course_rules', 'score': 169.5022}, {'stage': 'post_course_rules', 'score': 169.5022}, {'stage': 'pre_model_history', 'score': 101.7013}, {'stage': 'post_model_history', 'score': 101.7013}, {'stage': 'post_generic_overlay', 'score': 101.7013}, {'stage': 'recent_trend_refinement', 'trend_delta': 0.0, 'score': 101.7013}, {'stage': 'world_class_live_context', 'version': '2026.07.26-p4-live-context-v1', 'adjustment_pct': 0.0, 'delta': 0.0, 'score': 101.7013, 'positive_families': [], 'negative_families': ['connection'], 'evidence': 'rider-yard A/E -0.017 (97); positive overlay blocked by low coverage'}, {'stage': 'world_context_final', 'score': 101.7013}]</td>
+      <td>{'recent_form_normalized': 0.5, 'official_rating_normalized': 0.5, 'class_decay_normalized': 0.5, 'outclassed_penalty_pct': 0, 'fitness_status': 'neutral_pending_validation', 'fitness_component': 0.5, 'category_scores': {'suitability': 0.0, 'form': None, 'market': 0.0868103448275862, 'connections': 0.375, 'raw': 0.5833800002670049}, 'horse': 'Angela's Rose', 'trainer': 'T: S Corbett', 'jockey': 'J: Nathan Moscrop', 'going_suitability': None, 'distance_suitability': None, 'class_suitability': None, 'suitability_score': 0.0, 'form_score': None, 'past_perf_score': 0.5, 'course_form_score': 0.5, 'trainer_intent_boost': 0.0, 'match_cond_score': 0.0, 'track_bias_applied_in_composite': False, 'track_bias_value': 0.0, 'track_bias_tags': [], 'model_hist_n': 0, 'model_hist_avg': None, 'model_hist_mult': 1.0, 'atr_score_adj': 0.0, 'atr_confidence': 0.45, 'atr_flags': 'ATR debutant/no history', 'handicap_status': 'not_handicap', 'handicap_evidence': 'not a handicap', 'composite_score_pre_save': 101.70130051931132, 'trend_delta': 0.0, 'final_composite_score': 101.7013, 'world_context_adjustment_pct': 0.0, 'world_context_evidence': 'rider-yard A/E -0.017 (97); positive overlay blocked by low coverage'}</td>
       <td>7</td>
       <td>7</td>
       <td>active_and_total</td>
@@ -1480,15 +1537,17 @@
       <td>False</td>
       <td>Good-good to soft in places</td>
       <td>Deterministic Plackett-Luce benchmark; uncertainty not estimated</td>
-      <td>0.040541</td>
-      <td>0.022714</td>
-      <td>0.041804</td>
-      <td>0.053377</td>
-      <td>8.81</td>
-      <td>14.59</td>
-      <td>21.95</td>
-      <td>32.11</td>
-      <td>48.70</td>
+      <td>0.025769</td>
+      <td>0.010546</td>
+      <td>0.028176</td>
+      <td>0.049115</td>
+      <td>0.0</td>
+      <td>1.16959</td>
+      <td>5.69</td>
+      <td>9.58</td>
+      <td>14.69</td>
+      <td>22.06</td>
+      <td>35.17</td>
       <td>Turf</td>
       <td>Good</td>
       <td>NH Flat</td>

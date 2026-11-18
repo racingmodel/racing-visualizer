@@ -302,14 +302,38 @@
 /* A single immutable, hash-checked snapshot for tables, cards and notifications. */
 (() => {
   'use strict';
-  const names=['release_integrity.json','value_bets.json','placepot_picks.json','ai_bets.json','racing_products.json','shortlist_backtest.json','p5_shadow_predictions.json','historic_systems.json','daily_decisions.json','p6_predictions.json','race_finder_data.json','race_simulation_insights.json','extra_places.txt'];
   const events=new EventTarget(); let snapshot=null, inflight=null, error=null;
+  const files=new Map();
   const hash=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))), b=>b.toString(16).padStart(2,'0')).join('');
-  async function read(url){
+  async function read(url, cache='no-store'){
     const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),45000);
-    try{const r=await fetch(url,{cache:'no-store',signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
+    try{const r=await fetch(url,{cache,signal:controller.signal});if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);return await r.text();}
     catch(e){if(e.name==='AbortError')throw new Error(`Loading timed out: ${url.split('?')[0]}. Retrying automatically.`);throw e;}
     finally{clearTimeout(timer);}
+  }
+  async function load(manifest,name){
+    const digest=manifest.files[name];
+    if(!digest)return name.endsWith('.txt')?'':[];
+    const key=`${name}:${digest}`;
+    if(!files.has(key)){
+      const request=(async()=>{
+        // Verify every response, including resources reused from browser cache.
+        const text=await read(`${name}?release=${encodeURIComponent(digest)}`,'no-cache');
+        if(await hash(text)!==digest)throw new Error(`Release still updating: ${name}`);
+        const data=name.endsWith('.txt')?text:JSON.parse(text);
+        if(name==='race_finder_data.json'){
+          const universe=manifest.race_universe||{};
+          if(data?.run_id!==manifest.run_id || Number(data?.summary?.races)!==Number(universe.races)
+             || Number(data?.summary?.runners)!==Number(universe.runners)){
+            throw new Error('Published race universe mismatch');
+          }
+        }
+        return data;
+      })();
+      files.set(key,request);
+      request.catch(()=>{if(files.get(key)===request)files.delete(key);});
+    }
+    return files.get(key);
   }
   async function refresh(){
     if(inflight)return inflight;
@@ -319,23 +343,26 @@
         if(!manifest.files || !manifest.run_id)throw new Error('Release manifest invalid');
         if(manifest.integrity?.status!=='passed')throw new Error('Release integrity was not verified');
         const revision=JSON.stringify(manifest.files);
-        if(snapshot?.revision===revision){error=null;return snapshot;}
+        if(snapshot?.revision===revision){
+          const recovered=error;error=null;
+          if(recovered)events.dispatchEvent(new Event('change'));
+          return snapshot;
+        }
         const data={};
-        await Promise.all(names.map(async name=>{
-          if(!manifest.files[name]){data[name]=name.endsWith('.txt')?'':[];return;}
-          const text=await read(`${name}?release=${encodeURIComponent(manifest.run_id)}`);
-          if(await hash(text)!==manifest.files[name])throw new Error(`Release still updating: ${name}`);
-          data[name]=name.endsWith('.txt')?text:JSON.parse(text);
-        }));
-        if(!Array.isArray(data['value_bets.json']) || !Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
+        const core=['release_integrity.json','daily_decisions.json'];
+        await Promise.all(core.map(async name=>{data[name]=await load(manifest,name);}));
+        if(!Array.isArray(data['daily_decisions.json']?.rows))throw new Error('Required data contract missing');
         if(data['daily_decisions.json'].run_id!==manifest.run_id)throw new Error('Decision release mismatch');
         const integrity=data['release_integrity.json'];
         if(integrity?.status!=='passed'||integrity?.run_id!==manifest.run_id)throw new Error('Release integrity report mismatch');
-        const finder=data['race_finder_data.json'];
-        if(finder?.run_id!==manifest.run_id)throw new Error('Race Finder release mismatch');
-        const universe=manifest.race_universe||{};
-        if(Number(finder?.summary?.races)!==Number(universe.races)||Number(finder?.summary?.runners)!==Number(universe.runners))throw new Error('Published race universe mismatch');
+        for(const name of Object.keys(snapshot?.data||{})){
+          if(!core.includes(name) && manifest.files[name] && manifest.files[name]===snapshot.manifest.files[name]){
+            data[name]=snapshot.data[name];
+          }
+        }
         snapshot=Object.freeze({manifest,data,revision,receivedAt:new Date().toISOString()});error=null;
+        const keep=new Set(Object.entries(manifest.files).map(([name,digest])=>`${name}:${digest}`));
+        for(const key of files.keys())if(!keep.has(key))files.delete(key);
         events.dispatchEvent(new Event('change'));return snapshot;
       } catch(e){error=e;events.dispatchEvent(new Event('error'));throw e;}
       finally {inflight=null;}
@@ -385,12 +412,20 @@
   }
   const ready=refresh();ready.catch(()=>{});
   window.RacingStore={ready,refresh,get snapshot(){return snapshot;},get error(){return error;},ukDate,decisionState,isModelSelection,currentShortlistRows,
-    async get(name){if(!snapshot)await refresh();return snapshot.data[name]??(name.endsWith('.txt')?'':[]);},
+    async get(name){
+      const pinned=snapshot||await refresh();
+      if(Object.hasOwn(pinned.data,name))return pinned.data[name];
+      const data=await load(pinned.manifest,name);
+      if(snapshot!==pinned)return this.get(name);
+      pinned.data[name]=data;
+      return data;
+    },
     subscribe(fn){events.addEventListener('change',fn);return()=>events.removeEventListener('change',fn);},
     onError(fn){events.addEventListener('error',fn);},
     isReady(row){return decisionState(row).execution_status==='ready';}
   };
   setInterval(()=>refresh().catch(()=>{}),60000);
+  if(typeof window.addEventListener==='function')window.addEventListener('focus',()=>refresh().catch(()=>{}));
 })();
 
 </script></head>
@@ -643,6 +678,7 @@
       const tags = Array.isArray(entry.tags) ? entry.tags : [];
       return {
         id:`fallback-${index}`, race_date:match?.[1] || "", race_time:match?.[2] || "", race_datetime:clean(entry.race_datetime),
+        race_start_utc:entry.race_start_utc,
         course:clean(entry.course), horse:clean(entry.horse), market_odds:num(entry.bookie_odds), model_odds:num(entry.model_odds), raw_odds:num(entry.raw_odds),
         model_rank:num(entry.rank_model), market_rank:num(entry.rank_market), rank_delta:num(entry.rank_delta), model_win_pct:num(entry.model_win_prob),
         model_place_pct:num(entry.model_place_prob), direct_price_edge_pp:num(entry.model_edge_pts), data_coverage:num(entry.data_coverage), race_data_confidence:num(entry.race_data_confidence),
@@ -655,7 +691,10 @@
     }
 
     async function loadData() {
-      payload = await safeJSON("race_finder_data.json");
+      const next = await safeJSON("race_finder_data.json");
+      if (payload === next) { render(); return; }
+      payload = next;
+      limitedFallback = false;
       runners = Array.isArray(payload?.runners) ? payload.runners.filter(row => row && row.horse) : [];
       if (!runners.length) {
         const valueData = await safeJSON("value_bets.json");
@@ -676,11 +715,13 @@
       $("stat-runners").textContent = String(summary.runners ?? runners.length);
       $("stat-races").textContent = String(summary.races ?? new Set(runners.map(r => `${r.race_datetime}|${r.course}`)).size);
       $("stat-courses").textContent = String(courses.length);
-      $("stat-best").textContent = String(summary.best_bets ?? runners.filter(r => r.best_bet).length);
+      $("stat-best").textContent = String(runners.filter(r => r.best_bet && !raceStarted(r)).length);
       ["stat-runners","stat-races","stat-courses","stat-best"].forEach(id => $(id).classList.remove("loading"));
-      const generated = payload?.generated_at ? new Date(payload.generated_at) : null;
+      const generated = payload?.generated_at ? RacingStore.ukDate(payload.generated_at) : null;
+      const dates = [...new Set(runners.map(r=>r.race_date).filter(Boolean))];
+      const cardDate = dates.length ? `Cards ${dates.join(' · ')} · ` : '';
       $("run-badge").textContent = generated && !Number.isNaN(generated.getTime())
-        ? `Updated ${generated.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} · ${generated.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}`
+        ? `${cardDate}Updated ${generated.toLocaleDateString("en-GB",{day:"numeric",month:"short",timeZone:"Europe/London"})} · ${generated.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/London"})} UK`
         : (runners.length ? "Latest available model" : "No runner data yet");
       const warning = $("data-warning");
       if (limitedFallback) {
@@ -786,11 +827,8 @@
     }
 
     function raceDate(runner) {
-      const date = clean(runner.race_date || runner.race_datetime.split(" ")[0]);
-      const time = clean(runner.race_time || runner.race_datetime.match(/\d{1,2}:\d{2}/)?.[0]);
-      const parts = date.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      const clock = time.match(/(\d{1,2}):(\d{2})/);
-      return parts && clock ? new Date(Number(parts[3]),Number(parts[2])-1,Number(parts[1]),Number(clock[1]),Number(clock[2])) : new Date(8640000000000000);
+      const stamp=RacingStore.ukDate(runner.race_start_utc || runner.race_datetime || `${runner.race_date} ${runner.race_time}`);
+      return Number.isFinite(+stamp)?stamp:new Date(8640000000000000);
     }
     function raceStarted(runner) { const date = raceDate(runner); return !Number.isNaN(date.getTime()) && date.getTime() <= Date.now(); }
     function raceCode(runner) {
@@ -899,6 +937,17 @@
     }
 
     function render() {
+      const decisions=RacingStore.snapshot?.data['daily_decisions.json'];
+      if(decisions){
+        const runnerKey=r=>JSON.stringify([+raceDate(r),clean(r.course).toLowerCase(),clean(r.horse).toLowerCase()]);
+        const live=new Map(RacingStore.currentShortlistRows(decisions).map(r=>[runnerKey(r),r]));
+        runners=runners.map(r=>{
+          const decision=live.get(runnerKey(r));
+          return {...r,best_bet:!!decision,shortlist_type:decision?.route || "",
+            current_offer:decision?.execution_status==="ready"?decision:null};
+        });
+      }
+      updateStats();
       updateMultiSummaries();
       setModeButtons();
       renderActive();
@@ -956,6 +1005,8 @@
     ["sort","group","odds-format"].forEach(id=>$(id).addEventListener("change",render));
     document.querySelectorAll("button[data-preset]").forEach(button=>button.addEventListener("click",()=>preset(button.dataset.preset)));
     window.addEventListener("resize",applyView);
+    window.addEventListener("focus",()=>render());
+    setInterval(()=>{if(runners.length)render();},15000);
     const reloadRaceFinder=()=>loadData().catch(console.error); RacingStore.subscribe(reloadRaceFinder); RacingStore.ready.then(reloadRaceFinder).catch(console.error);
   })();
   </script>
