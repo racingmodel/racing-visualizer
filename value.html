@@ -6561,7 +6561,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">18 Nov 2026, 21:33</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">19 Nov 2026, 11:12</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -7414,15 +7414,15 @@ window.renderRacingView = async () => {
   };
 
   const ACTIVE_BACKTEST_TYPES = new Set([
-    "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
+    "Clear Value Win", "Clear Value E/W", "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W",
     "Longshot BT E/W B", "Intel EW", "Must Lay", "Value Lay B", "Place Lay"
   ]);
 
   const backtestGroupForType = (type) => {
     const t = String(type || "").trim();
-    if (["ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
+    if (["Clear Value E/W", "ELO E/W", "ML Place E/W", "Strong Value E/W", "Each Way", "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"].includes(t)) return "EW";
     if (["Must Lay", "Value Lay B", "Place Lay"].includes(t)) return "Lay";
-    if (["Must Win", "Elite Win", "ELO Win"].includes(t)) return "Win";
+    if (["Clear Value Win", "Must Win", "Elite Win", "ELO Win"].includes(t)) return "Win";
     return "Other";
   };
 
@@ -7559,7 +7559,7 @@ window.renderRacingView = async () => {
     if (updatedEl) updatedEl.textContent = `${sinceTxt}${payload.updated_at ? ` · Updated ${payload.updated_at}` : ""}`;
 
     const groups = summariseBacktestGroups(rows);
-    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win", "ELO Win"]);
+    const winA = summariseBacktestTypes(rows, ["Must Win", "Elite Win", "ELO Win", "Clear Value Win"]);
     const layA = summariseBacktestTypes(rows, ["Must Lay"]);
     const layB = summariseBacktestTypes(rows, ["Value Lay B"]);
     const placeLay = summariseBacktestTypes(rows, ["Place Lay"]);
@@ -8347,6 +8347,8 @@ window.renderRacingView = async () => {
   });
 
   const typeBadgeHTML = (type) => {
+    if (type === "Clear Value Win") return '<span class="type-badge type-win">Clear Value Win</span>';
+    if (type === "Clear Value E/W") return '<span class="type-badge type-ew">Clear Value E/W</span>';
     if (type === 'Strong Value E/W') return `<span class="type-badge type-ewep">Strong Value E/W</span>`;
     if (type === 'Big E/W - EP') return `<span class="type-badge type-ewep">Big E/W - EP</span>`;
     if (type === 'Each Way') return `<span class="type-badge type-ew">Each Way</span>`;
@@ -8563,6 +8565,7 @@ window.renderRacingView = async () => {
     if (type === "ML Place E/W") {
       return "ML Place E/W: validated P5 top-four probability and edge confirm P4 top-four rank, a positive rank overlay, dual value and genuine four-place terms.";
     }
+    if (type === "Clear Value Win" || type === "Clear Value E/W") return entry.reason || "Clear ratings leader with dual price value and strong profiles.";
     if (type === "Strong Win B") {
       return "Strong Win B: a clear model number one at 5.00 or shorter with dual price support, top-two market rank, strong leader/place profiles and 95%+ data, but outside the stricter Grade-A favourite route.";
     }
@@ -8699,6 +8702,13 @@ window.renderRacingView = async () => {
       const age = minutes < 1 ? 'under 1 min old' : `${minutes} min old`;
       const terms = entry.offer_places && entry.offer_fraction ? ` · ${entry.offer_places} places at ${entry.offer_fraction} of odds` : '';
       return `<small class="shortlist-reason"><strong>Ready</strong> · ${escHTML(entry.offer_bookmaker || 'Verified quote')} · ${age}${escHTML(terms)}</small>`;
+    }
+    if (["Clear Value Win", "Clear Value E/W"].includes(entry?.current_model_type)) {
+      const detail = entry.clear_value_decision || {};
+      const gap = Number.isFinite(detail.gap) ? Math.round(detail.gap) + " points clear" : "Clear ratings leader";
+      const anchor = Number.isFinite(detail.anchored_fair_price) ? " · anchored fair " + detail.anchored_fair_price.toFixed(2) : "";
+      const terms = detail.bookmaker ? " · " + detail.bookmaker + ", " + detail.places + " places at " + detail.fraction + " at last quote" : "";
+      return `<small class="shortlist-reason"><strong>Model shortlist · trial route</strong> · ${escHTML(gap + anchor + terms)}</small>`;
     }
     if (entry?.advice_price_provenance !== 'model_snapshot_price_verify_before_bet') return '';
     if (entry?.current_model_qualified === false) {
@@ -10205,7 +10215,7 @@ const getShortlistType = (entry) => {
     const backendType = backendAlias.get(backendRaw) || backendRaw;
     const extra = isExtraPlaceRace(entry);
     if (["Strong Win B", "Mid-Price Win"].includes(backendType)) return "";
-    if (["Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
+    if (["Clear Value Win", "Clear Value E/W", "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W", "Must Lay", "Value Lay B", "Place Lay", "Intel EW", "Strong Value E/W", "Big E/W - EP", "BT E/W", "Longshot BT E/W B"].includes(backendType)) {
       return backendType;
     }
     if (backendType === "Each Way") {
@@ -10402,7 +10412,7 @@ const getShortlistType = (entry) => {
     }
 
     const immutableTypes = new Set([
-      "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W",
+      "Clear Value Win", "Clear Value E/W", "Must Win", "Elite Win", "ELO Win", "ELO E/W", "ML Place E/W",
       "Strong Value E/W", "Each Way", "Must Lay", "Value Lay B", "Place Lay",
       "Big E/W - EP", "BT E/W", "Longshot BT E/W B", "Intel EW"
     ]);
@@ -10734,6 +10744,7 @@ const getShortlistType = (entry) => {
         current_model_qualified:decision.current_model_qualified,
         current_model_type:decision.current_model_type,
         current_model_reason:decision.current_model_reason,
+        clear_value_decision:decision.clear_value_decision || entry.clear_value_decision,
         advised_odds:decision.price ?? decision.advised_odds ?? entry.advised_odds,
         bookie_odds:decision.price};
     })
