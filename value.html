@@ -6561,7 +6561,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Nov 2026, 16:24</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Nov 2026, 16:55</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -6735,6 +6735,11 @@
       </div>
     </details>
 
+    <details id="top-rated-clear-section" class="section-card">
+      <summary class="section-title"><span class="section-title-left">🥇 Top Rated Clear <span id="toprated-section-count" class="section-count">0</span></span><span class="section-chevron">▶</span></summary>
+      <div class="section-body"><div class="section-note">Every model-rank-one runner rated at least 75 score points clear is shown here at 80%+ horse and race data. This is a score-led Watch classification; it becomes a bet only when Model100, Raw and the relevant action policy all pass.</div><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
+    </details>
+
     <details id="elo-section" class="section-card section-elo">
       <summary class="section-title">
         <span class="section-title-left">⚡ Horse ELO — Classic Primary <span id="elo-section-count" class="section-count">0</span></span>
@@ -6802,10 +6807,6 @@
       </div>
     </details>
 
-    <details id="top-rated-clear-section" class="section-card">
-      <summary class="section-title"><span class="section-title-left">🥇 Top Rated Clear <span id="toprated-section-count" class="section-count">0</span></span><span class="section-chevron">▶</span></summary>
-      <div class="section-body"><div class="section-note">Every model-rank-one runner rated at least 75 score points clear is shown here at 80%+ horse and race data. This is a score-led Watch classification; it becomes a bet only when Model100, Raw and the relevant action policy all pass.</div><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
-    </details>
 
     <details id="machine-learning-section" class="section-card section-machine-learning">
       <summary class="section-title">
@@ -10818,7 +10819,7 @@ const getShortlistType = (entry) => {
   const sleepers = buildGroupedRows(sleeperItems, sleeperRow, 6);
   const value = buildGroupedRows(valueItems, modelEdgeWatchRow, 5);
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row", "Big E/W Odds"), 5);
-  const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear"), 5);
+  const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear", true), 6);
   const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 6);
   const nameBetsHtml = buildGroupedRows(nameBetItems, nameBetRow, 6);
 
@@ -11220,7 +11221,7 @@ const getShortlistType = (entry) => {
   setBody('#value-table',     value, 5);
   setBody('#overlay-table',   overlay, 7);
   setBody('#blue-table',      blue, 5);
-  setBody('#toprated-table',  top, 5);
+  setBody('#toprated-table',  top, 6);
 
   const nameBetCount = document.getElementById("name-bets-section-count");
   if (nameBetCount) nameBetCount.textContent = String(nameBetItems.length);
