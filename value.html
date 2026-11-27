@@ -3290,8 +3290,8 @@
     @media (max-width: 720px) {
       /* Exchange back/lay quotes are desktop-only across the whole page. */
       .bf-exchange-cell { display: none !important; }
-      #todays-shortlist .shortlist-table-wrap { display: none !important; }
-      #todays-shortlist .mobile-shortlist-list { display: block; }
+      #todays-shortlist .shortlist-table-wrap, #top-rated-clear-section .table-wrap { display: none !important; }
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-shortlist-list { display: block; }
 
       .mobile-shortlist-date {
         margin: 0.18rem 0 0.38rem;
@@ -4656,8 +4656,8 @@
     /* Final phone contract: the same fields and order as the web shortlist,
        rearranged into a readable card instead of a squeezed desktop table. */
     @media (max-width: 720px) {
-      #todays-shortlist .section-body { padding: 10px !important; }
-      #todays-shortlist .mobile-shortlist-list { display: grid !important; gap: 10px; }
+      :is(#todays-shortlist, #top-rated-clear-section) .section-body { padding: 10px !important; }
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-shortlist-list { display: grid !important; gap: 10px; }
       .mobile-shortlist-date {
         margin: 2px 0 0 !important;
         padding: 8px 10px !important;
@@ -4998,13 +4998,13 @@
         row-gap: 0;
       }
       #todays-shortlist[open] > summary .section-chevron { grid-row: 1; }
-      #todays-shortlist .section-body { padding: 8px !important; }
-      #todays-shortlist .mobile-shortlist-list {
+      :is(#todays-shortlist, #top-rated-clear-section) .section-body { padding: 8px !important; }
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-shortlist-list {
         display: grid !important;
         gap: 8px !important;
       }
 
-      #todays-shortlist .mobile-shortlist-date {
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-shortlist-date {
         display: flex !important;
         align-items: center;
         gap: 0.42rem;
@@ -5026,7 +5026,7 @@
         background: #d5ab19;
       }
 
-      #todays-shortlist .mobile-selection-card {
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-selection-card {
         position: relative;
         margin: 0 !important;
         color: #eef2f7 !important;
@@ -5267,9 +5267,9 @@
 
     /* Precision black-and-gold mobile card, matched to the approved visual direction. */
     @media (max-width: 720px) {
-      #todays-shortlist .mobile-shortlist-date { display: none !important; }
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-shortlist-date { display: none !important; }
 
-      #todays-shortlist .mobile-selection-card {
+      :is(#todays-shortlist, #top-rated-clear-section) .mobile-selection-card {
         background:
           radial-gradient(circle at 18% 24%, rgba(230,184,31,0.065), transparent 34%),
           linear-gradient(145deg,#101419 0%,#090c10 62%,#0d1116 100%) !important;
@@ -5967,6 +5967,14 @@
         padding: 8px 12px 8px 6px !important;
         border: 0 !important;
       }
+      #toprated-table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-result {
+        grid-row: 4 !important;
+        grid-column: 1 / -1 !important;
+      }
+      #toprated-table.mobile-card-table tbody tr.mobile-simple-row .mobile-simple-tags {
+        grid-row: 5 !important;
+        grid-column: 1 !important;
+      }
       .mobile-simple-action .mybets-add-btn {
         min-width: 86px !important;
         min-height: 32px !important;
@@ -6561,7 +6569,7 @@
     <div class="subtitle">Best bets, your saved runners and the verified live model record in one clear view.</div>
 
     <div class="top-bar">
-      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Nov 2026, 16:55</span></div>
+      <div class="latest-update">🕒 Latest Update: <span id="latest-update-time">27 Nov 2026, 17:38</span></div>
 
       <button id="enableAlertsBtn" class="alert-btn" type="button">
         🔔 Enable shortlist alerts
@@ -6737,7 +6745,7 @@
 
     <details id="top-rated-clear-section" class="section-card">
       <summary class="section-title"><span class="section-title-left">🥇 Top Rated Clear <span id="toprated-section-count" class="section-count">0</span></span><span class="section-chevron">▶</span></summary>
-      <div class="section-body"><div class="section-note">Every model-rank-one runner rated at least 75 score points clear is shown here at 80%+ horse and race data. This is a score-led Watch classification; it becomes a bet only when Model100, Raw and the relevant action policy all pass.</div><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Tags</th><th>Result</th><th>My List</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="section-body"><div class="section-note">Every model-rank-one runner rated at least 75 score points clear is shown here at 80%+ horse and race data. This is a score-led Watch classification; it becomes a bet only when Model100, Raw and the relevant action policy all pass.</div><div class="table-wrap"><table id="toprated-table"><thead><tr><th>Race</th><th>Horse</th><th>Odds</th><th>Result</th><th>Tags</th><th>My List</th></tr></thead><tbody></tbody></table></div><div id="mobile-toprated-list" class="mobile-shortlist-list" aria-label="Mobile Top Rated Clear selections"></div></div>
     </details>
 
     <details id="elo-section" class="section-card section-elo">
@@ -8420,7 +8428,7 @@ window.renderRacingView = async () => {
     return `<span class="bf-price bf-${safeSide}"><span class="bf-label">${label}</span><span class="bf-odds">${escHTML(clean)}</span></span>`;
   };
 
-  const twoLineRow = (entry, tagList, rowClass = "", sourceLabel = "", includeResult = false) => {
+  const twoLineRow = (entry, tagList, rowClass = "", sourceLabel = "", includeResult = false, resultBeforeTags = false) => {
     const bookie = entry.bookie_odds ?? "-";
     const model = entry.model_odds ?? entry.model_100_odds ?? entry.model_100 ?? "-";
     const raw = entry.raw_odds ?? "-";
@@ -8442,8 +8450,9 @@ window.renderRacingView = async () => {
           <span class="supporting-price-box is-raw"><small>Raw</small><strong>${escHTML(raw)}</strong></span>
         </div>
       </td>
+      ${includeResult && resultBeforeTags ? `<td class="mobile-simple-result" data-label="Result">${resultBadgeHTML(resultEntry)}</td>` : ""}
       <td class="mobile-simple-tags">${tags}</td>
-      ${includeResult ? `<td class="mobile-simple-result" data-label="Result">${resultBadgeHTML(resultEntry)}</td>` : ""}
+      ${includeResult && !resultBeforeTags ? `<td class="mobile-simple-result" data-label="Result">${resultBadgeHTML(resultEntry)}</td>` : ""}
       <td class="mobile-simple-action">${myBetButtonHTML(entry, source, source)}</td>
     </tr>`;
   };
@@ -8828,11 +8837,11 @@ window.renderRacingView = async () => {
     return labels[clean] || clean;
   };
 
-  const mobileShortlistCardHTML = (entry) => {
+  const mobileShortlistCardHTML = (entry, sourceOverride = "") => {
     const market = entry?.bookie_odds ?? entry?.real_odds ?? "-";
     const model = entry?.model_odds ?? entry?.model_100_odds ?? entry?.model_100 ?? "-";
     const raw = entry?.raw_odds ?? "-";
-    const shortlistType = String(entry?.shortlist_type || "Shortlist");
+    const shortlistType = String(sourceOverride || entry?.shortlist_type || "Shortlist");
     const typeIsValue = shortlistType.toLowerCase().includes("value");
     const typeTone = /lay/i.test(shortlistType)
       ? "is-lay"
@@ -8847,7 +8856,7 @@ window.renderRacingView = async () => {
     );
     const horseLink = racecardHorseLinkHTML(entry, entry?.horse || "", "mobile-selection-horse");
     const mobileResult = resultLabel(entry);
-    const mobileStatusHTML = resultBadgeHTML(entry);
+    const mobileStatusHTML = resultBadgeHTML(sourceOverride ? (findValueResult(entry?.race_datetime, entry?.course, entry?.horse) || entry) : entry);
 
     return `<article class="mobile-selection-card">
       <header class="mobile-card-header">
@@ -8855,7 +8864,7 @@ window.renderRacingView = async () => {
         ${mobileStatusHTML}
       </header>
       <div class="mobile-card-primary">
-        <span class="mobile-card-bet-type ${typeTone}" title="${escHTML(shortlistType)}"><small>Bet type</small><strong>${escHTML(mobileCompactBetTypeLabel(shortlistType))}</strong></span>
+        <span class="mobile-card-bet-type ${typeTone}" title="${escHTML(shortlistType)}"><small>${sourceOverride ? "Watch" : "Bet type"}</small><strong>${escHTML(sourceOverride ? "Top Rated Clear" : mobileCompactBetTypeLabel(shortlistType))}</strong></span>
         <div class="mobile-card-horse">${horseLink}</div>
       </div>
       <div class="mobile-card-odds-grid" aria-label="Market and model odds comparison">
@@ -8873,8 +8882,8 @@ window.renderRacingView = async () => {
     </article>`;
   };
 
-  const renderMobileShortlist = (items) => {
-    const root = document.getElementById("mobile-shortlist-list");
+  const renderMobileShortlist = (items, rootId = "mobile-shortlist-list", sourceOverride = "") => {
+    const root = document.getElementById(rootId);
     if (!root) return;
     if (!Array.isArray(items) || !items.length) {
       root.innerHTML = '<div class="mobile-shortlist-empty">No active selections found.</div>';
@@ -8888,7 +8897,7 @@ window.renderRacingView = async () => {
         ? `<div class="mobile-shortlist-date"><span class="mobile-shortlist-date-dot" aria-hidden="true"></span>${escHTML(compactMobileDateFromRaceDT(entry?.race_datetime))}</div>`
         : "";
       lastDate = currentDate;
-      return divider + mobileShortlistCardHTML(entry);
+      return divider + mobileShortlistCardHTML(entry, sourceOverride);
     }).join("");
   };
 
@@ -10819,7 +10828,7 @@ const getShortlistType = (entry) => {
   const sleepers = buildGroupedRows(sleeperItems, sleeperRow, 6);
   const value = buildGroupedRows(valueItems, modelEdgeWatchRow, 5);
   const blue = buildGroupedRows(blueItems, e => twoLineRow(e, tagSet(e), "blue-row", "Big E/W Odds"), 5);
-  const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear", true), 6);
+  const top = buildGroupedRows(topItems, e => twoLineRow(e, tagSet(e), "toprated-row", "Top Rated Clear", true, true), 6);
   const wasValueHtml = buildGroupedRows(wasValueEntries, e => wasValueRow(e), 6);
   const nameBetsHtml = buildGroupedRows(nameBetItems, nameBetRow, 6);
 
@@ -11196,6 +11205,7 @@ const getShortlistType = (entry) => {
 
   setBody('#shortlist-table', shortlist, 8);
   renderMobileShortlist(shortlistItems);
+  renderMobileShortlist(topItems, "mobile-toprated-list", "Top Rated Clear");
   renderMobileSupportList('mobile-wasvalue-list', wasValueEntries, mobileWasValueCardHTML);
   renderMobileSupportList('mobile-elo-list', eloItems, mobileEloCardHTML);
   renderMobileSupportList('mobile-overlay-list', overlayEntries, mobileOverlayCardHTML);
